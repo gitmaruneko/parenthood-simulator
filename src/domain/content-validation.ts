@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 import {
-  conditionSchema,
   contentPackSchema,
   type Condition,
   type ContentPack,
   type EventNode,
+  type ScheduledFollowUp,
 } from "./schemas.js";
 
 export const contentValidationIssueCodeSchema = z.enum([
@@ -15,6 +15,7 @@ export const contentValidationIssueCodeSchema = z.enum([
   "INVALID_WEIGHT",
   "EMPTY_REACTION_POOL",
   "INVALID_AGE_STAGE",
+  "INVALID_FALLBACK",
   "UNREACHABLE_REQUIRED_EVENT",
   "CYCLE_WITHOUT_TERMINATION_GUARD",
 ]);
@@ -32,7 +33,13 @@ export type ContentValidationResult =
   | { success: false; issues: ContentValidationIssue[] };
 
 const pathOf = (path: readonly (string | number)[]): string =>
-  path.length === 0 ? "$" : path.map((part) => (typeof part === "number" ? `[${part}]` : part)).join(".");
+  path.length === 0
+    ? "$"
+    : path.reduce<string>(
+        (result, part) =>
+          typeof part === "number" ? `${result}[${part}]` : result.length === 0 ? part : `${result}.${part}`,
+        "",
+      );
 
 const addIssue = (
   issues: ContentValidationIssue[],
@@ -134,6 +141,35 @@ const addEventReferenceEdges = (
   });
 };
 
+const validateScheduledFollowUp = (
+  followUp: ScheduledFollowUp,
+  path: string,
+  sourceAgeStageId: string,
+  ageStageIds: ReadonlyMap<string, number>,
+  ageStageOrder: ReadonlyMap<string, number>,
+  eventIds: ReadonlyMap<string, number>,
+  actorIds: ReadonlyMap<string, number>,
+  issues: ContentValidationIssue[],
+): void => {
+  checkReference(followUp.eventId, eventIds, `${path}.eventId`, "scheduled event", issues);
+  if (followUp.targetAgeStageId) {
+    checkReference(followUp.targetAgeStageId, ageStageIds, `${path}.targetAgeStageId`, "target age-stage", issues);
+    const targetOrder = ageStageOrder.get(followUp.targetAgeStageId);
+    const sourceOrder = ageStageOrder.get(sourceAgeStageId);
+    if (targetOrder !== undefined && sourceOrder !== undefined && targetOrder < sourceOrder) {
+      addIssue(
+        issues,
+        "INVALID_AGE_STAGE",
+        `${path}.targetAgeStageId`,
+        "scheduled follow-up cannot target an earlier age stage",
+      );
+    }
+  }
+  if (followUp.condition) {
+    visitCondition(followUp.condition, `${path}.condition`, eventIds, actorIds, issues);
+  }
+};
+
 const stronglyConnectedComponents = (adjacency: ReadonlyMap<string, ReadonlySet<string>>): string[][] => {
   let nextIndex = 0;
   const indices = new Map<string, number>();
@@ -207,6 +243,15 @@ const validateCrossReferences = (content: ContentPack): ContentValidationIssue[]
     checkReference(eventId, eventIds, `entryEventIds[${index}]`, "entry event", issues),
   );
   checkReference(content.fallbackEventId, eventIds, "fallbackEventId", "fallback event", issues);
+  const fallbackEvent = content.events.find((event) => event.id === content.fallbackEventId);
+  if (fallbackEvent && (fallbackEvent.kind === "choice" || fallbackEvent.mode !== "AUTO_ADVANCE" || fallbackEvent.choices.length > 0)) {
+    addIssue(
+      issues,
+      "INVALID_FALLBACK",
+      "fallbackEventId",
+      "fallback event must be a choice-free AUTO_ADVANCE node",
+    );
+  }
   content.requiredEventIds.forEach((eventId, index) =>
     checkReference(eventId, eventIds, `requiredEventIds[${index}]`, "required event", issues),
   );
@@ -220,6 +265,15 @@ const validateCrossReferences = (content: ContentPack): ContentValidationIssue[]
         "age-stage entry event",
         issues,
       );
+      const entryEvent = content.events.find((event) => event.id === eventId);
+      if (entryEvent && entryEvent.ageStageId !== stage.id) {
+        addIssue(
+          issues,
+          "INVALID_AGE_STAGE",
+          `ageStages[${stageIndex}].entryEventIds[${eventIndex}]`,
+          `entry event ${eventId} belongs to ${entryEvent.ageStageId}, not ${stage.id}`,
+        );
+      }
     });
   });
 
@@ -253,43 +307,27 @@ const validateCrossReferences = (content: ContentPack): ContentValidationIssue[]
     visitCondition(event.eligibility, `events[${eventIndex}].eligibility`, eventIds, actorIds, issues);
     addEventReferenceEdges(event, adjacency, eventIds, reactionPools);
 
-    event.scheduledFollowUps.forEach((followUp, followUpIndex) => {
-      checkReference(
-        followUp.eventId,
+    event.scheduledFollowUps.forEach((followUp, followUpIndex) =>
+      validateScheduledFollowUp(
+        followUp,
+        `events[${eventIndex}].scheduledFollowUps[${followUpIndex}]`,
+        event.ageStageId,
+        ageStageIds,
+        ageStageOrder,
         eventIds,
-        `events[${eventIndex}].scheduledFollowUps[${followUpIndex}].eventId`,
-        "scheduled event",
+        actorIds,
+        issues,
+      ),
+    );
+    if (event.terminationGuard?.kind === "condition") {
+      visitCondition(
+        event.terminationGuard.condition,
+        `events[${eventIndex}].terminationGuard.condition`,
+        eventIds,
+        actorIds,
         issues,
       );
-      if (followUp.targetAgeStageId) {
-        checkReference(
-          followUp.targetAgeStageId,
-          ageStageIds,
-          `events[${eventIndex}].scheduledFollowUps[${followUpIndex}].targetAgeStageId`,
-          "target age-stage",
-          issues,
-        );
-        const targetOrder = ageStageOrder.get(followUp.targetAgeStageId);
-        const sourceOrder = ageStageOrder.get(event.ageStageId);
-        if (targetOrder !== undefined && sourceOrder !== undefined && targetOrder < sourceOrder) {
-          addIssue(
-            issues,
-            "INVALID_AGE_STAGE",
-            `events[${eventIndex}].scheduledFollowUps[${followUpIndex}].targetAgeStageId`,
-            "scheduled follow-up cannot target an earlier age stage",
-          );
-        }
-      }
-      if (followUp.condition) {
-        visitCondition(
-          followUp.condition,
-          `events[${eventIndex}].scheduledFollowUps[${followUpIndex}].condition`,
-          eventIds,
-          actorIds,
-          issues,
-        );
-      }
-    });
+    }
 
     event.choices.forEach((choice, choiceIndex) => {
       choice.knowledgeCardIds.forEach((cardId, cardIdIndex) =>
@@ -319,24 +357,18 @@ const validateCrossReferences = (content: ContentPack): ContentValidationIssue[]
           issues,
         ),
       );
-      choice.scheduledFollowUps.forEach((followUp, followUpIndex) => {
-        checkReference(
-          followUp.eventId,
+      choice.scheduledFollowUps.forEach((followUp, followUpIndex) =>
+        validateScheduledFollowUp(
+          followUp,
+          `events[${eventIndex}].choices[${choiceIndex}].scheduledFollowUps[${followUpIndex}]`,
+          event.ageStageId,
+          ageStageIds,
+          ageStageOrder,
           eventIds,
-          `events[${eventIndex}].choices[${choiceIndex}].scheduledFollowUps[${followUpIndex}].eventId`,
-          "scheduled event",
+          actorIds,
           issues,
-        );
-        if (followUp.targetAgeStageId) {
-          checkReference(
-            followUp.targetAgeStageId,
-            ageStageIds,
-            `events[${eventIndex}].choices[${choiceIndex}].scheduledFollowUps[${followUpIndex}].targetAgeStageId`,
-            "target age-stage",
-            issues,
-          );
-        }
-      });
+        ),
+      );
     });
   });
 
@@ -375,7 +407,11 @@ const validateCrossReferences = (content: ContentPack): ContentValidationIssue[]
   });
 
   const reachable = new Set<string>();
-  const queue = [...content.entryEventIds.filter((eventId) => eventIds.has(eventId))];
+  const reachabilityRoots = [
+    ...content.entryEventIds,
+    ...content.ageStages.flatMap((stage) => stage.entryEventIds),
+  ];
+  const queue = [...reachabilityRoots.filter((eventId) => eventIds.has(eventId))];
   while (queue.length > 0) {
     const eventId = queue.shift();
     if (!eventId || reachable.has(eventId)) {
@@ -402,13 +438,15 @@ const validateCrossReferences = (content: ContentPack): ContentValidationIssue[]
   for (const component of stronglyConnectedComponents(adjacency)) {
     const hasSelfLoop = component.length === 1 && adjacency.get(component[0] ?? "")?.has(component[0] ?? "");
     if (component.length > 1 || hasSelfLoop) {
-      const guarded = component.some((eventId) => content.events.find((event) => event.id === eventId)?.terminationGuard);
+      const guarded = component.some(
+        (eventId) => content.events.find((event) => event.id === eventId)?.terminationGuard?.kind === "maxVisits",
+      );
       if (!guarded) {
         addIssue(
           issues,
           "CYCLE_WITHOUT_TERMINATION_GUARD",
           "events",
-          `cycle requires an explicit termination guard: ${component.join(" -> ")}`,
+          `cycle requires a maxVisits termination guard: ${component.join(" -> ")}`,
         );
       }
     }
@@ -454,6 +492,4 @@ export const parseContentPack = (input: unknown): ContentPack => {
   }
   return result.data;
 };
-
-export { conditionSchema };
 

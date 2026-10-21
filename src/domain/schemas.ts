@@ -129,7 +129,7 @@ export const reactionEntrySchema = z
     id: identifierSchema,
     kind: z.enum(["support", "neutral", "criticism", "none"]),
     text: z.string().min(1),
-    weight: z.number().finite().positive(),
+    weight: z.number().finite(),
     actorRoles: z.array(actorRoleSchema).min(1),
     requirements: conditionSchema.optional(),
     followUpEventIds: z.array(identifierSchema).default([]),
@@ -297,6 +297,18 @@ export const eventProgressSchema = z
   })
   .strict();
 
+export const turnSchema = z
+  .object({
+    id: identifierSchema,
+    ageStageId: identifierSchema,
+    status: z.enum(["active", "awaitingInput", "completed", "cycleProtected"]),
+    nodeCount: z.number().int().min(0).max(4),
+    maxNodeCount: z.literal(4).default(4),
+    activeEventId: identifierSchema.nullable(),
+    processedEventIds: z.array(identifierSchema),
+  })
+  .strict();
+
 export const scheduledEventStateSchema = z
   .object({
     id: identifierSchema,
@@ -327,12 +339,23 @@ export const storyEntrySchema = z
   })
   .strict();
 
+export const reviewTimelineEntrySchema = z
+  .object({
+    ageStageId: identifierSchema,
+    title: z.string().min(1),
+    storyEntryIds: z.array(identifierSchema),
+  })
+  .strict();
+
 export const reviewDataSchema = z
   .object({
-    summary: z.string().min(1),
+    familySummary: z.string().min(1),
+    narrativeOverview: z.string().min(1),
+    timeline: z.array(reviewTimelineEntrySchema).length(12),
     keyMomentIds: z.array(identifierSchema).length(3),
     supportMomentIds: z.array(identifierSchema),
     repairMomentIds: z.array(identifierSchema),
+    endStateResources: resourceStateSchema,
     themes: z.array(z.enum([
       "growing-together",
       "dual-income-routine",
@@ -352,6 +375,7 @@ export const gameStateSchema = z
     rngState: z.number().int().min(0).max(0xffffffff),
     currentAgeStageId: identifierSchema,
     currentTurnId: identifierSchema.nullable(),
+    turn: turnSchema.nullable(),
     eventProgress: eventProgressSchema.nullable(),
     resources: resourceStateSchema,
     planningLoad: z.number().finite().min(0),
@@ -373,4 +397,6 @@ export type GameState = z.infer<typeof gameStateSchema>;
 export type ResourceKey = z.infer<typeof resourceKeySchema>;
 export type ReactionPool = z.infer<typeof reactionPoolSchema>;
 export type KnowledgeCard = z.infer<typeof knowledgeCardSchema>;
+export type ScheduledFollowUp = z.infer<typeof scheduledFollowUpSchema>;
+export type Turn = z.infer<typeof turnSchema>;
 

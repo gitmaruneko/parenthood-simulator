@@ -13,7 +13,7 @@ const makeAgeStages = () =>
     id: `age-stage-${order + 1}`,
     order,
     childAgeMonths,
-    entryEventIds: ["welcome"],
+    entryEventIds: [order === 0 ? "welcome" : `stage-entry-${order + 1}`],
     turnNodeLimit: 4 as const,
     ageStageNodeLimit: 6 as const,
   }));
@@ -21,7 +21,7 @@ const makeAgeStages = () =>
 const makeValidPack = (): ContentPack => ({
   schemaVersion: 1,
   entryEventIds: ["welcome"],
-  fallbackEventId: "welcome",
+  fallbackEventId: "follow-up",
   requiredEventIds: ["welcome", "follow-up"],
   ageStages: makeAgeStages(),
   actors: [
@@ -127,6 +127,24 @@ const makeValidPack = (): ContentPack => ({
       repeatable: false,
       cooldownTurns: 0,
     },
+    ...AGE_STAGE_MONTHS.slice(1).map((childAgeMonths, index) => ({
+      id: `stage-entry-${index + 2}`,
+      ageStageId: `age-stage-${index + 2}`,
+      kind: "routine" as const,
+      mode: "AUTO_ADVANCE" as const,
+      title: "階段入口",
+      text: "新的成長階段開始了。",
+      weight: 1,
+      eligibility: { kind: "always" as const },
+      actorIds: [],
+      choices: [],
+      reactionPoolIds: [],
+      knowledgeCardIds: [],
+      immediateFollowUpEventIds: [],
+      scheduledFollowUps: [],
+      repeatable: false,
+      cooldownTurns: 0,
+    })),
   ],
 });
 
@@ -178,7 +196,7 @@ describe("Content Schema Validation seam", () => {
     const invalidWeightResult = validateContentPack(invalidWeightPack);
     expect(invalidWeightResult.success).toBe(false);
     if (!invalidWeightResult.success) {
-      expect(invalidWeightResult.issues.some((issue) => issue.code === "SCHEMA_INVALID")).toBe(true);
+      expect(invalidWeightResult.issues.some((issue) => issue.code === "INVALID_WEIGHT")).toBe(true);
     }
 
     const emptyPoolPack = makeValidPack();
@@ -206,6 +224,61 @@ describe("Content Schema Validation seam", () => {
     if (!result.success) {
       expect(result.issues).toContainEqual(
         expect.objectContaining({ code: "UNREACHABLE_REQUIRED_EVENT" }),
+      );
+    }
+  });
+
+  it("validates knowledge-card references and nested scheduled conditions", () => {
+    const pack = makeValidPack();
+    pack.events[0]!.choices[0]!.knowledgeCardIds = ["missing-card"];
+    pack.events[0]!.choices[1]!.scheduledFollowUps[0]!.condition = {
+      kind: "eventCompleted",
+      eventId: "missing-condition-event",
+    };
+    pack.events[1]!.terminationGuard = {
+      kind: "condition",
+      condition: { kind: "actorAvailable", actorId: "missing-guard-actor" },
+    };
+
+    const result = validateContentPack(pack);
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ code: "MISSING_REFERENCE", path: "events[0].choices[0].knowledgeCardIds[0]" }),
+          expect.objectContaining({
+            code: "MISSING_REFERENCE",
+            path: "events[0].choices[1].scheduledFollowUps[0].condition.eventId",
+          }),
+          expect.objectContaining({
+            code: "MISSING_REFERENCE",
+            path: "events[1].terminationGuard.condition.actorId",
+          }),
+        ]),
+      );
+    }
+  });
+
+  it("uses age-stage entry events as reachability roots and validates stage ownership", () => {
+    const pack = makeValidPack();
+    pack.requiredEventIds.push("stage-entry-2");
+
+    const result = validateContentPack(pack);
+
+    expect(result.success).toBe(true);
+  });
+
+  it("requires a safe auto-advance fallback event", () => {
+    const pack = makeValidPack();
+    pack.fallbackEventId = "welcome";
+
+    const result = validateContentPack(pack);
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.issues).toContainEqual(
+        expect.objectContaining({ code: "INVALID_FALLBACK", path: "fallbackEventId" }),
       );
     }
   });
@@ -262,6 +335,7 @@ describe("domain state schemas", () => {
       rngState: 456,
       currentAgeStageId: "age-stage-1",
       currentTurnId: null,
+      turn: null,
       eventProgress: null,
       resources: {
         finances: 50,
