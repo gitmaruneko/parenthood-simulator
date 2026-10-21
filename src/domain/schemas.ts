@@ -399,4 +399,3 @@ export type ReactionPool = z.infer<typeof reactionPoolSchema>;
 export type KnowledgeCard = z.infer<typeof knowledgeCardSchema>;
 export type ScheduledFollowUp = z.infer<typeof scheduledFollowUpSchema>;
 export type Turn = z.infer<typeof turnSchema>;
-
