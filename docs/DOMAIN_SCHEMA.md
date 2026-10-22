@@ -7,6 +7,9 @@ Issue #2 establishes the data contract used by later engine, persistence, conten
 - `src/domain/schemas.ts` contains the Zod schemas and inferred TypeScript types.
 - `src/domain/content-validation.ts` exposes the `validateContentPack` seam and the throwing `parseContentPack` helper.
 - `src/domain/index.ts` is the public export surface for domain contracts.
+- `src/domain/family-conditions.ts` validates the Issue #4 explanation catalogue
+  against existing family dimensions. See [Family opening](FAMILY_OPENING.md)
+  for generation, assessment, and reroll contracts.
 
 ## Model boundaries
 
