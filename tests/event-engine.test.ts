@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { gameStateSchema } from "../src/domain/schemas.js";
 
 import {
   initializePrngState,
@@ -140,6 +141,131 @@ const replay = (state: GameState, content: ContentPack): EngineTransition =>
   transitionGame(state, content, { type: "ADVANCE" });
 
 describe("Core Event Engine Public Boundary", () => {
+  it("enters stage-owned events in milestone order even when content arrays are reversed", () => {
+    const content = makeContent([]);
+    const events = content.ageStages.map((stage) => ({ ...makeChoiceEvent(`decision-${stage.order}`), ageStageId: stage.id }));
+    content.events.push(...events);
+    for (const stage of content.ageStages) stage.entryEventIds = [events[stage.order]!.id];
+    content.ageStages.reverse();
+    content.events.reverse();
+    let state = makeState();
+    for (let order = 0; order < 12; order += 1) {
+      const pending = transitionGame(state, content, { type: "ADVANCE" });
+      expect(pending.pendingEvent?.id).toBe(`decision-${order}`);
+      const resolved = transitionGame(pending.state, content, { type: "CHOOSE", choiceId: "rest" });
+      const complete = transitionGame(resolved.state, content, { type: "COMPLETE_AGE_STAGE" });
+      state = transitionGame(complete.state, content, { type: "NEXT_AGE_STAGE" }).state;
+    }
+    expect(state.completedAgeStages).toHaveLength(12);
+  });
+
+  it("enforces hard boundaries immediately after player choices", () => {
+    const content = makeContent([makeChoiceEvent("decision")]);
+    const pending = transitionGame(makeState(), content, { type: "ADVANCE" });
+    const fourth = { ...pending.state, turn: { ...pending.state.turn!, nodeCount: 3 } };
+    const turnLimit = transitionGame(fourth, content, { type: "CHOOSE", choiceId: "rest" });
+    expect(turnLimit.stopReason).toBe("TURN_NODE_LIMIT");
+    expect(turnLimit.state.turn?.status).toBe("safelyEnded");
+    const sixth = { ...pending.state, ageStageProgress: { ...pending.state.ageStageProgress!, nodeCount: 5 } };
+    const stageLimit = transitionGame(sixth, content, { type: "CHOOSE", choiceId: "rest" });
+    expect(stageLimit.stopReason).toBe("AGE_STAGE_NODE_LIMIT");
+    expect(stageLimit.state.ageStageProgress?.status).toBe("safelyEnded");
+    expect(stageLimit.state.choiceHistory).toHaveLength(1);
+    expect(transitionGame(stageLimit.state, content, { type: "ADVANCE" }).state).toBe(stageLimit.state);
+  });
+
+  it("ends a multi-node Turn explicitly, starts another, and completes the stage without UI rules", () => {
+    const content = makeContent([makeAutoEvent("routine", { repeatable: true, maxVisits: 10 })]);
+    const first = transitionGame(makeState(), content, { type: "ADVANCE" }, { maxAutoAdvanceNodes: 2 });
+    expect(first.state.turn?.nodeCount).toBe(2);
+    const ended = transitionGame(first.state, content, { type: "END_TURN" });
+    expect(ended.stopReason).toBe("TURN_COMPLETED");
+    expect(ended.state.ageStageProgress?.status).toBe("active");
+    expect(transitionGame(ended.state, content, { type: "ADVANCE" }).state).toBe(ended.state);
+    const next = transitionGame(ended.state, content, { type: "START_TURN" });
+    expect(next.state.currentTurnId).not.toBe(first.state.currentTurnId);
+    expect(() => transitionGame(next.state, content, { type: "COMPLETE_AGE_STAGE" })).toThrow();
+    const resolved = transitionGame(next.state, content, { type: "ADVANCE" }, { maxAutoAdvanceNodes: 1 });
+    const complete = transitionGame(resolved.state, content, { type: "COMPLETE_AGE_STAGE" });
+    expect(complete.state.completedAgeStages?.[0]).toMatchObject({ nodeCount: 3, turnCount: 2 });
+    expect(complete.state.completedAgeStages?.[0]?.storyEntryIds).toHaveLength(3);
+    expect(complete.state.turn?.status).toBe("completed");
+    expect(() => transitionGame(first.state, content, { type: "NEXT_AGE_STAGE" })).toThrow();
+    expect(() => transitionGame(first.state, content, { type: "START_TURN" })).toThrow();
+  });
+
+  it("resumes pending input and completed stages identically after JSON serialization", () => {
+    const content = makeContent([makeChoiceEvent("decision")]);
+    const pending = transitionGame(makeState(), content, { type: "ADVANCE" });
+    expect(() => transitionGame(pending.state, content, { type: "END_TURN" })).toThrow();
+    expect(() => transitionGame(pending.state, content, { type: "COMPLETE_AGE_STAGE" })).toThrow();
+    const restored = gameStateSchema.parse(JSON.parse(JSON.stringify(pending.state)));
+    const input = { type: "CHOOSE", choiceId: "rest" } as const;
+    const resolved = transitionGame(pending.state, content, input);
+    expect(transitionGame(restored, content, input)).toEqual(resolved);
+    const complete = transitionGame(resolved.state, content, { type: "COMPLETE_AGE_STAGE" });
+    const saved = gameStateSchema.parse(JSON.parse(JSON.stringify(complete.state)));
+    expect(transitionGame(saved, content, { type: "NEXT_AGE_STAGE" })).toEqual(
+      transitionGame(complete.state, content, { type: "NEXT_AGE_STAGE" }));
+    for (const step of [pending, resolved, complete]) {
+      expect(step.trace[0]?.beforeState.rngState).toBe(step.trace[0]?.rngStateBefore);
+      expect(step.trace.at(-1)?.afterState).toEqual(step.state);
+    }
+  });
+
+  it("filters executable choices, rejects hidden choices, and falls back if fewer than two remain", () => {
+    const event = makeChoiceEvent("care-decision");
+    event.choices.push({ ...event.choices[0]!, id: "ask-partner", requirements: { kind: "actorAvailable", actorId: "partner" } });
+    const content = makeContent([event]);
+    const pending = transitionGame(makeState(), content, { type: "ADVANCE" });
+    expect(pending.pendingEvent?.choices.map((choice) => choice.id)).toEqual(["rest", "continue"]);
+    expect(() => transitionGame(pending.state, content, { type: "CHOOSE", choiceId: "ask-partner" })).toThrow();
+    event.choices[0]!.requirements = { kind: "resourceAtLeast", resource: "energy", value: 60 };
+    const fallback = transitionGame(pending.state, content, { type: "ADVANCE" });
+    expect(fallback.stopReason).toBe("FALLBACK");
+    expect(fallback.pendingEvent).toBeNull();
+    expect(fallback.state.choiceHistory).toEqual([]);
+    expect(fallback.state.rngState).toBe(pending.state.rngState);
+  });
+
+  it("carries the six-node stage budget across multiple four-node Turns", () => {
+    const event = makeAutoEvent("routine", { repeatable: true, maxVisits: 20 });
+    const content = makeContent([event]);
+    let transition = transitionGame(makeState(), content, { type: "ADVANCE" }, { maxAutoAdvanceNodes: 10 });
+    expect(transition.stopReason).toBe("TURN_NODE_LIMIT");
+    expect(transition.state.turn?.nodeCount).toBe(4);
+    expect(transition.state.ageStageProgress?.nodeCount).toBe(4);
+    transition = transitionGame(transition.state, content, { type: "START_TURN" });
+    expect(transition.state.turn?.nodeCount).toBe(0);
+    transition = transitionGame(transition.state, content, { type: "ADVANCE" }, { maxAutoAdvanceNodes: 2 });
+    expect(transition.stopReason).toBe("AGE_STAGE_NODE_LIMIT");
+    expect(transition.state.turn?.nodeCount).toBe(2);
+    expect(transition.state.ageStageProgress).toMatchObject({ nodeCount: 6, turnCount: 2, status: "safelyEnded" });
+    const stopped = transitionGame(transition.state, content, { type: "ADVANCE" });
+    expect(stopped.state.history).toHaveLength(6);
+    expect(gameStateSchema.parse(JSON.parse(JSON.stringify(stopped.state)))).toEqual(stopped.state);
+  });
+
+  it("starts from the family opening and completes all twelve stages in milestone order", () => {
+    const content = makeContent([]);
+    let state = makeState();
+    state.turn = null;
+    state.currentTurnId = null;
+    const months: number[] = [];
+    for (let index = 0; index < 12; index += 1) {
+      months.push(content.ageStages.find((stage) => stage.id === state.currentAgeStageId)!.childAgeMonths);
+      const completed = transitionGame(state, content, { type: "ADVANCE" });
+      expect(completed.state.turn?.status).toBe("completed");
+      expect(completed.state.ageStageProgress?.status).toBe("completed");
+      expect(completed.state.ageStageProgress?.nodeCount).toBe(1);
+      state = transitionGame(completed.state, content, { type: "NEXT_AGE_STAGE" }).state;
+    }
+    expect(months).toEqual([2, 6, 10, 15, 21, 27, 33, 39, 45, 52, 61, 71]);
+    expect(state.completedAgeStages).toHaveLength(12);
+    expect(state.completedAgeStages?.map((stage) => stage.storyEntryIds.length)).toEqual(Array(12).fill(1));
+    expect(transitionGame(state, content, { type: "ADVANCE" }).stopReason).toBe("GAME_COMPLETED");
+  });
+
   it("keeps the PRNG sequence stable and accepts only unsigned 32-bit state", () => {
     const first = nextPrng(initializePrngState(123456789));
 
@@ -332,7 +458,7 @@ describe("Core Event Engine Public Boundary", () => {
     expect(transition.state.resources).toEqual(state.resources);
     expect(transition.state.flags).toEqual(state.flags);
     expect(transition.state.turn).toMatchObject({
-      status: "active",
+      status: "completed",
       nodeCount: 1,
       processedEventIds: ["safe-fallback"],
     });
@@ -363,7 +489,7 @@ describe("Core Event Engine Public Boundary", () => {
     expect(transition.pendingEvent).toBeNull();
     expect(transition.state.rngState).toBe(state.rngState);
     expect(transition.state.turn).toMatchObject({
-      status: "active",
+      status: "safelyEnded",
       nodeCount: 4,
       processedEventIds: ["event-1", "event-2", "event-3", "event-4"],
     });
@@ -425,7 +551,7 @@ describe("Core Event Engine Public Boundary", () => {
       "TURN_NODE_LIMIT",
     ]);
     expect(transition.state.turn).toMatchObject({
-      status: "active",
+      status: "safelyEnded",
       nodeCount: 4,
       processedEventIds: ["event-1", "event-2", "event-3", "final-node"],
     });
@@ -470,7 +596,7 @@ describe("Core Event Engine Public Boundary", () => {
     expect(transition.state.resources).toEqual(atLimit.resources);
     expect(transition.state.choiceHistory).toEqual([]);
     expect(transition.state.turn).toMatchObject({
-      status: "awaitingInput",
+      status: "safelyEnded",
       nodeCount: 4,
       activeEventId: null,
     });

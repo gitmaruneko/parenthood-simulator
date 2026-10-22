@@ -301,7 +301,7 @@ export const turnSchema = z
   .object({
     id: identifierSchema,
     ageStageId: identifierSchema,
-    status: z.enum(["active", "awaitingInput", "completed", "cycleProtected"]),
+    status: z.enum(["active", "awaitingInput", "completed", "cycleProtected", "safelyEnded"]),
     nodeCount: z.number().int().min(0).max(4),
     maxNodeCount: z.literal(4).default(4),
     activeEventId: identifierSchema.nullable(),
@@ -368,6 +368,18 @@ export const reviewDataSchema = z
   })
   .strict();
 
+export const ageStageProgressSchema = z.object({
+  ageStageId: identifierSchema,
+  status: z.enum(["active", "completed", "safelyEnded"]),
+  nodeCount: z.number().int().min(0).max(6),
+  turnCount: z.number().int().min(1),
+}).strict();
+
+export const completedAgeStageSchema = ageStageProgressSchema.extend({
+  status: z.enum(["completed", "safelyEnded"]),
+  storyEntryIds: z.array(identifierSchema),
+});
+
 export const gameStateSchema = z
   .object({
     schemaVersion: z.number().int().positive(),
@@ -377,6 +389,8 @@ export const gameStateSchema = z
     currentTurnId: identifierSchema.nullable(),
     turn: turnSchema.nullable(),
     eventProgress: eventProgressSchema.nullable(),
+    ageStageProgress: ageStageProgressSchema.optional(),
+    completedAgeStages: z.array(completedAgeStageSchema).optional(),
     resources: resourceStateSchema,
     planningLoad: z.number().finite().min(0),
     family: familyProfileSchema,
