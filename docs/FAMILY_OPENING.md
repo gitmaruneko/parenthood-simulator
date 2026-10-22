@@ -62,6 +62,8 @@ situational tendencies. Internal vectors use `responsibility`, `flexibility`,
 Skipping initialises all four to zero. The vectors remain ordinary mutable
 GameState data. `describeTendencies(state.tendencies)` regenerates display copy
 after future event changes; #4 does not implement those event effects.
+Only positive dimensions receive specific descriptions. If fewer than two
+are present, neutral situational context supplies the remaining text.
 
 ## Reroll
 

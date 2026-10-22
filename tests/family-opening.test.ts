@@ -174,4 +174,18 @@ describe("Family opening public boundary", () => {
     }
     expect(covered.size).toBe(4);
   });
+
+  it("describes only supported tendencies and uses neutral context when fewer than two remain", () => {
+    const run = createFamilyRun({ seed: 42,
+      answers: ["pause-meal", "pack-meal", "rest-tonight", "defer-comment", "follow-mood"] });
+    expect(run.state.tendencies).toEqual({ responsibility: 0, flexibility: 8, selfCare: 7, sharedCare: 0 });
+    expect(run.assessment.descriptions).toHaveLength(2);
+    expect(run.assessment.descriptions.join("")).not.toMatch(/準備好|分擔/);
+    const single = describeTendencies({ responsibility: 0, flexibility: 0, selfCare: 5, sharedCare: 0 });
+    expect(single).toHaveLength(2);
+    expect(single[0]).toContain("休息");
+    expect(single[1]).toContain("改變");
+    expect(single.join("")).not.toMatch(/準備好|分擔|原來的安排/);
+    expect(describeTendencies({ responsibility: -1 })).toEqual(describeTendencies({}));
+  });
 });

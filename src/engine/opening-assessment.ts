@@ -76,12 +76,14 @@ const DESCRIPTIONS: Record<Tendency, string> = {
 };
 
 export const describeTendencies = (tendencies: GameState["tendencies"]): readonly string[] => {
-  const keys = Object.keys(DESCRIPTIONS) as Tendency[];
-  if (keys.every((key) => (tendencies[key] ?? 0) === 0)) {
-    return ["你可以先從當下的需要開始，不必預先決定自己的照顧方式。", "照顧傾向可以隨日常、支持與選擇慢慢改變。"];
+  const neutralContext = "照顧傾向可以隨日常、支持與選擇慢慢改變。";
+  const keys = (Object.keys(DESCRIPTIONS) as Tendency[]).filter((key) => (tendencies[key] ?? 0) > 0);
+  if (keys.length === 0) {
+    return ["你可以先從當下的需要開始，不必預先決定自己的照顧方式。", neutralContext];
   }
-  return keys.sort((left, right) => (tendencies[right] ?? 0) - (tendencies[left] ?? 0))
+  const descriptions = keys.sort((left, right) => (tendencies[right] ?? 0) - (tendencies[left] ?? 0))
     .slice(0, 3).map((key) => DESCRIPTIONS[key]);
+  return descriptions.length === 1 ? [...descriptions, neutralContext] : descriptions;
 };
 
 export interface OpeningAssessment {
