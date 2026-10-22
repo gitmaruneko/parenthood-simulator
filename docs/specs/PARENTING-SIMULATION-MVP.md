@@ -134,6 +134,16 @@ MVP 需要一個可重現、可測試、可擴充的事件引擎，讓玩家的�
 - The player is positioned as someone beginning to care for and organise a household, not as a child discovering which life they were born into.
 - The opening must remain warm, mobile-first, accessible, and non-shaming.
 
+### Gameplay UI and responsive information architecture
+
+- The visual direction is a warm family-life journal combined with an information-rich simulation dashboard. 《80億分之1》 may inform the goal of keeping character, state, and history legible, but its visual style, layout, identity-record framing, and assets must not be reproduced.
+- At desktop widths, gameplay uses three columns: family profile and resources on the left; scene, current event, and family log in the centre; family members, parent thoughts, and growth timeline on the right. The centre remains the primary interaction region.
+- At mobile widths, gameplay uses a single-column story view with bottom tabs for life, family, records, and thoughts. Mobile is a reprioritised experience rather than a compressed three-column layout.
+- The interface displays `AgeStage` and `Turn` separately and supports `PLAYER_INPUT_REQUIRED`, `AUTO_ADVANCE`, reactions, follow-up narrative, visible resources, accumulated family records, save status, and safe recovery errors.
+- Invisible planning load is presented through authored parent-thought and follow-up narrative. The UI must not expose it as a moral score, diagnosis, or irreversible punishment meter.
+- UI components render public engine and persistence outputs and submit commands. They do not own PRNG, eligibility, reaction selection, state transitions, scheduling, Turn termination, or save migration rules.
+- The detailed wireframes, component responsibilities, responsive rules, accessibility requirements, and UI acceptance criteria are defined in `docs/UI_UX_SPEC.md`.
+
 ### Opening assessment
 
 - The assessment has five optional situational questions with four choices each.
@@ -187,6 +197,14 @@ MVP 需要一個可重現、可測試、可擴充的事件引擎，讓玩家的�
 - Family explanations do not rank family structures, predict happiness, or present income as a deterministic parenting outcome.
 - Any real-world statistic shown in a family explanation includes a visible, verifiable source; unsourced statistics are rejected from public MVP content.
 - The opening family reveal communicates 「從今天開始，我要經營一個怎樣的家庭？」 through an original household-oriented visual language rather than reproducing 《80億分之1》's interface.
+- At desktop widths, the gameplay view provides the defined three-column information architecture; at mobile widths, the story remains the primary single-column view and family, records, and thoughts remain available through bottom navigation.
+- `AgeStage`, age context, current `Turn`, and save status remain understandable on desktop and mobile without treating an AgeStage as a Turn.
+- `PLAYER_INPUT_REQUIRED` and `AUTO_ADVANCE` have distinct, accessible presentation states; reading controls for automatic narrative do not alter engine results.
+- Person reactions, follow-up stories, family resources, parent thoughts, and committed family-life records remain traceable without revealing scheduled future events.
+- Planning-load narrative can visibly change after support, rest, delegation, or relationship repair, and is not presented as a parenting score or diagnosis.
+- Save failures and incompatible or corrupted saves show readable, non-destructive recovery choices.
+- Responsive UI, keyboard navigation, focus management, reduced motion, colour-independent status, and Traditional Chinese readability meet the acceptance criteria in `docs/UI_UX_SPEC.md`.
+- React UI does not implement PRNG, event eligibility, reaction selection, resource transitions, scheduling, Turn termination, or persistence migration rules.
 - The engine distinguishes `AgeStage`, `Turn`, and `EventNode` in its observable progression data.
 - One AgeStage can contain multiple Turns, and one Turn can contain multiple EventNodes.
 - A Turn stops at player input, a valid terminal condition, or a configured node limit; it cannot run indefinitely.
@@ -227,7 +245,7 @@ Test valid and invalid event data through the content validator. Cover schemas, 
 
 Test serialization and restoration at an event boundary and a Turn boundary, including PRNG state, scheduled events, choice history, schema version, migrations, corrupted data, incompatible versions, and safe recovery behavior.
 
-The existing repository has no established engine or UI test suite yet. The implementation phase should establish the smallest Vitest seam around the core engine, schema validation tests around content loading, and Playwright coverage only for player-visible flows such as completing or skipping the assessment, viewing family-condition explanations, rerolling a family, starting, choosing, completing a Turn, refreshing, restoring, and completing a review.
+The existing repository has no established UI test suite yet. The implementation phase should use component tests with fixed presentation snapshots and command spies, without recreating engine rules in test fixtures. Playwright should cover player-visible flows such as completing or skipping the assessment, viewing family-condition explanations, rerolling a family, starting, traversing `AUTO_ADVANCE`, choosing at `PLAYER_INPUT_REQUIRED`, seeing a person reaction and follow-up, completing a Turn, switching mobile information tabs without changing game state, refreshing, restoring, recovering from a save error, and completing a review. Desktop and mobile viewports must both be covered.
 
 ## Out of Scope
 
