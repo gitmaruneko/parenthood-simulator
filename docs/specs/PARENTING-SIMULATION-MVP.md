@@ -127,6 +127,8 @@ MVP 需要一個可重現、可測試、可擴充的事件引擎，讓玩家的�
 
 ### Opening UX and visual direction
 
+- Detailed homepage and gameplay UI contracts are maintained in [MVP UI/UX Spec](../UI_UX_SPEC.md). Section 10 defines the original family-life vignettes, homepage wireframes, component responsibilities, persistence-driven Floating Action Bar states, safe restart confirmation, accessibility, and homepage acceptance criteria for Issue #11.
+
 - The family reveal may borrow the sense of ceremony associated with beginning a life story, but it must use an original visual language grounded in everyday family life.
 - Visual motifs should come from household routines, shared spaces, schedules, bags, meals, toys, notes, and care hand-offs rather than imitating 《80億分之1》's identity, record, or life-summary presentation.
 - The player is positioned as someone beginning to care for and organise a household, not as a child discovering which life they were born into.
