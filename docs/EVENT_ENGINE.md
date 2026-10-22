@@ -8,6 +8,9 @@ Issue #3 establishes the pure event-transition boundary and deterministic PRNG u
 - `initializePrngState(seed)` validates and stores a 32-bit seed as the initial PRNG state.
 - `nextPrng(rngState)` returns the next immutable PRNG state and a value in `[0, 1)`.
 - `transitionGame(state, content, input, options?)` is the single Core Event Engine Public Boundary.
+- Issue #4 adds `createFamilyRun`, `rerollFamilyRun`, assessment questions, and
+  display helpers to the same export surface. They initialise family state
+  without starting or advancing a Turn; see [Family opening](FAMILY_OPENING.md).
 
 ## Transition contract
 
