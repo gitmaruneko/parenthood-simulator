@@ -7,6 +7,7 @@ import {
   type ContentPack,
 } from "../src/domain/schemas.js";
 import { parseContentPack, validateContentPack } from "../src/domain/content-validation.js";
+import { createPlanningStory } from "../src/content/planning-story.js";
 
 const makeAgeStages = () =>
   AGE_STAGE_MONTHS.map((childAgeMonths, order) => ({
@@ -149,6 +150,36 @@ const makeValidPack = (): ContentPack => ({
 });
 
 describe("Content Schema Validation seam", () => {
+  it("validates the planning story's support and repair references as stage-owned content", () => {
+    const content = makeValidPack();
+    const story = createPlanningStory("age-stage-1");
+    content.events.push(...story);
+    content.ageStages[0]!.entryEventIds.push(story[0]!.id);
+    content.requiredEventIds.push(...story.map((event) => event.id));
+    expect(validateContentPack(content).success).toBe(true);
+  });
+
+  it.each(["node", "choice"])("rejects unknown actors in %s relationship memories", (source) => {
+    const content = makeValidPack();
+    const target = source === "node" ? content.events[0]! : content.events[0]!.choices[0]!;
+    target.relationshipMemories = [{ id: "help", actorId: "missing-helper", category: "support", text: "Helped with planning." }];
+    const result = validateContentPack(content);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.issues).toContainEqual(expect.objectContaining({
+      code: "MISSING_REFERENCE", path: `events[0]${source === "choice" ? ".choices[0]" : ""}.relationshipMemories[0].actorId`,
+    }));
+  });
+
+  it.each([
+    { planningLoadDelta: Infinity }, { tendencyDeltas: { sharedCare: NaN } },
+    { resourceDeltas: { planningLoad: 3 } }, { storyEntries: [{ kind: "repair", text: "" }] },
+    { eligibility: { kind: "planningLoadAtLeast", value: -1 } },
+  ])("rejects invalid narrative effect or eligibility data: %j", (invalid) => {
+    const content = makeValidPack();
+    Object.assign(content.events[0]!, invalid);
+    expect(validateContentPack(content).success).toBe(false);
+  });
+
   it("accepts the six reaction kinds and roles, and rejects invalid modifier and memory data", () => {
     const pack = makeValidPack();
     const entry = pack.reactionPools[0]!.entries[0]!;

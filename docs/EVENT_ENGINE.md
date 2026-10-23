@@ -44,7 +44,7 @@ The seed is not read during transitions. Callers initialise `rngState` once, aft
 This ticket leaves later ticket ownership intact:
 
 - Issue #7 adds reaction-pool resolution and observed reaction results (see below).
-- Issue #8 owns planning-load, relationship-memory, support, and repair effects.
+- Issue #8 adds planning-load, relationship-memory, support, and repair effects (see below).
 - Issue #9 owns serialization, migration, and storage adapters.
 
 Later systems attach their results to the same public transition trace when their owning tickets are implemented; Issue #3 does not reserve or populate speculative reaction or scheduling fields.
@@ -56,7 +56,7 @@ Completing an EventNode queues its `immediateFollowUpEventIds` and
 contributes follow-ups. `CHOOSE` still resolves one node; the next `ADVANCE`
 continues the chain. A follow-up can be a reaction, environment event, or another
 choice with narrative consequences. Reaction-pool selection is described below;
-broader planning-load and family effects remain owned by issue #8.
+planning-load and family effects use the narrative effects described below.
 
 All follow-ups use the serializable `GameState.scheduledFollowUps` queue:
 
@@ -210,4 +210,81 @@ Reaction schedules use the same priority, delay, eligibility, cooldown, expiry,
 and node-limit rules as other event chains. Their IDs use a separate
 `reaction-scheduled` prefix to avoid collisions with node/choice schedules.
 Relationship changes are concrete memories and flags rather than a relationship
-score. Planning load and general support/repair mechanics remain issue #8.
+score.
+
+## Invisible planning, support, and repair (issue #8)
+
+`planningLoad` is internal `GameState` data. It is excluded from the five visible
+resources and `EngineEventResult.resourceDeltas`. Present its consequences through
+story text, fatigue, interactions, and opportunities to redistribute work. UI
+consumers must keep its number and authored deltas out of player-facing meters.
+
+Events, chosen options, and independently selected reactions accept the same
+optional narrative effects:
+
+- `planningLoadDelta` increases or reduces burden, with a floor of zero.
+- `tendencyDeltas` changes named tendencies; missing tendencies start at zero.
+- `resourceDeltas` changes the existing five resources, each clamped to `0–100`.
+- `clearFlags` removes flags; `setFlags` then adds unique flags. Setting a flag
+  wins if both lists name it within the same effect source.
+- `relationshipMemories` records concrete ID/category/text templates. Node and
+  choice templates can name an actor; reaction templates bind to the selected
+  actor. The engine stamps the current AgeStage and run-wide Turn number.
+- `storyEntries` adds authored `planning`, `support`, or `repair` text for later
+  review, with deterministic IDs distinct from the base event and reaction text.
+
+Effects run once when a node resolves: node effects, then the selected choice's
+effects, then selected reaction effects in stable pool order. Awaiting input and
+unselected options apply nothing. All reaction pools see the same post-node,
+post-choice snapshot, including its burden, tendencies, and memories. A selected
+reaction's effects influence subsequent nodes, rather than another pool's draw
+on the same node. Effects do not consume randomness or extra node budget.
+
+Result `resourceDeltas` combines authored node, selected-choice, and reaction
+deltas; inspect state for actual balances after each source's clamping. Burden
+and tendency arithmetic saturates at finite machine bounds to remain JSON-safe;
+this is not a gameplay score cap. Memories are append-only occurrences: repeating
+a task preserves both occurrences with their Turn timestamps. Existing
+`relationshipMemoryIds` remains legacy metadata; new effects use concrete
+`relationshipMemories` templates.
+
+Eligibility, choice requirements, reaction requirements/modifiers, and scheduled
+conditions support `planningLoadAtLeast` / `planningLoadAtMost` (`value`), and
+`tendencyAtLeast` / `tendencyAtMost` (`tendency`, `value`). Existing
+`relationshipMemory` conditions optionally accept `memoryId` to select a specific
+memory as well as its category and recency. Reaction checks retain their
+actor-specific scope. These conditions compose with `all`, `any`, and `not`.
+
+Support and repair nodes record their base text with the corresponding history
+kind, so future review consumers can find them directly. Their story IDs remain
+part of the completed stage's `storyEntryIds`; concrete memories and tendency
+changes persist across stage boundaries and JSON/schema round trips.
+
+### Reference planning story
+
+`createPlanningStory(ageStageId)` in `src/content/planning-story.ts` returns five
+stage-local event definitions with stage-prefixed IDs. Add them to a content
+pack and add `<ageStageId>-planning` to that stage's entry IDs. Validate the
+assembled pack normally. This is a mechanics reference story; the full 30-node
+MVP catalogue and age-specific prose remain separate content work.
+
+```text
+planning choice (pickup / meals / school notices / household planning)
+  repeat in a later Turn → fatigue → support → coordination choice
+    rest or delegate the complete workflow
+      repair scheduled in the next Turn
+```
+
+Each planning choice records remembering, arranging, coordinating, tracking, and
+following through, plus a distinct care memory and burden. Two such tasks unlock
+fatigue and a strained handoff memory. Support reduces burden; coordination
+offers rest or complete workflow delegation; a later check-in requires the
+earlier conflict memory and records repair. Both recovery choices reduce burden
+to zero over the chain, preserving the earlier memories. Support and recovery
+have no minimum resource or partner-membership requirement, so single caregivers
+can use a wider support network. The six resolved nodes fit the stage budget
+across three Turns; ordinary Turn limits still apply.
+
+Low resources and high burden never create a failure state. Rest, support,
+delegation, and repair are authored reversible paths through the same engine,
+with no duplicate eligibility rules in presentation code.

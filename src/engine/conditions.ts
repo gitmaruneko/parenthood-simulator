@@ -23,6 +23,14 @@ export const conditionMatches = (
       return state.resources[condition.resource] >= condition.value;
     case "resourceAtMost":
       return state.resources[condition.resource] <= condition.value;
+    case "planningLoadAtLeast":
+      return state.planningLoad >= condition.value;
+    case "planningLoadAtMost":
+      return state.planningLoad <= condition.value;
+    case "tendencyAtLeast":
+      return (state.tendencies[condition.tendency] ?? 0) >= condition.value;
+    case "tendencyAtMost":
+      return (state.tendencies[condition.tendency] ?? 0) <= condition.value;
     case "actorAvailable":
       if (availableActorIds) return availableActorIds.includes(condition.actorId);
       return (
@@ -41,7 +49,8 @@ export const conditionMatches = (
     case "relationshipMemory":
       return state.relationshipMemories.some((memory) => {
         const age = (state.turnNumber ?? 1) - (memory.createdAtTurn ?? -Infinity);
-        return memory.category === condition.category && (!actorId || memory.actorId === actorId) &&
+        return memory.category === condition.category && (!condition.memoryId || memory.id === condition.memoryId) &&
+          (!actorId || memory.actorId === actorId) &&
           age >= 0 && age <= condition.withinTurns;
       });
     case "all":
