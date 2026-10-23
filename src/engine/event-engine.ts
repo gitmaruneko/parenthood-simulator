@@ -87,6 +87,7 @@ export interface EngineTransition {
 const chooseWeightedEvent = (
   events: readonly EventNode[],
   rngState: number,
+  directionId: FamilyLifeDirectionId,
 ): { readonly event: EventNode; readonly rngState: number } => {
   if (events.length === 0) {
     throw new Error("cannot choose an event from an empty candidate list");
@@ -95,13 +96,16 @@ const chooseWeightedEvent = (
   const candidates = [...events].sort((left, right) =>
     left.id < right.id ? -1 : left.id > right.id ? 1 : 0,
   );
-  const totalWeight = candidates.reduce((total, event) => total + event.weight, 0);
+  // Normalize before multiplying so finite base weights cannot overflow.
+  const scale = Math.max(...candidates.map((event) => event.weight));
+  const weights = candidates.map((event) => event.weight / scale * (event.familyLifeDirectionWeights?.[directionId] ?? 1));
+  const totalWeight = weights.reduce((total, weight) => total + weight, 0);
   const random = nextPrng(rngState);
   const target = random.value * totalWeight;
   let cumulativeWeight = 0;
 
-  for (const event of candidates) {
-    cumulativeWeight += event.weight;
+  for (const [index, event] of candidates.entries()) {
+    cumulativeWeight += weights[index]!;
     if (target < cumulativeWeight) {
       return { event, rngState: random.state };
     }
@@ -644,7 +648,7 @@ const runTransition = (
     }
 
     const selected = scheduledEvent ? { event: scheduledEvent, rngState: currentState.rngState }
-      : chooseWeightedEvent(candidates, currentState.rngState);
+      : chooseWeightedEvent(candidates, currentState.rngState, currentState.activeFamilyLifeDirectionId);
     const event = selected.event;
     const priorVisits = currentState.turn!.processedEventIds.filter(
       (eventId) => eventId === event.id,

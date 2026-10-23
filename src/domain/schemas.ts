@@ -245,6 +245,7 @@ export const eventNodeSchema = z
     title: z.string().min(1),
     text: z.string().min(1),
     weight: z.number().finite().positive(),
+    familyLifeDirectionWeights: z.record(familyLifeDirectionIdSchema, z.number().finite().min(1).max(1.25)).optional(),
     locationId: identifierSchema.optional(),
     contextTags: z.array(identifierSchema).optional(),
     eligibility: conditionSchema.default({ kind: "always" }),
