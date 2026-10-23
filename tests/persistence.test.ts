@@ -271,13 +271,14 @@ describe("Save / Restore Boundary", () => {
     expect(restoredState(serializeGame(state))).toEqual(state);
   });
 
-  it.each(["event-id", "node-index", "missing-input", "node-count"])(
+  it.each(["event-id", "node-index", "missing-input", "node-count", "turn-status"])(
     "rejects a shape-valid pending save with inconsistent %s progress", (damage) => {
       const state = structuredClone(transitionGame(run.state, content, { type: "ADVANCE" }).state);
       if (damage === "event-id") state.eventProgress!.eventId = "different-event";
       if (damage === "node-index") state.eventProgress!.nodeIndex = 2;
       if (damage === "missing-input") state.eventProgress = null;
       if (damage === "node-count") state.turn!.nodeCount = 1;
+      if (damage === "turn-status") state.turn!.status = "active";
       const rawData = JSON.stringify({ schemaVersion: 2, state });
       expect(restoreGame(rawData)).toMatchObject({ status: "error", rawData,
         error: { code: "invalid-data" } });

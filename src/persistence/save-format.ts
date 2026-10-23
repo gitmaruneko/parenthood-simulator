@@ -27,7 +27,9 @@ const savedStateSchema = gameStateSchema.extend({ schemaVersion: z.literal(1) })
   if (state.turn && state.turn.nodeCount !== state.turn.processedEventIds.length) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: "inconsistent resolved node count" });
   }
-  if (state.turn?.status === "awaitingInput" && (!state.turn.activeEventId ||
+  const pendingInput = state.turn?.status === "awaitingInput" ||
+    state.eventProgress?.status === "awaitingInput" || state.turn?.activeEventId != null;
+  if (pendingInput && (state.turn?.status !== "awaitingInput" || !state.turn.activeEventId ||
       state.eventProgress?.status !== "awaitingInput" ||
       state.eventProgress.eventId !== state.turn.activeEventId ||
       state.eventProgress.nodeIndex !== state.turn.nodeCount)) {
