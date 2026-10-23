@@ -256,7 +256,10 @@ memory as well as its category and recency. Reaction checks retain their
 actor-specific scope. These conditions compose with `all`, `any`, and `not`.
 
 Support and repair nodes record their base text with the corresponding history
-kind, so future review consumers can find them directly. Their story IDs remain
+kind, so future review consumers can find them directly. Base node history records
+`resolvedEventId`; lifecycle recovery counts this provenance rather than inferring
+resolved nodes from story ID formatting. Older `event` history still counts.
+Their story IDs remain
 part of the completed stage's `storyEntryIds`; concrete memories and tendency
 changes persist across stage boundaries and JSON/schema round trips.
 
@@ -270,9 +273,10 @@ MVP catalogue and age-specific prose remain separate content work.
 
 ```text
 planning choice (pickup / meals / school notices / household planning)
-  repeat in a later Turn → fatigue → support → coordination choice
+  repeat another task → fatigue → support
+    coordination choice scheduled in the next Turn
     rest or delegate the complete workflow
-      repair scheduled in the next Turn
+      repair follows the coordination choice
 ```
 
 Each planning choice records remembering, arranging, coordinating, tracking, and
@@ -283,7 +287,9 @@ earlier conflict memory and records repair. Both recovery choices reduce burden
 to zero over the chain, preserving the earlier memories. Support and recovery
 have no minimum resource or partner-membership requirement, so single caregivers
 can use a wider support network. The six resolved nodes fit the stage budget
-across three Turns; ordinary Turn limits still apply.
+across two Turns; ordinary Turn limits still apply. The planning self-follow-up
+uses a two-visit guard; support schedules coordination after the first Turn's
+four-node limit so the ordinary advance path preserves the whole chain.
 
 Low resources and high burden never create a failure state. Rest, support,
 delegation, and repair are authored reversible paths through the same engine,

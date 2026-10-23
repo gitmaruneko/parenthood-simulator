@@ -164,6 +164,8 @@ describe("invisible planning work", () => {
     const content = makeContent([support]);
     const first = transitionGame(makeState(), content, { type: "ADVANCE" }, { maxAutoAdvanceNodes: 1 });
     const { ageStageProgress, ...legacy } = first.state;
+    legacy.history.push({ id: "story-personal-note", ageStageId: "age-stage-1", turnId: "turn-1",
+      kind: "support", text: "An extra narrative note is not a resolved node." });
     const result = replay(legacy, content);
     expect(result.state.ageStageProgress?.nodeCount).toBe(2);
   });
@@ -203,18 +205,16 @@ describe("invisible planning work", () => {
       act({ type: "ADVANCE" });
       act({ type: "CHOOSE", choiceId: "pickup" });
       expect(state.planningLoad).toBe(2);
-      act({ type: "END_TURN" });
-      act({ type: "START_TURN" });
-      act({ type: "ADVANCE" });
+      expect(act({ type: "ADVANCE" }).pendingEvent?.id).toBe("age-stage-1-planning");
       act({ type: "CHOOSE", choiceId: "school-notices" });
       expect(state.planningLoad).toBe(4);
       const supported = act({ type: "ADVANCE" });
-      expect(supported.pendingEvent?.id).toBe("age-stage-1-coordinate");
+      expect(supported.stopReason).toBe("TURN_NODE_LIMIT");
       expect(state.planningLoad).toBe(3);
+      act({ type: "START_TURN" });
+      expect(act({ type: "ADVANCE" }).pendingEvent?.id).toBe("age-stage-1-coordinate");
       act({ type: "CHOOSE", choiceId: recovery });
       expect(state.planningLoad).toBe(1);
-      expect(state.turn?.status).toBe("safelyEnded");
-      act({ type: "START_TURN" });
       act({ type: "ADVANCE" });
       expect(state.planningLoad).toBe(0);
       expect(state.history.some((entry) => entry.kind === "support")).toBe(true);

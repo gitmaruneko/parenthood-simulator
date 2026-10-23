@@ -14,7 +14,7 @@ export const createPlanningStory = (ageStageId: string): EventNode[] => {
     {
       id: id("planning"), ageStageId, kind: "choice", mode: "PLAYER_INPUT_REQUIRED",
       title: "還有那些要記住的事", text: "完成一件事之前，往往還得先記住、安排、協調，再追蹤到收尾。今天你接起哪一段？",
-      weight: 1, repeatable: true, cooldownTurns: 1, terminationGuard: { kind: "maxVisits", count: 1 },
+      weight: 1, repeatable: true, terminationGuard: { kind: "maxVisits", count: 2 },
       eligibility: { kind: "all", conditions: [
         { kind: "planningLoadAtMost", value: 2 },
         { kind: "not", condition: { kind: "flag", flag: "shared-plan" } },
@@ -24,7 +24,7 @@ export const createPlanningStory = (ageStageId: string): EventNode[] => {
         tendencyDeltas: { responsibility: 1 }, setFlags: ["carrying-alone"],
         relationshipMemories: [{ id: id(task.id), category: "care", text: task.memory }],
         storyEntries: [{ kind: "planning", text: task.memory }],
-        immediateFollowUpEventIds: [id("fatigue")],
+        immediateFollowUpEventIds: [id("fatigue"), id("planning")],
       })),
     },
     {
@@ -44,7 +44,7 @@ export const createPlanningStory = (ageStageId: string): EventNode[] => {
       ] },
       planningLoadDelta: -1, resourceDeltas: { support: 5 }, setFlags: ["accepted-support"],
       relationshipMemories: [{ id: id("help-with-reminders"), category: "support", text: "有人接下提醒和確認，讓支持不只停在口頭。" }],
-      immediateFollowUpEventIds: [id("coordinate")],
+      scheduledFollowUps: [{ eventId: id("coordinate"), delayTurns: 1 }],
     },
     {
       id: id("coordinate"), ageStageId, kind: "choice", mode: "PLAYER_INPUT_REQUIRED",
@@ -66,7 +66,7 @@ export const createPlanningStory = (ageStageId: string): EventNode[] => {
           storyEntries: [{ kind: "planning", text: "工作有了新的負責人，連提醒與追蹤也一起交接。" }],
         },
       ],
-      scheduledFollowUps: [{ eventId: id("repair"), delayTurns: 1 }],
+      immediateFollowUpEventIds: [id("repair")],
     },
     {
       id: id("repair"), ageStageId, kind: "repair", mode: "AUTO_ADVANCE",

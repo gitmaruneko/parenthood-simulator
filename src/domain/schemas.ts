@@ -384,6 +384,7 @@ export const choiceHistoryEntrySchema = z
 export const storyEntrySchema = z
   .object({
     id: identifierSchema,
+    resolvedEventId: identifierSchema.optional(),
     ageStageId: identifierSchema,
     turnId: identifierSchema,
     kind: z.enum(["event", "reaction", "support", "repair", "planning"]),

@@ -78,3 +78,5 @@ condition. Numeric changes must be finite; planning thresholds are nonnegative.
 `planningLoad` remains separate from `resourceKeySchema` and resource state.
 No relationship score is introduced. See [Event engine](EVENT_ENGINE.md#invisible-planning-support-and-repair-issue-8)
 for effect order, recovery, narrative history, and reference-story integration.
+Base node history optionally records `resolvedEventId` for lifecycle recovery;
+additional authored story effects do not count as resolved nodes.

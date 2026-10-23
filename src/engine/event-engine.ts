@@ -318,6 +318,7 @@ const completeEventNode = (
       ...state.history,
       {
         id: `story-${state.currentTurnId}-${nodeIndex + 1}`,
+        resolvedEventId: event.id,
         ageStageId: state.currentAgeStageId,
         turnId: state.currentTurnId,
         kind: event.kind === "support" || event.kind === "repair" ? event.kind : "event",
