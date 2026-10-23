@@ -620,15 +620,27 @@ button .muted,
 .growth span {
   font-family: Georgia, serif;
 }
+.event-log {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 .log-entry {
-  padding: 20px 0;
+  display: flex;
+  align-items: baseline;
+  gap: 4px 16px;
+  flex-wrap: wrap;
+  padding: 12px 0;
   border-bottom: 1px solid var(--line);
 }
 .log-entry small {
   font-size: 1rem;
+  white-space: nowrap;
 }
-.log-entry h3 {
-  margin-top: 10px;
+.log-entry > span {
+  flex: 1 1 220px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .bottom-tabs,
 .drawer-toggle,

@@ -132,27 +132,41 @@ function ConfirmedChoice({
 }
 
 export function FamilyLog({ game }: { game: GamePresentation }) {
+  const events = game.history.filter((entry) => entry.resolvedEventId);
   return (
     <section aria-labelledby="log-title">
       <h2 id="log-title" tabIndex={-1}>
         家庭生活紀錄
       </h2>
-      {!game.history.length && <p>接下來的日常，會一段一段留在這裡。</p>}
-      {game.history.map((entry) => (
-        <article className="log-entry" key={entry.id}>
-          <small>
-            AgeStage{" "}
-            {game.stages.findIndex((stage) => stage.id === entry.ageStageId) +
-              1}{" "}
-            · {game.turnLabels[entry.turnId]} · {storyNames[entry.kind]}
-          </small>
-          {entry.resolvedEventId && (
-            <h3>{game.eventTitles[entry.resolvedEventId]}</h3>
-          )}
-          <p>{entry.text}</p>
-          <ConfirmedChoice game={game} entry={entry} />
-        </article>
-      ))}
+      {!events.length && <p>接下來的日常，會一段一段留在這裡。</p>}
+      <ol className="event-log" aria-label="已發生的事件" role="list">
+        {events.map((entry) => {
+          const choice = game.choices.find(
+            (choice) =>
+              choice.eventId === entry.resolvedEventId &&
+              choice.turnId === entry.turnId,
+          );
+          const choiceText =
+            choice && game.choiceTexts[`${choice.eventId}/${choice.choiceId}`];
+          return (
+            <li className="log-entry" key={entry.id}>
+              <small>
+                階段{" "}
+                {game.stages.findIndex(
+                  (stage) => stage.id === entry.ageStageId,
+                ) + 1}{" "}
+                · {game.turnLabels[entry.turnId]}
+              </small>
+              <span>
+                <strong>
+                  {game.eventTitles[entry.resolvedEventId!] ?? "生活片段"}
+                </strong>
+                {choiceText && ` — ${choiceText}`}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
     </section>
   );
 }

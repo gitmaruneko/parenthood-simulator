@@ -15,6 +15,8 @@ and a persistence-driven action bar. Gameplay presents engine-approved choices,
 automatic story sequences, reactions, authored parent thoughts and accumulated
 family records. Completion reopens the existing log read-only; later-ticket review
 generation, themes, editable key moments and sharing remain out of scope.
+The log uses one compact row per confirmed event, showing its title and choice
+without repeating full narrative or creating separate planning/reaction records.
 
 ## Evidence
 
@@ -26,8 +28,9 @@ generation, themes, editable key moments and sharing remain out of scope.
   a later failed automatic checkpoint could prevent a valid retry.
   **After:** Regression tests verify conflict preservation and retrying the exact
   in-memory result without replaying choices or randomness.
-- **After:** `npm test`: 165 tests in 10 files; `npm run test:e2e`: 16 Chromium
+- **After:** `npm test`: 166 tests in 10 files; `npm run test:e2e`: 16 Chromium
   desktop/mobile cases; `npm run typecheck`, `npm run build`, `git diff --check` pass.
+  The compact-log follow-up additionally reran the two affected desktop/mobile flows.
 - **Review:** Standards identified one duplicated choice renderer; Spec identified
   completed-record routing, missing polite story announcements and missing
   presentation-state tests. All four findings were fixed and independently rechecked.

@@ -2,7 +2,7 @@
 import { afterEach, beforeAll, expect, it, vi } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { GameScreen } from "../src/ui/GameScreen.js";
+import { FamilyLog, GameScreen } from "../src/ui/GameScreen.js";
 import type { GamePresentation } from "../src/ui/player-session.js";
 import { HomePage } from "../src/ui/HomePage.js";
 import type { HomeSaveView } from "../src/persistence/index.js";
@@ -57,6 +57,91 @@ const game: GamePresentation = {
   eventTitles: {},
   choiceTexts: {},
 };
+
+it("keeps one compact record per resolved event instead of separate narrative and reaction entries", () => {
+  const history: GamePresentation["history"] = [
+    {
+      id: "event-1",
+      resolvedEventId: "night",
+      ageStageId: "age-stage-1",
+      turnId: "turn-1",
+      kind: "event",
+      text: "完整事件正文不重複鋪在紀錄裡。",
+    },
+    {
+      id: "planning-1",
+      ageStageId: "age-stage-1",
+      turnId: "turn-1",
+      kind: "planning",
+      text: "記得與安排的細節。",
+    },
+    {
+      id: "reaction-1",
+      ageStageId: "age-stage-1",
+      turnId: "turn-1",
+      kind: "reaction",
+      text: "人物反應的細節。",
+    },
+    {
+      id: "event-2",
+      resolvedEventId: "reflection",
+      ageStageId: "age-stage-1",
+      turnId: "turn-1",
+      kind: "event",
+      text: "後續故事的完整段落。",
+    },
+    {
+      id: "event-3",
+      resolvedEventId: "support",
+      ageStageId: "age-stage-1",
+      turnId: "turn-2",
+      kind: "support",
+      text: "支持事件的完整段落。",
+    },
+  ];
+  const original = structuredClone(history);
+  render(
+    <FamilyLog
+      game={{
+        ...game,
+        history,
+        stages: [
+          {
+            id: "age-stage-1",
+            label: "2 個月",
+            completed: false,
+            current: true,
+          },
+        ],
+        turnLabels: { "turn-1": "Turn 1", "turn-2": "Turn 2" },
+        eventTitles: {
+          night: "凌晨的交接",
+          reflection: "凌晨的交接之後",
+          support: "有人接手了",
+        },
+        choices: [
+          {
+            eventId: "night",
+            choiceId: "carry",
+            ageStageId: "age-stage-1",
+            turnId: "turn-1",
+          },
+        ],
+        choiceTexts: { "night/carry": "今晚先自己承接，明天再談安排" },
+      }}
+    />,
+  );
+  const records = screen.getAllByRole("listitem");
+  expect(records).toHaveLength(3);
+  expect(records[0]!.textContent).toContain(
+    "凌晨的交接 — 今晚先自己承接，明天再談安排",
+  );
+  expect(records[2]!.textContent).toContain("Turn 2");
+  expect(screen.queryByText("記得與安排的細節。")).toBeNull();
+  expect(screen.queryByText("人物反應的細節。")).toBeNull();
+  expect(screen.queryByText("完整事件正文不重複鋪在紀錄裡。")).toBeNull();
+  expect(history).toEqual(original);
+});
 it("keeps AUTO_ADVANCE reading and mobile tabs separate from simulation commands", async () => {
   const choose = vi.fn();
   const advance = vi.fn();
