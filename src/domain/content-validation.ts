@@ -5,6 +5,7 @@ import {
   type Condition,
   type ContentPack,
   type EventNode,
+  type ReactionPool,
   type ScheduledFollowUp,
 } from "./schemas.js";
 
@@ -93,6 +94,7 @@ const visitCondition = (
   switch (condition.kind) {
     case "eventCompleted":
     case "eventNotCompleted":
+    case "recentEvent":
       checkReference(condition.eventId, eventIds, `${path}.eventId`, "event reference", issues);
       return;
     case "actorAvailable":
@@ -111,6 +113,9 @@ const visitCondition = (
     case "flag":
     case "resourceAtLeast":
     case "resourceAtMost":
+    case "location":
+    case "contextTag":
+    case "relationshipMemory":
       return;
   }
 };
@@ -119,7 +124,7 @@ const addEventReferenceEdges = (
   event: EventNode,
   adjacency: Map<string, Set<string>>,
   eventIds: ReadonlyMap<string, number>,
-  reactionPools: ReadonlyMap<string, { entries: readonly { followUpEventIds: readonly string[] }[] }>,
+  reactionPools: ReadonlyMap<string, ReactionPool>,
 ): void => {
   const edges = adjacency.get(event.id);
   if (!edges) {
@@ -137,7 +142,10 @@ const addEventReferenceEdges = (
     choice.scheduledFollowUps.forEach((followUp) => add(followUp.eventId));
   });
   event.reactionPoolIds.forEach((poolId) => {
-    reactionPools.get(poolId)?.entries.forEach((entry) => entry.followUpEventIds.forEach(add));
+    reactionPools.get(poolId)?.entries.forEach((entry) => {
+      entry.followUpEventIds.forEach(add);
+      entry.scheduledFollowUps?.forEach((followUp) => add(followUp.eventId));
+    });
   });
 };
 
@@ -373,10 +381,22 @@ const validateCrossReferences = (content: ContentPack): ContentValidationIssue[]
   });
 
   content.reactionPools.forEach((pool, poolIndex) => {
+    collectIds(pool.entries, `reactionPools[${poolIndex}].entries`, issues);
     if (pool.entries.length === 0) {
       addIssue(issues, "EMPTY_REACTION_POOL", `reactionPools[${poolIndex}].entries`, "reaction pool must not be empty");
     }
     pool.entries.forEach((entry, entryIndex) => {
+      const entryPath = `reactionPools[${poolIndex}].entries[${entryIndex}]`;
+      entry.weightModifiers?.forEach((modifier, index) =>
+        visitCondition(modifier.condition, `${entryPath}.weightModifiers[${index}].condition`, eventIds, actorIds, issues));
+      entry.scheduledFollowUps?.forEach((followUp, index) => {
+        const users = content.events.filter((event) => event.reactionPoolIds.includes(pool.id));
+        const sourceStages = new Set(users.map((event) => event.ageStageId));
+        if (!sourceStages.size) sourceStages.add(content.ageStages[0]!.id);
+        sourceStages.forEach((sourceStage) => validateScheduledFollowUp(followUp,
+          `${entryPath}.scheduledFollowUps[${index}]`, sourceStage,
+          ageStageIds, ageStageOrder, eventIds, actorIds, issues));
+      });
       if (!Number.isFinite(entry.weight) || entry.weight <= 0) {
         addIssue(
           issues,

@@ -46,6 +46,10 @@ export type Condition =
   | { kind: "resourceAtLeast"; resource: z.infer<typeof resourceKeySchema>; value: number }
   | { kind: "resourceAtMost"; resource: z.infer<typeof resourceKeySchema>; value: number }
   | { kind: "actorAvailable"; actorId: string }
+  | { kind: "location"; locationId: string }
+  | { kind: "contextTag"; tag: string }
+  | { kind: "recentEvent"; eventId: string; withinTurns: number }
+  | { kind: "relationshipMemory"; category: "care" | "conflict" | "support" | "repair" | "connection"; withinTurns: number }
   | { kind: "all"; conditions: Condition[] }
   | { kind: "any"; conditions: Condition[] }
   | { kind: "not"; condition: Condition };
@@ -71,6 +75,12 @@ export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
       })
       .strict(),
     z.object({ kind: z.literal("actorAvailable"), actorId: identifierSchema }).strict(),
+    z.object({ kind: z.literal("location"), locationId: identifierSchema }).strict(),
+    z.object({ kind: z.literal("contextTag"), tag: identifierSchema }).strict(),
+    z.object({ kind: z.literal("recentEvent"), eventId: identifierSchema, withinTurns: z.number().int().min(0) }).strict(),
+    z.object({ kind: z.literal("relationshipMemory"),
+      category: z.enum(["care", "conflict", "support", "repair", "connection"]),
+      withinTurns: z.number().int().min(0) }).strict(),
     z
       .object({ kind: z.literal("all"), conditions: z.array(conditionSchema).min(1) })
       .strict(),
@@ -108,6 +118,7 @@ export const relationshipMemorySchema = z
     category: z.enum(["care", "conflict", "support", "repair", "connection"]),
     text: z.string().min(1),
     createdAtAgeStageId: identifierSchema,
+    createdAtTurn: z.number().int().min(0).optional(),
   })
   .strict();
 
@@ -124,15 +135,26 @@ export const actorDefinitionSchema = z
   })
   .strict();
 
+export const reactionKindSchema = z.enum(["support", "understanding", "neutral", "criticism", "conflict", "none"]);
+
 export const reactionEntrySchema = z
   .object({
     id: identifierSchema,
-    kind: z.enum(["support", "neutral", "criticism", "none"]),
+    kind: reactionKindSchema,
     text: z.string().min(1),
     weight: z.number().finite(),
     actorRoles: z.array(actorRoleSchema).min(1),
     requirements: conditionSchema.optional(),
     followUpEventIds: z.array(identifierSchema).default([]),
+    weightModifiers: z.array(z.object({
+      condition: conditionSchema,
+      multiplier: z.number().finite().min(0),
+    }).strict()).optional(),
+    setFlags: z.array(identifierSchema).optional(),
+    relationshipMemories: z.array(relationshipMemorySchema.omit({
+      actorId: true, createdAtAgeStageId: true, createdAtTurn: true,
+    })).optional(),
+    scheduledFollowUps: z.array(scheduledFollowUpSchema).optional(),
   })
   .strict();
 
@@ -178,6 +200,7 @@ export const eventChoiceSchema = z
   .object({
     id: identifierSchema,
     text: z.string().min(1),
+    anticipatedJudgment: z.string().min(1).optional(),
     requirements: conditionSchema.optional(),
     resourceDeltas: resourceDeltaSchema.default({}),
     setFlags: z.array(identifierSchema).default([]),
@@ -197,6 +220,8 @@ export const eventNodeSchema = z
     title: z.string().min(1),
     text: z.string().min(1),
     weight: z.number().finite().positive(),
+    locationId: identifierSchema.optional(),
+    contextTags: z.array(identifierSchema).optional(),
     eligibility: conditionSchema.default({ kind: "always" }),
     actorIds: z.array(identifierSchema).default([]),
     choices: z.array(eventChoiceSchema).default([]),
@@ -326,6 +351,7 @@ export const choiceHistoryEntrySchema = z
   .object({
     eventId: identifierSchema,
     choiceId: identifierSchema,
+    anticipatedJudgment: z.string().min(1).optional(),
     ageStageId: identifierSchema,
     turnId: identifierSchema,
   })
@@ -382,6 +408,20 @@ export const completedAgeStageSchema = ageStageProgressSchema.extend({
   storyEntryIds: z.array(identifierSchema),
 });
 
+export const observedReactionSchema = z.object({
+  poolId: identifierSchema,
+  reactionId: identifierSchema.nullable(),
+  actorId: identifierSchema.nullable(),
+  kind: reactionKindSchema,
+  text: z.string().min(1),
+}).strict();
+
+export const reactionHistoryEntrySchema = observedReactionSchema.extend({
+  eventId: identifierSchema,
+  ageStageId: identifierSchema,
+  turnId: identifierSchema,
+});
+
 export const gameStateSchema = z
   .object({
     schemaVersion: z.number().int().positive(),
@@ -404,6 +444,7 @@ export const gameStateSchema = z
     completedEventIds: z.array(identifierSchema),
     scheduledFollowUps: z.array(scheduledEventStateSchema),
     choiceHistory: z.array(choiceHistoryEntrySchema),
+    reactionHistory: z.array(reactionHistoryEntrySchema).optional(),
     history: z.array(storyEntrySchema),
     review: reviewDataSchema.optional(),
   })
@@ -417,3 +458,4 @@ export type ReactionPool = z.infer<typeof reactionPoolSchema>;
 export type KnowledgeCard = z.infer<typeof knowledgeCardSchema>;
 export type ScheduledFollowUp = z.infer<typeof scheduledFollowUpSchema>;
 export type Turn = z.infer<typeof turnSchema>;
+export type ObservedReaction = z.infer<typeof observedReactionSchema>;

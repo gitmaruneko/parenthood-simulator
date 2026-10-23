@@ -140,7 +140,243 @@ const makeState = (seed = 123456789): GameState => ({
 const replay = (state: GameState, content: ContentPack): EngineTransition =>
   transitionGame(state, content, { type: "ADVANCE" });
 
+const reactionScenario = (seed = 1) => {
+  const event = makeChoiceEvent("care");
+  event.actorIds = ["child-1"];
+  event.reactionPoolIds = ["responses"];
+  const content = makeContent([event]);
+  content.actors = [{ id: "child-1", role: "child", displayName: "Child", availability: 1,
+    initiative: 0.5, workflowOwnership: 0.5, reliability: 0.5, boundaryRespect: 0.5 }];
+  content.reactionPools = [{ id: "responses", entries: [{ id: "thanks", kind: "support",
+    text: "The child smiles.", weight: 1, actorRoles: ["child"], followUpEventIds: [] }] }];
+  const state = transitionGame(makeState(seed), content, { type: "ADVANCE" }).state;
+  return { state, event, content, entry: content.reactionPools[0]!.entries[0]! };
+};
+
 describe("Core Event Engine Public Boundary", () => {
+  it("resolves reactions on automatic nodes and carries their effects into a later Turn", () => {
+    const { state, event, content, entry } = reactionScenario();
+    const automatic = makeAutoEvent("notice");
+    automatic.actorIds = event.actorIds;
+    automatic.reactionPoolIds = event.reactionPoolIds;
+    event.reactionPoolIds = [];
+    event.choices[0]!.immediateFollowUpEventIds = [automatic.id];
+    entry.setFlags = ["supported"];
+    entry.relationshipMemories = [{ id: "help", category: "support", text: "Helped today." }];
+    entry.scheduledFollowUps = [{ eventId: "later", delayTurns: 1, priority: 0 }];
+    const later = makeChoiceEvent("later");
+    later.eligibility = { kind: "all", conditions: [{ kind: "flag", flag: "supported" },
+      { kind: "relationshipMemory", category: "support", withinTurns: 1 }] };
+    content.events.push(automatic, later);
+    let next = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" }).state;
+    const reaction = transitionGame(next, content, { type: "ADVANCE" }, { maxAutoAdvanceNodes: 1 });
+    expect(reaction.results[0]!.reactions?.[0]?.kind).toBe("support");
+    expect(reaction.trace.at(-1)?.afterState).toEqual(reaction.state);
+    next = transitionGame(reaction.state, content, { type: "END_TURN" }).state;
+    next = transitionGame(next, content, { type: "START_TURN" }).state;
+    expect(transitionGame(next, content, { type: "ADVANCE" }).pendingEvent?.id).toBe("later");
+  });
+
+  it("honors base pool weights and memory-based weight modifiers", () => {
+    const count = (weight: number, memory: boolean) => {
+      let support = 0;
+      for (let seed = 0; seed < 128; seed++) {
+        const { state, content, entry } = reactionScenario(seed);
+        content.reactionPools[0]!.entries.push({ ...entry, id: "neutral", kind: "neutral" });
+        entry.weight = weight;
+        entry.weightModifiers = [{ condition: { kind: "relationshipMemory", category: "support", withinTurns: 1 }, multiplier: 20 }];
+        if (memory) state.relationshipMemories = [{ id: "help", actorId: "child-1", category: "support",
+          text: "Helped", createdAtAgeStageId: "age-stage-1", createdAtTurn: 1 }];
+        const result = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" });
+        if (result.results[0]!.reactions?.[0]?.kind === "support") support++;
+      }
+      return support;
+    };
+    const baseline = count(1, false);
+    expect(count(20, false)).toBeGreaterThan(baseline + 30);
+    expect(count(1, true)).toBeGreaterThan(baseline + 30);
+  });
+  it("evaluates reaction actorAvailable conditions against scene availability, including transient actors", () => {
+    const { state, event, content, entry } = reactionScenario();
+    content.actors[0]!.id = "teacher-1";
+    content.actors[0]!.role = "teacher";
+    event.actorIds = ["teacher-1"];
+    entry.actorRoles = ["teacher"];
+    entry.requirements = { kind: "actorAvailable", actorId: "teacher-1" };
+    const result = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" });
+    expect(result.results[0]!.reactions?.[0]).toMatchObject({ actorId: "teacher-1", kind: "support" });
+  });
+  it.each(["child", "partner", "grandparent", "teacher", "colleague", "stranger"] as const)(
+    "allows %s responses only when the actor is present and belongs to the scene", (role) => {
+      const { state, event, content, entry } = reactionScenario();
+      const actor = content.actors[0]!;
+      actor.role = role;
+      entry.actorRoles = [role];
+      state.family.persistentActorIds = role === "partner" || role === "grandparent" ? [actor.id] : [];
+      const choose = () => transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" }).results[0]!.reactions?.[0];
+      expect(choose()).toMatchObject({ kind: "support", actorId: actor.id });
+      actor.availability = 0;
+      expect(choose()).toMatchObject({ kind: "none", actorId: null, reactionId: null });
+      actor.availability = 1;
+      event.actorIds = [];
+      expect(choose()?.kind).toBe("none");
+      event.actorIds = [actor.id];
+      if (role === "partner" || role === "grandparent") {
+        state.family.persistentActorIds = [];
+        expect(choose()?.kind).toBe("none");
+      }
+    });
+
+  it("replays complete reaction traces from saved PRNG state and permits all six seeded outcomes for the same choice", () => {
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 128; seed++) {
+      const { state, content, entry } = reactionScenario(seed);
+      content.reactionPools[0]!.entries = ["support", "understanding", "neutral", "criticism", "conflict", "none"]
+        .map((kind) => ({ ...entry, id: kind, kind: kind as typeof entry.kind }));
+      const before = structuredClone(state);
+      const result = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" });
+      seen.add(result.results[0]!.reactions![0]!.kind);
+      expect(transitionGame(gameStateSchema.parse(JSON.parse(JSON.stringify(state))), content,
+        { type: "CHOOSE", choiceId: "rest" })).toEqual(result);
+      expect(state).toEqual(before);
+      state.seed = 12345;
+      // The current generator state, rather than the original seed, controls continuation.
+      expect(transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" }).results).toEqual(result.results);
+    }
+    expect([...seen].sort()).toEqual(["conflict", "criticism", "neutral", "none", "support", "understanding"]);
+  });
+
+  it("preserves support at zero resources across all household types, including probabilistic availability", () => {
+    for (const householdComposition of ["singleCaregiver", "twoCaregivers", "multigenerational"] as const) {
+      const seen = new Set<string>();
+      for (let seed = 0; seed < 64; seed++) {
+        const { state, content } = reactionScenario(seed);
+        state.family.householdComposition = householdComposition;
+        state.resources = { finances: 0, energy: 0, support: 0, timeFlexibility: 0, connection: 0 };
+        content.actors[0]!.availability = 0.5;
+        const result = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" });
+        seen.add(result.results[0]!.reactions![0]!.kind);
+      }
+      expect([...seen].sort()).toEqual(["none", "support"]);
+    }
+  });
+
+  it("makes authored silence possible even when an actor is available, and supports explicit weight suppression", () => {
+    const { state, content, entry } = reactionScenario();
+    entry.weightModifiers = [{ condition: { kind: "always" }, multiplier: 0 }];
+    content.reactionPools[0]!.entries.push({ ...entry, id: "silence", kind: "none", text: "No one notices.", weightModifiers: [] });
+    const result = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" });
+    expect(result.results[0]!.reactions?.[0]).toMatchObject({ reactionId: "silence", kind: "none", actorId: null });
+  });
+
+  it("does not let anticipated judgment or content ordering change the observed reaction", () => {
+    const { state, event, content, entry } = reactionScenario();
+    content.actors.push({ ...content.actors[0]!, id: "teacher-1", role: "teacher" });
+    event.actorIds.push("teacher-1");
+    entry.actorRoles.push("teacher");
+    content.reactionPools[0]!.entries.push({ ...entry, id: "neutral", kind: "neutral" });
+    content.reactionPools.push({ id: "second", entries: [{ ...entry }] });
+    event.reactionPoolIds.push("second");
+    const result = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" });
+    event.choices[0]!.anticipatedJudgment = "They will praise me.";
+    content.actors.reverse();
+    event.actorIds.reverse();
+    content.reactionPools.forEach((pool) => pool.entries.reverse());
+    content.reactionPools.reverse();
+    event.reactionPoolIds.reverse();
+    const reordered = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" });
+    expect(reordered.results).toEqual(result.results);
+    expect(reordered.state.rngState).toBe(result.state.rngState);
+    expect(reordered.state.reactionHistory).toEqual(result.state.reactionHistory);
+  });
+
+  it("weights reactions by actor tendencies and authored contextual modifiers", () => {
+    const counts = (helpful: boolean, boost: boolean) => {
+      let support = 0;
+      for (let seed = 0; seed < 128; seed++) {
+        const { state, content, entry } = reactionScenario(seed);
+        content.actors[0]!.initiative = helpful ? 1 : 0;
+        content.actors[0]!.reliability = helpful ? 1 : 0;
+        content.actors[0]!.boundaryRespect = helpful ? 1 : 0;
+        content.reactionPools[0]!.entries.push({ ...entry, id: "criticism", kind: "criticism" });
+        entry.weightModifiers = [{ condition: { kind: "flag", flag: "asked" }, multiplier: 20 }];
+        state.flags = boost ? ["asked"] : [];
+        const result = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" });
+        if (result.results[0]!.reactions?.[0]?.kind === "support") support++;
+      }
+      return support;
+    };
+    expect(counts(true, false)).toBeGreaterThan(counts(false, false) + 30);
+    expect(counts(false, true)).toBeGreaterThan(counts(false, false) + 30);
+  });
+  it("uses location, situation, recent events, and actor-specific relationship memory for eligibility", () => {
+    const { state, event, content, entry } = reactionScenario();
+    event.locationId = "school";
+    event.contextTags = ["handoff"];
+    entry.requirements = { kind: "all", conditions: [
+      { kind: "location", locationId: "school" }, { kind: "contextTag", tag: "handoff" },
+      { kind: "recentEvent", eventId: "earlier", withinTurns: 2 },
+      { kind: "relationshipMemory", category: "support", withinTurns: 2 },
+    ] };
+    content.events.push(makeAutoEvent("earlier"));
+    state.turnNumber = 5;
+    state.eventLastResolvedTurn = { earlier: 4 };
+    state.relationshipMemories = [{ id: "help", actorId: "child-1", category: "support", text: "Helped",
+      createdAtAgeStageId: "age-stage-1", createdAtTurn: 4 }];
+    const choose = () => transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" }).results[0]!.reactions?.[0];
+    expect(choose()?.kind).toBe("support");
+    event.locationId = "home";
+    expect(choose()?.kind).toBe("none");
+    event.locationId = "school";
+    event.contextTags = [];
+    expect(choose()?.kind).toBe("none");
+    event.contextTags = ["handoff"];
+    state.eventLastResolvedTurn.earlier = 1;
+    expect(choose()?.kind).toBe("none");
+    state.eventLastResolvedTurn.earlier = 4;
+    state.relationshipMemories[0]!.actorId = "another-child";
+    expect(choose()?.kind).toBe("none");
+    state.relationshipMemories[0]!.actorId = "child-1";
+    state.relationshipMemories[0]!.createdAtTurn = 1;
+    expect(choose()?.kind).toBe("none");
+  });
+  it("records observed reactions separately from anticipated judgment and applies narrative effects", () => {
+    const { state, event, content, entry } = reactionScenario();
+    event.choices[0]!.anticipatedJudgment = "Someone might disapprove.";
+    entry.setFlags = ["supported"];
+    entry.relationshipMemories = [{ id: "shared-care", category: "support", text: "We shared this moment." }];
+    entry.followUpEventIds = ["repair"];
+    entry.scheduledFollowUps = [{ eventId: "later", delayTurns: 1, priority: 3 }];
+    const repair = makeChoiceEvent("repair");
+    repair.eligibility = { kind: "flag", flag: "supported" };
+    content.events.push(repair, makeChoiceEvent("later"));
+    const result = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" });
+    expect(result.results[0]!.reactions).toEqual([{ poolId: "responses", reactionId: "thanks",
+      actorId: "child-1", kind: "support", text: "The child smiles." }]);
+    expect(result.state.choiceHistory.at(-1)?.anticipatedJudgment).toBe("Someone might disapprove.");
+    expect(result.state.reactionHistory?.[0]).toMatchObject({ eventId: "care", reactionId: "thanks", actorId: "child-1" });
+    expect(result.state.relationshipMemories).toEqual([{ id: "shared-care", actorId: "child-1",
+      category: "support", text: "We shared this moment.", createdAtAgeStageId: "age-stage-1", createdAtTurn: 1 }]);
+    expect(result.state.scheduledFollowUps).toEqual(expect.arrayContaining([
+      expect.objectContaining({ eventId: "later", dueAfterTurns: 1, priority: 3 }),
+    ]));
+    expect(transitionGame(result.state, content, { type: "ADVANCE" }).pendingEvent?.id).toBe("repair");
+    expect(gameStateSchema.parse(JSON.parse(JSON.stringify(result.state)))).toEqual(result.state);
+  });
+  it("resolves an independent reaction after a choice through the engine", () => {
+    const event = makeChoiceEvent("care");
+    event.actorIds = ["child-1"];
+    event.reactionPoolIds = ["responses"];
+    const content = makeContent([event]);
+    content.actors = [{ id: "child-1", role: "child", displayName: "Child",
+      availability: 1, initiative: 0.5, workflowOwnership: 0.5, reliability: 0.5, boundaryRespect: 0.5 }];
+    content.reactionPools = [{ id: "responses", entries: [{ id: "thanks", kind: "support",
+      text: "The child smiles.", weight: 1, actorRoles: ["child"], followUpEventIds: [] }] }];
+    const pending = transitionGame(makeState(), content, { type: "ADVANCE" });
+    expect(pending.state.history).toEqual([]);
+    const resolved = transitionGame(pending.state, content, { type: "CHOOSE", choiceId: "rest" });
+    expect(resolved.state.history.at(-1)).toMatchObject({ kind: "reaction", text: "The child smiles." });
+  });
   it("progresses through an empty waiting Turn while enforcing the stage budget", () => {
     const first = makeChoiceEvent("first");
     const future = makeChoiceEvent("future");

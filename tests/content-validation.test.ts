@@ -149,6 +149,57 @@ const makeValidPack = (): ContentPack => ({
 });
 
 describe("Content Schema Validation seam", () => {
+  it("accepts the six reaction kinds and roles, and rejects invalid modifier and memory data", () => {
+    const pack = makeValidPack();
+    const entry = pack.reactionPools[0]!.entries[0]!;
+    pack.reactionPools[0]!.entries = ["support", "understanding", "neutral", "criticism", "conflict", "none"]
+      .map((kind) => ({ ...entry, id: kind, kind: kind as typeof entry.kind,
+        actorRoles: ["child", "partner", "grandparent", "teacher", "colleague", "stranger"] }));
+    expect(validateContentPack(pack).success).toBe(true);
+    const first = pack.reactionPools[0]!.entries[0]!;
+    first.weightModifiers = [{ condition: { kind: "always" }, multiplier: -1 }];
+    expect(validateContentPack(pack).success).toBe(false);
+    first.weightModifiers = [];
+    first.relationshipMemories = [{ id: "help", category: "support", text: "" }];
+    expect(validateContentPack(pack).success).toBe(false);
+  });
+  it("validates reaction effect references, nested modifier references, and unique entry IDs", () => {
+    const pack = makeValidPack();
+    const entry = pack.reactionPools[0]!.entries[0]!;
+    entry.scheduledFollowUps = [{ eventId: "missing", targetAgeStageId: "missing-stage", delayTurns: 1, priority: 0 }];
+    entry.weightModifiers = [{ multiplier: 2, condition: { kind: "all", conditions: [
+      { kind: "recentEvent", eventId: "missing-recent", withinTurns: 1 },
+      { kind: "actorAvailable", actorId: "missing-actor" },
+    ] } }];
+    pack.reactionPools[0]!.entries.push({ ...entry });
+    const result = validateContentPack(pack);
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "DUPLICATE_ID" }),
+      expect.objectContaining({ code: "MISSING_REFERENCE", message: expect.stringContaining("missing-recent") }),
+      expect.objectContaining({ code: "MISSING_REFERENCE", message: expect.stringContaining("missing-actor") }),
+      expect.objectContaining({ code: "MISSING_REFERENCE", message: expect.stringContaining("missing-stage") }),
+      expect.objectContaining({ code: "MISSING_REFERENCE", message: expect.stringContaining("missing") }),
+    ]));
+  });
+
+  it("includes reaction schedules in graph reachability and validates their target chronology", () => {
+    const pack = makeValidPack();
+    pack.events[1]!.reactionPoolIds = [];
+    pack.events[0]!.choices.forEach((choice) => {
+      choice.immediateFollowUpEventIds = [];
+      choice.scheduledFollowUps = [];
+    });
+    pack.reactionPools[0]!.entries[0]!.scheduledFollowUps = [{ eventId: "follow-up", delayTurns: 1, priority: 0 }];
+    expect(validateContentPack(pack).success).toBe(true);
+    const later = pack.events.find((event) => event.ageStageId === "age-stage-2")!;
+    later.reactionPoolIds = ["public-reactions"];
+    pack.reactionPools[0]!.entries[0]!.scheduledFollowUps![0]!.targetAgeStageId = "age-stage-1";
+    const result = validateContentPack(pack);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.issues.some((issue) => issue.code === "INVALID_AGE_STAGE")).toBe(true);
+  });
   it("accepts a valid content pack and exposes parsed defaults", () => {
     const result = validateContentPack(makeValidPack());
 
