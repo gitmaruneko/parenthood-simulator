@@ -132,7 +132,9 @@ function ConfirmedChoice({
 }
 
 export function FamilyLog({ game }: { game: GamePresentation }) {
-  const events = game.history.filter((entry) => entry.resolvedEventId);
+  const events = game.history
+    .filter((entry) => entry.resolvedEventId)
+    .reverse();
   return (
     <section aria-labelledby="log-title">
       <h2 id="log-title" tabIndex={-1}>
@@ -210,9 +212,9 @@ export function GameScreen({
   const [readThrough, setReadThrough] = useState(0);
   const title = useRef<HTMLHeadingElement>(null);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
-  const turnStories = game.history.filter(
-    (entry) => entry.turnId === game.currentTurnId,
-  );
+  const turnStories = game.history
+    .filter((entry) => entry.turnId === game.currentTurnId)
+    .reverse();
   const reading = game.history.length > readThrough && turnStories.length > 0;
   const event = game.pendingEvent;
   const focusKey = reading
@@ -388,18 +390,13 @@ export function GameScreen({
               十二個階段告一段落。這些紀錄留下眼前的生活，不預測未來。你可以查看家庭生活紀錄，或回首頁開始新的故事。
             </p>
           ) : (
-            <>
-              {game.turnEnded && (
-                <p>這個 Turn 已結束。下一段生活仍由引擎接續。</p>
-              )}
-              <button
-                className="primary"
-                disabled={busy || blocked}
-                onClick={onAdvance}
-              >
-                {game.nextLabel}
-              </button>
-            </>
+            <button
+              className="primary"
+              disabled={busy || blocked}
+              onClick={onAdvance}
+            >
+              {game.nextLabel}
+            </button>
           )}
         </section>
         <section

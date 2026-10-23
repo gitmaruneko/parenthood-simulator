@@ -133,13 +133,55 @@ it("keeps one compact record per resolved event instead of separate narrative an
   );
   const records = screen.getAllByRole("listitem");
   expect(records).toHaveLength(3);
-  expect(records[0]!.textContent).toContain(
+  expect(records[2]!.textContent).toContain(
     "凌晨的交接 — 今晚先自己承接，明天再談安排",
   );
-  expect(records[2]!.textContent).toContain("Turn 2");
+  expect(records[0]!.textContent).toContain("Turn 2");
+  expect(records[1]!.textContent).toContain("凌晨的交接之後");
   expect(screen.queryByText("記得與安排的細節。")).toBeNull();
   expect(screen.queryByText("人物反應的細節。")).toBeNull();
   expect(screen.queryByText("完整事件正文不重複鋪在紀錄裡。")).toBeNull();
+  expect(history).toEqual(original);
+});
+it("shows the latest story first and offers continuation without a Turn-ended notice", async () => {
+  const history: GamePresentation["history"] = [
+    {
+      id: "earlier",
+      resolvedEventId: "earlier-event",
+      ageStageId: "age-stage-1",
+      turnId: "turn-1",
+      kind: "event",
+      text: "較早發生的故事。",
+    },
+    {
+      id: "latest",
+      resolvedEventId: "latest-event",
+      ageStageId: "age-stage-1",
+      turnId: "turn-1",
+      kind: "repair",
+      text: "最新發生的故事。",
+    },
+  ];
+  const original = structuredClone(history);
+  const advance = vi.fn();
+  render(
+    <GameScreen
+      game={{ ...game, history }}
+      busy={false}
+      blocked={false}
+      onChoose={vi.fn()}
+      onAdvance={advance}
+    />,
+  );
+  const life = within(screen.getByRole("tabpanel", { name: "生活" }));
+  const stories = life.getAllByRole("article");
+  expect(stories[0]!.textContent).toContain("最新發生的故事。");
+  expect(stories[1]!.textContent).toContain("較早發生的故事。");
+  await userEvent.click(life.getByRole("button", { name: "繼續故事" }));
+  expect(life.queryByText(/這個 Turn 已結束/)).toBeNull();
+  expect(advance).not.toHaveBeenCalled();
+  await userEvent.click(life.getByRole("button", { name: "走進下一段生活" }));
+  expect(advance).toHaveBeenCalledOnce();
   expect(history).toEqual(original);
 });
 it("keeps AUTO_ADVANCE reading and mobile tabs separate from simulation commands", async () => {
