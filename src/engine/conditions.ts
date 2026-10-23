@@ -1,6 +1,6 @@
 import type { Condition, EventNode, GameState } from "../domain/schemas.js";
 
-interface ConditionContext {
+export interface ConditionContext {
   event?: EventNode;
   actorId?: string;
   availableActorIds?: readonly string[];

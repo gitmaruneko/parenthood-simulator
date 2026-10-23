@@ -364,17 +364,9 @@ describe("Core Event Engine Public Boundary", () => {
     expect(gameStateSchema.parse(JSON.parse(JSON.stringify(result.state)))).toEqual(result.state);
   });
   it("resolves an independent reaction after a choice through the engine", () => {
-    const event = makeChoiceEvent("care");
-    event.actorIds = ["child-1"];
-    event.reactionPoolIds = ["responses"];
-    const content = makeContent([event]);
-    content.actors = [{ id: "child-1", role: "child", displayName: "Child",
-      availability: 1, initiative: 0.5, workflowOwnership: 0.5, reliability: 0.5, boundaryRespect: 0.5 }];
-    content.reactionPools = [{ id: "responses", entries: [{ id: "thanks", kind: "support",
-      text: "The child smiles.", weight: 1, actorRoles: ["child"], followUpEventIds: [] }] }];
-    const pending = transitionGame(makeState(), content, { type: "ADVANCE" });
-    expect(pending.state.history).toEqual([]);
-    const resolved = transitionGame(pending.state, content, { type: "CHOOSE", choiceId: "rest" });
+    const { state, content } = reactionScenario();
+    expect(state.history).toEqual([]);
+    const resolved = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" });
     expect(resolved.state.history.at(-1)).toMatchObject({ kind: "reaction", text: "The child smiles." });
   });
   it("progresses through an empty waiting Turn while enforcing the stage budget", () => {

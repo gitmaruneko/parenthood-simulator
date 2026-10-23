@@ -1,5 +1,5 @@
 import type { ContentPack, EventNode, GameState, ReactionPool } from "../domain/schemas.js";
-import { conditionMatches } from "./conditions.js";
+import { conditionMatches, type ConditionContext } from "./conditions.js";
 import { nextPrng } from "./prng.js";
 
 type ReactionEntry = ReactionPool["entries"][number];
@@ -7,7 +7,9 @@ type Actor = ContentPack["actors"][number];
 
 const compareIds = (a: { id: string }, b: { id: string }): number => a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 
-const reactionLogWeight = (entry: ReactionEntry, state: GameState, event: EventNode, availableActorIds: readonly string[], actor?: Actor): number => {
+const reactionLogWeight = (
+  entry: ReactionEntry, state: GameState, context: ConditionContext, actor?: Actor,
+): number => {
   let weight = Math.log(entry.weight);
   if (actor) {
     if (entry.kind === "support" || entry.kind === "understanding") {
@@ -17,7 +19,7 @@ const reactionLogWeight = (entry: ReactionEntry, state: GameState, event: EventN
     }
   }
   for (const modifier of entry.weightModifiers ?? []) {
-    if (conditionMatches(modifier.condition, state, { event, availableActorIds, ...(actor ? { actorId: actor.id } : {}) })) weight += Math.log(modifier.multiplier);
+    if (conditionMatches(modifier.condition, state, context)) weight += Math.log(modifier.multiplier);
   }
   return weight;
 };
@@ -47,12 +49,16 @@ export const resolveReactions = (state: GameState, event: EventNode, content: Co
   const availableActorIds = present.map((actor) => actor.id);
   const reactions = [...new Set(event.reactionPoolIds)].sort().map((poolId): ResolvedReaction => {
     const pool = content.reactionPools.find((pool) => pool.id === poolId)!;
-    const candidates = [...pool.entries].sort(compareIds).flatMap((entry) =>
-      entry.kind === "none" ? (!entry.requirements || conditionMatches(entry.requirements, state, { event, availableActorIds }) ? [{ entry, actorId: null as string | null, logWeight: reactionLogWeight(entry, state, event, availableActorIds) }] : []) :
-        present.filter((actor) => entry.actorRoles.includes(actor.role) &&
-          (!entry.requirements || conditionMatches(entry.requirements, state, { event, actorId: actor.id, availableActorIds })))
-          .map((actor) => ({ entry, actorId: actor.id, logWeight: reactionLogWeight(entry, state, event, availableActorIds, actor) })))
-      .filter((candidate) => Number.isFinite(candidate.logWeight));
+    const candidates = [...pool.entries].sort(compareIds).flatMap((entry) => {
+      const responders = entry.kind === "none" ? [undefined] :
+        present.filter((actor) => entry.actorRoles.includes(actor.role));
+      return responders.flatMap((actor) => {
+        const context: ConditionContext = { event, availableActorIds, ...(actor ? { actorId: actor.id } : {}) };
+        if (entry.requirements && !conditionMatches(entry.requirements, state, context)) return [];
+        const logWeight = reactionLogWeight(entry, state, context, actor);
+        return Number.isFinite(logWeight) ? [{ entry, actorId: actor?.id ?? null, logWeight }] : [];
+      });
+    });
     if (!candidates.length) return { poolId, entry: null, actorId: null };
     const random = nextPrng(rngState);
     rngState = random.state;
