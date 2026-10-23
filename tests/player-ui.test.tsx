@@ -1,0 +1,151 @@
+// @vitest-environment jsdom
+import { afterEach, beforeAll, expect, it, vi } from "vitest";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import { userEvent } from "@testing-library/user-event";
+import { GameScreen } from "../src/ui/GameScreen.js";
+import type { GamePresentation } from "../src/ui/player-session.js";
+import { HomePage } from "../src/ui/HomePage.js";
+import type { HomeSaveView } from "../src/persistence/index.js";
+
+beforeAll(() => {
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
+});
+
+afterEach(cleanup);
+const game: GamePresentation = {
+  completed: false,
+  pendingEvent: null,
+  nextInput: { type: "ADVANCE" },
+  nextLabel: "走進下一段生活",
+  stageLabel: "AgeStage 1 / 12",
+  ageLabel: "0 個月",
+  turnLabel: "Turn 1",
+  turnLabels: { "turn-1": "Turn 1" },
+  turnEnded: true,
+  stages: [],
+  family: { text: "這是眼前的家庭", conditions: [] },
+  resources: {
+    finances: 50,
+    energy: 40,
+    support: 60,
+    timeFlexibility: 30,
+    connection: 70,
+  },
+  history: [
+    {
+      id: "night",
+      ageStageId: "age-stage-1",
+      turnId: "turn-1",
+      kind: "support",
+      text: "有人接下一段工作。",
+    },
+  ],
+  choices: [],
+  reactions: [],
+  members: [{ id: "child", displayName: "孩子", recent: null }],
+  currentTurnId: "turn-1",
+  currentAgeStageId: "age-stage-1",
+  cause: null,
+  eventTitles: {},
+  choiceTexts: {},
+};
+it("keeps AUTO_ADVANCE reading and mobile tabs separate from simulation commands", async () => {
+  const choose = vi.fn();
+  const advance = vi.fn();
+  render(
+    <GameScreen
+      game={game}
+      busy={false}
+      blocked={false}
+      onChoose={choose}
+      onAdvance={advance}
+    />,
+  );
+  expect(screen.getByText("故事正在發展")).toBeTruthy();
+  await userEvent.click(screen.getByRole("button", { name: "繼續故事" }));
+  await userEvent.click(screen.getByRole("tab", { name: "家庭" }));
+  await userEvent.click(screen.getByRole("tab", { name: "生活" }));
+  expect(advance).not.toHaveBeenCalled();
+  expect(choose).not.toHaveBeenCalled();
+  expect(
+    within(screen.getByRole("tabpanel", { name: "生活" })).getByText(
+      "有人接下一段工作。",
+    ),
+  ).toBeTruthy();
+  await userEvent.click(screen.getByRole("button", { name: "走進下一段生活" }));
+  expect(advance).toHaveBeenCalledOnce();
+});
+
+it.each<{
+  kind: HomeSaveView["kind"];
+  primary: string | null;
+  canStartNew: boolean;
+}>([
+  { kind: "checking", primary: null, canStartNew: false },
+  { kind: "empty", primary: "開始我們的故事", canStartNew: false },
+  { kind: "active", primary: "繼續上次生活", canStartNew: true },
+  { kind: "completed", primary: "開始新的故事", canStartNew: false },
+  { kind: "migration", primary: "更新存檔並繼續", canStartNew: true },
+  { kind: "corrupt", primary: "查看恢復選項", canStartNew: true },
+  { kind: "incompatible", primary: "查看恢復選項", canStartNew: true },
+  { kind: "unavailable", primary: "重新讀取", canStartNew: false },
+])(
+  "renders the classified $kind save and submits only the offered command",
+  async ({ kind, primary, canStartNew }) => {
+    const command = vi.fn();
+    render(
+      <HomePage
+        save={{ kind, primary, canStartNew, summary: "由存檔邊界提供的摘要" }}
+        busy={false}
+        status=""
+        overlay={false}
+        onPrimary={command}
+        onNew={command}
+        onRecords={command}
+      />,
+    );
+    const actions = within(screen.getByRole("region", { name: "遊戲操作" }));
+    expect(actions.getByText("由存檔邊界提供的摘要")).toBeTruthy();
+    if (primary) {
+      await userEvent.click(actions.getByRole("button", { name: primary }));
+      expect(command).toHaveBeenCalledOnce();
+    } else expect(actions.queryAllByRole("button")).toHaveLength(0);
+  },
+);
+
+it("keeps vignette expansion local, blocks busy commands and removes overlay actions", async () => {
+  const command = vi.fn();
+  const props = {
+    save: {
+      kind: "empty",
+      primary: "開始我們的故事",
+      canStartNew: false,
+      summary: "開始",
+    } as HomeSaveView,
+    busy: true,
+    status: "正在開啟故事…",
+    overlay: false,
+    onPrimary: command,
+    onNew: command,
+    onRecords: command,
+  };
+  const { rerender } = render(<HomePage {...props} />);
+  await userEvent.click(
+    screen.getAllByRole("button", { name: "讀一段生活 ＋" })[0]!,
+  );
+  expect(
+    screen
+      .getByRole("button", { name: "收起這段生活 −" })
+      .getAttribute("aria-expanded"),
+  ).toBe("true");
+  await userEvent.click(screen.getByRole("button", { name: "開始我們的故事" }));
+  expect(command).not.toHaveBeenCalled();
+  rerender(<HomePage {...props} overlay />);
+  expect(screen.queryByRole("region", { name: "遊戲操作" })).toBeNull();
+});

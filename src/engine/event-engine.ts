@@ -695,3 +695,77 @@ export const transitionGame = (
   const [first, ...rest] = transition.trace;
   return { ...transition, trace: [{ ...first!, beforeState: state, rngStateBefore: state.rngState }, ...rest] };
 };
+
+// Read-only projection: lifecycle and eligibility stay behind the engine boundary.
+export const getPlayerView = (state: GameState, content: ContentPack) => {
+  const stage = content.ageStages.find(
+    (item) => item.id === state.currentAgeStageId,
+  );
+  if (!stage) throw new Error(`unknown AgeStage: ${state.currentAgeStageId}`);
+  const stageEnded =
+    !!state.ageStageProgress && state.ageStageProgress.status !== "active";
+  const completed =
+    stageEnded &&
+    stage.order === Math.max(...content.ageStages.map((item) => item.order));
+  const event = content.events.find(
+    (item) => item.id === state.turn?.activeEventId,
+  );
+  if (state.turn?.status === "awaitingInput" && (!event || event.mode !== "PLAYER_INPUT_REQUIRED")) {
+    throw new Error("pending player-input content is unavailable");
+  }
+  const pendingEvent =
+    state.turn?.status === "awaitingInput" && event
+      ? executableEvent(event, state)
+      : null;
+  const nextInput: EngineInput | null =
+    completed || pendingEvent
+      ? null
+      : stageEnded
+        ? { type: "NEXT_AGE_STAGE" }
+        : state.turn && !["active", "awaitingInput"].includes(state.turn.status)
+          ? { type: "START_TURN" }
+          : { type: "ADVANCE" };
+  const months = stage.childAgeMonths;
+  const turnLabels: Record<string, string> = {};
+  for (const ageStage of content.ageStages) {
+    const turns = [
+      ...new Set(
+        state.history
+          .filter((entry) => entry.ageStageId === ageStage.id)
+          .map((entry) => entry.turnId),
+      ),
+    ];
+    turns.forEach((id, index) => {
+      turnLabels[id] = `Turn ${index + 1}`;
+    });
+  }
+  return {
+    completed,
+    pendingEvent,
+    nextInput,
+    nextLabel: completed
+      ? "這段生活已成為家庭紀錄"
+      : stageEnded
+        ? "走向下一個成長階段"
+        : nextInput?.type === "START_TURN"
+          ? "開始下一個 Turn"
+          : "走進下一段生活",
+    stageLabel: `AgeStage ${stage.order + 1} / ${content.ageStages.length}`,
+    ageLabel:
+      months < 12
+        ? `${months} 個月`
+        : `${Math.floor(months / 12)} 歲${months % 12 ? ` ${months % 12} 個月` : ""}`,
+    turnLabel: `Turn ${state.ageStageProgress?.turnCount ?? 1}`,
+    turnLabels,
+    turnEnded:
+      !!state.turn && !["active", "awaitingInput"].includes(state.turn.status),
+    stages: content.ageStages.map((item) => ({
+      id: item.id,
+      label: `${item.childAgeMonths} 個月`,
+      completed:
+        state.completedAgeStages?.some((done) => done.ageStageId === item.id) ??
+        false,
+      current: item.id === state.currentAgeStageId,
+    })),
+  };
+};
