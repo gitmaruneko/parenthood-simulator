@@ -141,6 +141,38 @@ const replay = (state: GameState, content: ContentPack): EngineTransition =>
   transitionGame(state, content, { type: "ADVANCE" });
 
 describe("Core Event Engine Public Boundary", () => {
+  it("progresses through an empty waiting Turn while enforcing the stage budget", () => {
+    const first = makeChoiceEvent("first");
+    const future = makeChoiceEvent("future");
+    first.choices[0]!.scheduledFollowUps = [{ eventId: future.id, delayTurns: 2, priority: 0 }];
+    const content = makeContent([first, future], [first.id]);
+    const run = () => {
+      let state = transitionGame(makeState(), content, { type: "ADVANCE" }).state;
+      state = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" }).state;
+      return transitionGame(state, content, { type: "ADVANCE" }).state;
+    };
+    let state = run();
+    expect(state.ageStageProgress?.status).toBe("active");
+    state = transitionGame(state, content, { type: "START_TURN" }).state;
+    const waiting = transitionGame(state, content, { type: "ADVANCE" });
+    expect(waiting.stopReason).toBe("FALLBACK");
+    expect(waiting.state.turn?.status).toBe("completed");
+    expect(waiting.state.ageStageProgress?.status).toBe("active");
+    state = transitionGame(waiting.state, content, { type: "START_TURN" }).state;
+    expect(transitionGame(state, content, { type: "ADVANCE" }).pendingEvent?.id).toBe("future");
+
+    first.choices[0]!.scheduledFollowUps[0]!.delayTurns = 100;
+    state = run();
+    let last: EngineTransition | undefined;
+    for (let i = 0; i < 4; i += 1) {
+      state = transitionGame(state, content, { type: "START_TURN" }).state;
+      last = transitionGame(state, content, { type: "ADVANCE" });
+      state = last.state;
+    }
+    expect(last?.stopReason).toBe("AGE_STAGE_NODE_LIMIT");
+    expect(state.ageStageProgress).toMatchObject({ status: "safelyEnded", nodeCount: 6 });
+  });
+
   it("resumes an interrupted immediate chain before higher-priority same-Turn schedules", () => {
     const first = makeAutoEvent("first");
     first.immediateFollowUpEventIds = ["reaction"];
@@ -339,11 +371,11 @@ describe("Core Event Engine Public Boundary", () => {
     const content = makeContent([choice, reaction, handoff], [choice.id]);
     let state = transitionGame(makeState(), content, { type: "ADVANCE" }).state;
     state = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" }).state;
-    const immediate = transitionGame(state, content, { type: "ADVANCE" }, { maxAutoAdvanceNodes: 1 });
+    const immediate = transitionGame(state, content, { type: "ADVANCE" });
     expect(immediate.results[0]?.eventId).toBe("partner-agrees");
-    expect(immediate.state.history.at(-1)?.text).toBe(reaction.text);
-    state = transitionGame(immediate.state, content, { type: "END_TURN" }).state;
-    state = transitionGame(state, content, { type: "START_TURN" }).state;
+    expect(immediate.state.history.some((entry) => entry.text === reaction.text)).toBe(true);
+    expect(immediate.state.ageStageProgress?.status).toBe("active");
+    state = transitionGame(immediate.state, content, { type: "START_TURN" }).state;
     const restored = gameStateSchema.parse(JSON.parse(JSON.stringify(state)));
     const later = transitionGame(restored, content, { type: "ADVANCE" });
     expect(later.pendingEvent?.id).toBe("care-handoff");

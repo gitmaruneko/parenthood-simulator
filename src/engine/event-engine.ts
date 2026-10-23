@@ -147,6 +147,10 @@ const eventCoolingDown = (event: EventNode, state: GameState): boolean => {
   return lastTurn !== undefined && cooldown > 0 && (state.turnNumber ?? 1) - lastTurn < cooldown;
 };
 
+const isScheduleDue = (item: GameState["scheduledFollowUps"][number], state: GameState): boolean =>
+  item.targetAgeStageId === state.currentAgeStageId &&
+  item.dueAfterTurns < state.ageStageProgress!.turnCount;
+
 const selectScheduledEvent = (state: GameState, content: ContentPack): {
   state: GameState; event: EventNode | undefined;
 } => {
@@ -155,8 +159,7 @@ const selectScheduledEvent = (state: GameState, content: ContentPack): {
     if (item.status !== "pending") return item;
     const targetOrder = stageOrder.get(item.targetAgeStageId);
     const currentOrder = stageOrder.get(state.currentAgeStageId)!;
-    const due = item.targetAgeStageId === state.currentAgeStageId &&
-      item.dueAfterTurns < state.ageStageProgress!.turnCount;
+    const due = isScheduleDue(item, state);
     const event = content.events.find((event) => event.id === item.eventId);
     if (targetOrder === undefined || targetOrder < currentOrder || !event ||
         (item.immediateTurnId !== undefined && item.immediateTurnId !== state.currentTurnId) ||
@@ -167,8 +170,7 @@ const selectScheduledEvent = (state: GameState, content: ContentPack): {
     return item;
   });
   const due = scheduledFollowUps.filter((item) => item.status === "pending" &&
-    item.targetAgeStageId === state.currentAgeStageId &&
-    item.dueAfterTurns < state.ageStageProgress!.turnCount &&
+    isScheduleDue(item, state) &&
     !eventCoolingDown(content.events.find((event) => event.id === item.eventId)!, state))
     .sort((a, b) => Number(!!b.immediateTurnId) - Number(!!a.immediateTurnId) ||
       b.priority - a.priority || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
@@ -372,7 +374,13 @@ const completeEventNode = (
       status: "completed",
     },
   };
-  if (resultKind === "SAFE_FALLBACK") nextState = finishStage(nextState, "completed");
+  if (resultKind === "SAFE_FALLBACK") {
+    const waitingForLaterTurn = nextState.scheduledFollowUps.some((item) => item.status === "pending" &&
+      item.targetAgeStageId === nextState.currentAgeStageId && item.immediateTurnId === undefined);
+    nextState = waitingForLaterTurn
+      ? { ...nextState, turn: { ...nextState.turn!, status: "completed" } }
+      : finishStage(nextState, "completed");
+  }
   const result: EngineEventResult = {
     kind: resultKind,
     eventId: event.id,
@@ -675,7 +683,8 @@ export const transitionGame = (
 ): EngineTransition => {
   let transition = runTransition(state, content, input, options);
   if (transition.state.ageStageProgress?.status === "active" &&
-      (transition.stopReason === "EVENT_RESOLVED" || transition.stopReason === "AUTO_ADVANCE_LIMIT")) {
+      (transition.stopReason === "EVENT_RESOLVED" || transition.stopReason === "AUTO_ADVANCE_LIMIT" ||
+        transition.stopReason === "FALLBACK")) {
     const boundary = stopAtNodeBudget(transition.state, input);
     if (boundary) transition = { ...boundary, results: [...transition.results, ...boundary.results],
       trace: [...transition.trace, ...boundary.trace] };

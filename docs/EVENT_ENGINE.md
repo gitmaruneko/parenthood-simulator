@@ -36,7 +36,7 @@ The seed is not read during transitions. Callers initialise `rngState` once, aft
 - A Turn ends safely before processing more than four nodes (or its configured lower runtime limit).
 - Automatic traversal stops at `maxAutoAdvanceNodes` and can continue from the returned state.
 - Repeat visits stop at the event's `maxVisits` guard; unguarded repeat visits stop after one completed visit.
-- If no entry event is eligible, the validated choice-free `AUTO_ADVANCE` fallback resolves without consuming PRNG state and completes the stage.
+- If no queued or entry event is eligible, the validated choice-free `AUTO_ADVANCE` fallback resolves without consuming PRNG state and completes the stage, unless a same-stage schedule is waiting for a later Turn.
 - Repeating `ADVANCE` while player input is pending is idempotent and does not consume PRNG state.
 
 ## Deliberate extension points
@@ -92,6 +92,11 @@ queue items is included in the event transition trace, with contiguous before
 and after states. An automatic traversal budget can pause a chain; the returned
 queue resumes on the next `ADVANCE`, including after JSON/schema restoration.
 If no schedule is eligible, normal entry selection and safe fallback continue.
+When a pending non-immediate follow-up targets a later Turn of the current stage
+(including a due item waiting for cooldown), fallback completes only the Turn,
+preserving the stage so `START_TURN` can reach that follow-up. This also lets
+otherwise empty waiting Turns progress safely. Fallback nodes still count
+toward the stage budget; the six-node cap takes precedence over waiting.
 Queue metadata and cooldown clocks round-trip through `gameStateSchema` and
 JSON; storage adapters and migrations remain owned by issue #9.
 
@@ -122,8 +127,9 @@ identical automatic traversal budget. A cycle-protected Turn also remains
 stopped until an explicit lifecycle command. `ADVANCE` on an ended Turn or
 stage is idempotent and never silently starts another Turn or stage.
 
-If no stage entry is executable, a choice-free fallback resolves without a
-random draw and completes the Turn and stage. Fallback is also used if an
+If no queued event or stage entry is executable, a choice-free fallback resolves
+without a random draw and completes the Turn and stage (or only the Turn when
+a later-Turn schedule remains in the current stage). Fallback is also used if an
 already pending event loses enough executable choices to become invalid.
 Player-input candidates must expose at least two executable choices; only
 choices satisfying their requirements are returned, and `CHOOSE` rechecks
