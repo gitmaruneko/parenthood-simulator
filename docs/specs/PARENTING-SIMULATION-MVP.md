@@ -1,5 +1,7 @@
 # Formal Spec: 《今天也在養小孩》MVP 事件引擎與家庭生活回顧
 
+設計補充（2026-10-23）：[家庭生活方向](../FAMILY_LIFE_DIRECTION.md) 定義主畫面隨時單選切換、只影響尚未抽選事件，以及 PRNG／AgeStage／Persistence／Gameplay UI 的邊界。本次使用者已確認將首版納入實作，補充 Spec #28 與 Tickets #29、#30 的範圍及驗收見 [實作決議](../FAMILY_LIFE_DIRECTION_IMPLEMENTATION.md)；不改變以下既有 MVP 核心規則。
+
 ## Problem Statement
 
 《今天也在養小孩》目前有完整的遊戲理念與內容方向，但若把每個年齡階段簡化成一題選擇題，遊戲會變成問卷，而不是能呈現家庭因果關係的人生模擬。

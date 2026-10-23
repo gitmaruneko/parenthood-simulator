@@ -27,3 +27,17 @@
 ## 驗證邊界
 
 沿用 Core Event Engine Public Boundary、Content Schema Validation、Save / Restore Boundary；補 Session、UI 與桌面／手機 Playwright。實作前基線：168 個測試與 typecheck 通過。UI 截圖驗證六項可見、單選文字標示與鍵盤焦點，不以自動測試宣稱螢幕閱讀器實機驗收。
+
+最終驗證：`npm test` 181 項通過；`npm run test:e2e` 18 項桌面／手機案例通過；`npm run typecheck` 及 `npm run build` 通過。完整命令序列涵蓋 12 階段、多次方向切換、固定後續事件與保存續玩；正式內容沒有增加入口事件。
+
+## Standards
+
+以工作起點 `a44ea35` 審查：0 項規範違反，0 項需修正的判斷性 code smells。
+
+## Spec
+
+1 項佇列隔離風險已修正：保存失敗後的排隊方向不可作用於重新載入的故事。以故事世代綁定處理；首筆切換同步鎖定提交狀態。三個 Session 回歸案例驗證同 tick 提交順序、失敗後重試依序保存、重新載入不重放舊指令。未有未處理 Spec 發現。
+
+## 本次 Retro
+
+CI 已執行單元測試、型別與 build，但未執行 Playwright；本次在本機完成 18 項驗證，未宣稱 CI 已覆蓋瀏覽器流程。建議後續獨立改善 CI 的瀏覽器整合驗證。驗證期間應先固定原始碼，避免 Vite 熱重載干擾長流程測試。
