@@ -191,6 +191,7 @@ export function App({ session: provided }: { session?: PlayerSession }) {
               initialTab={snapshot.gameTab}
               onChoose={(id) => void session.choose(id)}
               onAdvance={() => void session.advance()}
+              onDirection={(id) => void session.setDirection(id)}
             />
           )}
         </>

@@ -1,4 +1,5 @@
 import type { ContentPack, GameState } from "../domain/schemas.js";
+import type { FamilyLifeDirectionId } from "../domain/family-life-direction.js";
 import { createMvpContent } from "../content/mvp.js";
 import {
   createFamilyRun,
@@ -84,6 +85,19 @@ export const createPlayerSession = (
   let confirmedRaw: string | null | undefined;
   let dialogRaw: string | null = null;
   let needsSave = false;
+  let directionQueue: Promise<void> = Promise.resolve();
+  let pendingDirections = 0;
+  let storyGeneration = 0;
+  const waitForDirection = () => new Promise<void>((resolve) => {
+    const ready = () => {
+      if (!snapshot.busy && (!needsSave || snapshot.page !== "game")) {
+        listeners.delete(ready);
+        resolve();
+      }
+    };
+    listeners.add(ready);
+    ready();
+  });
   const inspect = () => {
     const result = inspectPlayerSave(store, content);
     publish({ home: result.view });
@@ -191,7 +205,8 @@ export const createPlayerSession = (
       publish({ busy: false });
     }
   };
-  const enterOpening = () =>
+  const enterOpening = () => {
+    storyGeneration++;
     publish({
       page: "assessment",
       dialog: null,
@@ -199,10 +214,12 @@ export const createPlayerSession = (
       game: null,
       gameTab: "life",
     });
+  };
   const installState = (
     loaded: GameState,
     gameTab: "life" | "records" = "life",
   ) => {
+    storyGeneration++;
     state = loaded;
     // Recreate only the seeded actor catalogue through the family-generation boundary.
     const generated = createFamilyRun({ seed: state.seed });
@@ -274,6 +291,7 @@ export const createPlayerSession = (
       }),
     home: () => {
       if (snapshot.busy) return;
+      storyGeneration++;
       confirmedRaw = undefined;
       publish({ page: "home", dialog: null, error: null });
       void session.check();
@@ -405,6 +423,22 @@ export const createPlayerSession = (
           return;
         execute({ type: "CHOOSE", choiceId });
       }),
+    setDirection: (directionId: FamilyLifeDirectionId) => {
+      const generation = storyGeneration;
+      const applyDirection = () => operate("儲存中…", () => {
+          if (generation !== storyGeneration) return;
+          if (!state || snapshot.page !== "game" || getPlayerView(state, content).completed) return;
+          execute({ type: "SET_FAMILY_LIFE_DIRECTION", directionId });
+        });
+      const immediate = pendingDirections === 0 && !snapshot.busy && !needsSave;
+      pendingDirections++;
+      const operation = immediate ? applyDirection() : directionQueue.then(async () => {
+        await waitForDirection();
+        await applyDirection();
+      });
+      directionQueue = operation.finally(() => { pendingDirections--; });
+      return directionQueue;
+    },
     retrySave: () =>
       !snapshot.canRetrySave
         ? Promise.resolve()

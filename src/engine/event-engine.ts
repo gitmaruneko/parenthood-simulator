@@ -12,6 +12,7 @@ import { nextPrng } from "./prng.js";
 import { resolveReactions } from "./reactions.js";
 import { ensureStageProgress, finishStage, nextStage, startTurn } from "./lifecycle.js";
 import { applyNarrativeEffects, sumResourceDeltas } from "./narrative-effects.js";
+import { FAMILY_LIFE_DIRECTIONS, familyLifeDirectionIdSchema, type FamilyLifeDirectionId } from "../domain/family-life-direction.js";
 
 export type EngineMode = "PLAYER_INPUT_REQUIRED" | "AUTO_ADVANCE";
 export type EngineStopReason =
@@ -27,13 +28,15 @@ export type EngineStopReason =
   | "GAME_COMPLETED"
   | "TURN_STARTED"
   | "AGE_STAGE_STARTED"
-  | "SCHEDULE_CANCELLED";
+  | "SCHEDULE_CANCELLED"
+  | "FAMILY_LIFE_DIRECTION_SET";
 
 export interface EngineOptions {
   readonly maxAutoAdvanceNodes: number;
 }
 
 export type EngineInput =
+  | Readonly<{ type: "SET_FAMILY_LIFE_DIRECTION"; directionId: FamilyLifeDirectionId }>
   | Readonly<{ type: "ADVANCE" }>
   | Readonly<{ type: "CANCEL_SCHEDULED_EVENT"; scheduledEventId: string }>
   | Readonly<{ type: "CHOOSE"; choiceId: string }>
@@ -55,7 +58,8 @@ export interface EngineEventResult {
     | "GAME_COMPLETED"
     | "TURN_STARTED"
     | "AGE_STAGE_STARTED"
-    | "SCHEDULE_CANCELLED";
+    | "SCHEDULE_CANCELLED"
+    | "FAMILY_LIFE_DIRECTION_SET";
   readonly eventId: string | null;
   readonly choiceId: string | null;
   readonly resourceDeltas: Readonly<Partial<Record<ResourceKey, number>>>;
@@ -83,6 +87,7 @@ export interface EngineTransition {
 const chooseWeightedEvent = (
   events: readonly EventNode[],
   rngState: number,
+  directionId: FamilyLifeDirectionId,
 ): { readonly event: EventNode; readonly rngState: number } => {
   if (events.length === 0) {
     throw new Error("cannot choose an event from an empty candidate list");
@@ -91,13 +96,16 @@ const chooseWeightedEvent = (
   const candidates = [...events].sort((left, right) =>
     left.id < right.id ? -1 : left.id > right.id ? 1 : 0,
   );
-  const totalWeight = candidates.reduce((total, event) => total + event.weight, 0);
+  // Normalize before multiplying so finite base weights cannot overflow.
+  const scale = Math.max(...candidates.map((event) => event.weight));
+  const weights = candidates.map((event) => event.weight / scale * (event.familyLifeDirectionWeights?.[directionId] ?? 1));
+  const totalWeight = weights.reduce((total, weight) => total + weight, 0);
   const random = nextPrng(rngState);
   const target = random.value * totalWeight;
   let cumulativeWeight = 0;
 
-  for (const event of candidates) {
-    cumulativeWeight += event.weight;
+  for (const [index, event] of candidates.entries()) {
+    cumulativeWeight += weights[index]!;
     if (target < cumulativeWeight) {
       return { event, rngState: random.state };
     }
@@ -509,6 +517,19 @@ const runTransition = (
   options: EngineOptions = { maxAutoAdvanceNodes: 4 },
 ): EngineTransition => {
   const originalState = state;
+  if (input.type === "SET_FAMILY_LIFE_DIRECTION") {
+    const directionId = familyLifeDirectionIdSchema.parse(input.directionId);
+    const view = getPlayerView(state, content);
+    if (view.completed) throw new Error("completed family records are read-only");
+    const next = directionId === state.activeFamilyLifeDirectionId
+      ? state : { ...state, activeFamilyLifeDirectionId: directionId };
+    const result: EngineEventResult = { kind: "FAMILY_LIFE_DIRECTION_SET", eventId: null,
+      choiceId: null, resourceDeltas: {} };
+    return { state: next, mode: view.pendingEvent ? "PLAYER_INPUT_REQUIRED" : "AUTO_ADVANCE",
+      pendingEvent: view.pendingEvent, stopReason: "FAMILY_LIFE_DIRECTION_SET",
+      results: next === state ? [] : [result],
+      trace: next === state ? [] : [makeTrace(state, input, next, result)] };
+  }
   if (input.type === "CANCEL_SCHEDULED_EVENT") {
     const pending = state.scheduledFollowUps.some((item) => item.id === input.scheduledEventId && item.status === "pending");
     const next = pending ? { ...state, scheduledFollowUps: state.scheduledFollowUps.map((item) =>
@@ -627,7 +648,7 @@ const runTransition = (
     }
 
     const selected = scheduledEvent ? { event: scheduledEvent, rngState: currentState.rngState }
-      : chooseWeightedEvent(candidates, currentState.rngState);
+      : chooseWeightedEvent(candidates, currentState.rngState, currentState.activeFamilyLifeDirectionId);
     const event = selected.event;
     const priorVisits = currentState.turn!.processedEventIds.filter(
       (eventId) => eventId === event.id,
@@ -745,6 +766,8 @@ export const getPlayerView = (state: GameState, content: ContentPack) => {
   }
   return {
     completed,
+    activeFamilyLifeDirectionId: state.activeFamilyLifeDirectionId,
+    familyLifeDirections: FAMILY_LIFE_DIRECTIONS,
     pendingEvent,
     nextInput,
     nextLabel: completed

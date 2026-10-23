@@ -1,5 +1,11 @@
 # Domain Schema and Content Validation
 
+Family Life Direction update (#28–#30): six stable direction IDs and a single
+`activeFamilyLifeDirectionId` are implemented. All six are available; new state
+defaults to `flexible`. Optional event `familyLifeDirectionWeights` maps known IDs
+to finite multipliers in [1, 1.25]. No unlock schema or resource effects were added.
+See [confirmed implementation decisions](FAMILY_LIFE_DIRECTION_IMPLEMENTATION.md).
+
 Issue #2 establishes the data contract used by later engine, persistence, content, and UI work. It does not implement event progression.
 
 ## Public modules

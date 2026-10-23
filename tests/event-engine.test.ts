@@ -98,6 +98,7 @@ const makeContent = (events: EventNode[], entryEventIds = events.map((event) => 
 };
 
 const makeState = (seed = 123456789): GameState => ({
+  activeFamilyLifeDirectionId: "flexible",
   schemaVersion: 1,
   seed,
   rngState: initializePrngState(seed),

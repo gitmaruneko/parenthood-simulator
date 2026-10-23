@@ -1,5 +1,7 @@
 # 玩家流程 UI（Issue #11）
 
+實作補充（#28–#30）：[家庭生活方向](FAMILY_LIFE_DIRECTION_IMPLEMENTATION.md) 已接上 Schema／引擎／Session，主故事畫面常駐六項單選，隨時免費切換並立即保存；與生活紀錄分開。保存失敗可重試，排隊方向按提交順序處理，重新讀取後不重放舊指令。
+
 ## 本機使用
 
 需要 Node.js 22.12+ 或 24。執行 `npm install`、`npm run dev`，開啟終端機顯示的本機網址。

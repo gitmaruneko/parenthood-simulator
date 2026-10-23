@@ -2,6 +2,13 @@
 
 Issue #3 establishes the pure event-transition boundary and deterministic PRNG used by later gameplay tickets.
 
+Family Life Direction update (#28–#30): `SET_FAMILY_LIFE_DIRECTION(directionId)`
+changes only the active preference, before lifecycle/budget processing. It emits
+a `FAMILY_LIFE_DIRECTION_SET` trace without consuming PRNG. Same-selection commands
+are idempotent; completed records reject changes. Only general entry selection
+uses authored direction multipliers; pending stories, reactions and fixed follow-ups
+are unchanged. See [implementation decisions](FAMILY_LIFE_DIRECTION_IMPLEMENTATION.md).
+
 ## Public modules
 
 - `src/engine/index.ts` is the public export surface.

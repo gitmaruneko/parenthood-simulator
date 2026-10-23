@@ -34,6 +34,7 @@ export const createMvpContent = (familyActors: readonly Actor[] = defaultFamilyA
       id: id("choice"), ageStageId, kind: "choice", mode: "PLAYER_INPUT_REQUIRED",
       title: scene.title, text: scene.text, locationId: scene.location,
       contextTags: [scene.slug, "everyday-care"], weight: 2,
+      familyLifeDirectionWeights: scene.directionWeights,
       actorIds: familyActors.map((person) => person.id).concat(
         scene.location === "school" ? ["teacher-1"] : scene.location === "work" ? ["colleague-1"] :
           scene.location === "park" ? ["stranger-1"] : []),
