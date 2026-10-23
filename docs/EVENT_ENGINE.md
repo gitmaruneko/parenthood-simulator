@@ -43,7 +43,7 @@ The seed is not read during transitions. Callers initialise `rngState` once, aft
 
 This ticket leaves later ticket ownership intact:
 
-- Issue #7 owns reaction-pool resolution and will extend event results when reactions exist.
+- Issue #7 adds reaction-pool resolution and observed reaction results (see below).
 - Issue #8 owns planning-load, relationship-memory, support, and repair effects.
 - Issue #9 owns serialization, migration, and storage adapters.
 
@@ -55,8 +55,8 @@ Completing an EventNode queues its `immediateFollowUpEventIds` and
 `scheduledFollowUps`, plus those of the chosen option. Only the chosen option
 contributes follow-ups. `CHOOSE` still resolves one node; the next `ADVANCE`
 continues the chain. A follow-up can be a reaction, environment event, or another
-choice with narrative consequences. Reaction-pool selection and additional
-family effects belong to issues #7 and #8.
+choice with narrative consequences. Reaction-pool selection is described below;
+broader planning-load and family effects remain owned by issue #8.
 
 All follow-ups use the serializable `GameState.scheduledFollowUps` queue:
 
@@ -144,3 +144,70 @@ and JSON. They are optional on pre-lifecycle state; the first transition
 initializes progress from recorded event history. Storage and migration
 adapters remain owned by issue #9; full ending-review generation remains a
 separate concern.
+
+## Independent character reactions (issue #7)
+
+A completed choice or automatic node resolves each referenced reaction pool once.
+Waiting for input never rolls reactions. Safe fallback nodes skip reactions and
+preserve their existing no-randomness guarantee. Reactions are part of the source
+node, so they do not consume extra node budget; their follow-up nodes do.
+
+The resolver uses the post-choice resources, flags, and completed-event state.
+All pools see that same snapshot; effects from one pool become visible to later
+nodes, rather than changing the selection of another pool on the same node.
+Choices do not name a fixed reaction. An optional choice `anticipatedJudgment`
+is copied into choice history and never affects reaction selection.
+
+Actors must be listed in the source event's `actorIds`. The child must match
+`family.childId`; partners and grandparents must belong to `persistentActorIds`.
+Teachers, colleagues, and strangers can appear as transient scene actors.
+Availability is sampled once per scene actor, in stable ID order, and shared by
+all pools. Within a reaction requirement or modifier, `actorAvailable` checks
+that sampled scene availability. Elsewhere it retains the existing family
+membership meaning. Household composition and resource levels do not implicitly
+remove support candidates.
+
+Pools and entries are processed in stable ID order. Each eligible entry/actor
+pair is a candidate; `none` entries are actorless candidates and can be selected
+even when actors are present. Each pool selects one candidate using its authored
+weight and the saved PRNG state. If there are no candidates, it records an
+actorless `none` result without a selection draw. Presence draws still count.
+Pool IDs are deduplicated. Reordering actors, entries, or pools does not reroll
+a run.
+
+Support and understanding weights are multiplied by
+`0.5 + (initiative + reliability + boundaryRespect) / 3`; criticism and conflict
+weights by `1.5 - boundaryRespect`. Neutral and none have no trait multiplier.
+These positive factors shift probabilities without assigning moral outcomes.
+Optional `weightModifiers` multiply weights when their conditions match; zero
+explicitly suppresses a candidate. Weights are normalized in log space to avoid
+overflow from large finite authored weights.
+
+Requirements and weight modifiers support existing conditions plus:
+
+- `location` with `locationId`, matching the source event's optional `locationId`;
+- `contextTag` with `tag`, matching the event's optional `contextTags`;
+- `recentEvent` with `eventId` and `withinTurns`, using the run-wide resolution clock;
+- `relationshipMemory` with `category` and `withinTurns`, matching the candidate
+  actor's memories. Outside actor selection, it matches any actor's memory.
+
+Recency includes the current Turn (age zero), rejects future timestamps, and
+requires a recorded timestamp. Older memories without `createdAtTurn` remain in
+the narrative but do not count as recent. These conditions can be composed with
+`all`, `any`, and `not` and can also control later event eligibility.
+
+Results expose optional `reactions` with pool ID, entry ID, actor ID, kind, and
+text. Authored kinds are support, understanding, neutral, criticism, conflict,
+and none. Implicit no-response results have null entry and actor IDs.
+`GameState.reactionHistory` records these observations with source event, stage,
+and Turn IDs; story history also receives reaction text. They round-trip through
+JSON and `gameStateSchema`, independently of anticipated judgment.
+
+Selected entries can add `setFlags`, concrete `relationshipMemories`, immediate
+`followUpEventIds`, and `scheduledFollowUps`. Memories bind to the selected actor
+and current stage/Turn clock; actorless entries produce unbound memories.
+Reaction schedules use the same priority, delay, eligibility, cooldown, expiry,
+and node-limit rules as other event chains. Their IDs use a separate
+`reaction-scheduled` prefix to avoid collisions with node/choice schedules.
+Relationship changes are concrete memories and flags rather than a relationship
+score. Planning load and general support/repair mechanics remain issue #8.

@@ -37,3 +37,28 @@ Validation returns structured issues with a stable code and a precise data path.
 ## Scope boundary
 
 The event engine will later consume these contracts and enforce runtime traversal. This ticket intentionally does not select events, advance turns, resolve reactions, or render UI.
+
+## Reaction contracts (issue #7)
+
+Reaction entries support six kinds: `support`, `understanding`, `neutral`,
+`criticism`, `conflict`, and `none`. Optional `weightModifiers` contain a
+condition and a finite nonnegative multiplier. Optional effects are `setFlags`,
+`relationshipMemories` (ID, category, text templates), and `scheduledFollowUps`;
+existing `followUpEventIds` are immediate reactions chains.
+
+Events optionally declare `locationId` and `contextTags`. Conditions also support
+location, context tag, recent event, and recent relationship-memory checks.
+Recency uses a nonnegative integer `withinTurns` and optional memory
+`createdAtTurn` timestamps. See [Event engine](EVENT_ENGINE.md) for evaluation
+and candidate weighting semantics.
+
+Choice `anticipatedJudgment` is optional text preserved separately in choice
+history. Observed reactions use `observedReactionSchema`; optional
+`GameState.reactionHistory` adds the source event, stage, and Turn to each result.
+These additions are optional so previous states and content remain parseable.
+
+The validator checks unique reaction entry IDs within each pool, nested modifier
+condition references, and reaction schedule event/stage/condition references.
+Reaction schedules contribute graph edges for reachability and guarded-cycle
+validation. Their target chronology is checked against every event using the
+pool, so a shared pool cannot silently schedule into a past stage.

@@ -1,11 +1,14 @@
 import type {
-  Condition,
   ContentPack,
   EventNode,
   GameState,
   ResourceKey,
+  ObservedReaction,
+  ScheduledFollowUp,
 } from "../domain/schemas.js";
+import { conditionMatches } from "./conditions.js";
 import { nextPrng } from "./prng.js";
+import { resolveReactions } from "./reactions.js";
 import { ensureStageProgress, finishStage, nextStage, startTurn } from "./lifecycle.js";
 
 export type EngineMode = "PLAYER_INPUT_REQUIRED" | "AUTO_ADVANCE";
@@ -54,6 +57,7 @@ export interface EngineEventResult {
   readonly eventId: string | null;
   readonly choiceId: string | null;
   readonly resourceDeltas: Readonly<Partial<Record<ResourceKey, number>>>;
+  readonly reactions?: readonly ObservedReaction[];
 }
 
 export interface EngineTraceEntry {
@@ -100,44 +104,16 @@ const chooseWeightedEvent = (
   return { event: candidates[candidates.length - 1]!, rngState: random.state };
 };
 
-const conditionMatches = (condition: Condition, state: GameState): boolean => {
-  switch (condition.kind) {
-    case "always":
-      return true;
-    case "flag":
-      return state.flags.includes(condition.flag);
-    case "eventCompleted":
-      return state.completedEventIds.includes(condition.eventId);
-    case "eventNotCompleted":
-      return !state.completedEventIds.includes(condition.eventId);
-    case "resourceAtLeast":
-      return state.resources[condition.resource] >= condition.value;
-    case "resourceAtMost":
-      return state.resources[condition.resource] <= condition.value;
-    case "actorAvailable":
-      return (
-        state.family.childId === condition.actorId ||
-        state.family.persistentActorIds.includes(condition.actorId)
-      );
-    case "all":
-      return condition.conditions.every((child) => conditionMatches(child, state));
-    case "any":
-      return condition.conditions.some((child) => conditionMatches(child, state));
-    case "not":
-      return !conditionMatches(condition.condition, state);
-  }
-};
-
 const executableEvent = (event: EventNode, state: GameState): EventNode => ({
   ...event,
-  choices: event.choices.filter((choice) => !choice.requirements || conditionMatches(choice.requirements, state)),
+  choices: event.choices.filter((choice) => !choice.requirements || conditionMatches(choice.requirements, state, { event })),
 });
 
 const eventEligible = (event: EventNode, state: GameState): boolean =>
   event.ageStageId === state.currentAgeStageId &&
   (event.mode !== "PLAYER_INPUT_REQUIRED" || executableEvent(event, state).choices.length >= 2) &&
-  conditionMatches(event.eligibility, state) &&
-  (event.terminationGuard?.kind !== "condition" || conditionMatches(event.terminationGuard.condition, state)) &&
+  conditionMatches(event.eligibility, state, { event }) &&
+  (event.terminationGuard?.kind !== "condition" || conditionMatches(event.terminationGuard.condition, state, { event })) &&
   (event.repeatable || !state.completedEventIds.includes(event.id));
 
 const eventCoolingDown = (event: EventNode, state: GameState): boolean => {
@@ -164,7 +140,7 @@ const selectScheduledEvent = (state: GameState, content: ContentPack): {
     if (targetOrder === undefined || targetOrder < currentOrder || !event ||
         (item.immediateTurnId !== undefined && item.immediateTurnId !== state.currentTurnId) ||
         (due && ((!eventEligible(event, state)) ||
-          (item.condition !== undefined && !conditionMatches(item.condition, state))))) {
+          (item.condition !== undefined && !conditionMatches(item.condition, state, { event }))))) {
       return { ...item, status: "expired" as const };
     }
     return item;
@@ -297,9 +273,36 @@ const awaitPlayerInput = (
   return makeResolution(state, input, nextState, result);
 };
 
+interface FollowUpSource {
+  immediateFollowUpEventIds: readonly string[];
+  scheduledFollowUps: readonly ScheduledFollowUp[];
+}
+
+const enqueueFollowUps = (state: GameState, sources: readonly FollowUpSource[], prefix = "scheduled") => [
+  ...state.scheduledFollowUps,
+  ...sources.flatMap((source) => [
+    ...source.immediateFollowUpEventIds.map((eventId) => ({
+      eventId, targetAgeStageId: state.currentAgeStageId, delayTurns: 0,
+      priority: 0, immediateTurnId: state.currentTurnId!,
+    })),
+    ...source.scheduledFollowUps,
+  ]).map((followUp, index) => {
+    const { delayTurns, ...scheduled } = followUp;
+    return {
+      ...scheduled,
+      id: `${prefix}-${state.currentTurnId}-${state.turn!.nodeCount + 1}-${index}`,
+      targetAgeStageId: followUp.targetAgeStageId ?? state.currentAgeStageId,
+      dueAfterTurns: (followUp.targetAgeStageId && followUp.targetAgeStageId !== state.currentAgeStageId
+        ? 0 : state.ageStageProgress!.turnCount - 1) + delayTurns,
+      status: "pending" as const,
+    };
+  }),
+];
+
 const completeEventNode = (
   state: GameState,
   event: EventNode,
+  content: ContentPack,
   input: EngineInput,
   rngStateAfter: number,
   resultKind: "EVENT_RESOLVED" | "SAFE_FALLBACK" = "EVENT_RESOLVED",
@@ -314,23 +317,7 @@ const completeEventNode = (
     ...state,
     ageStageProgress: { ...state.ageStageProgress!, nodeCount: state.ageStageProgress!.nodeCount + 1 },
     rngState: rngStateAfter,
-    scheduledFollowUps: [
-      ...state.scheduledFollowUps,
-      ...[event, ...(choice ? [choice] : [])].flatMap((source) => [
-        ...source.immediateFollowUpEventIds.map((eventId) => ({
-          eventId, targetAgeStageId: state.currentAgeStageId, delayTurns: 0,
-          priority: 0, immediateTurnId: state.currentTurnId!,
-        })),
-        ...source.scheduledFollowUps,
-      ]).map((followUp, index) => ({
-        ...followUp,
-        id: `scheduled-${state.currentTurnId}-${nodeIndex + 1}-${index}`,
-        targetAgeStageId: followUp.targetAgeStageId ?? state.currentAgeStageId,
-        dueAfterTurns: (followUp.targetAgeStageId && followUp.targetAgeStageId !== state.currentAgeStageId
-          ? 0 : state.ageStageProgress!.turnCount - 1) + followUp.delayTurns,
-        status: "pending" as const,
-      })).map(({ delayTurns: _delayTurns, ...scheduled }) => scheduled),
-    ],
+    scheduledFollowUps: enqueueFollowUps(state, [event, ...(choice ? [choice] : [])]),
     turnNumber: state.turnNumber ?? 1,
     eventLastResolvedTurn: { ...state.eventLastResolvedTurn, [event.id]: state.turnNumber ?? 1 },
     resources: choice
@@ -344,6 +331,7 @@ const completeEventNode = (
           {
             eventId: event.id,
             choiceId: choice.id,
+            ...(choice.anticipatedJudgment ? { anticipatedJudgment: choice.anticipatedJudgment } : {}),
             ageStageId: state.currentAgeStageId,
             turnId: state.currentTurnId,
           },
@@ -374,6 +362,33 @@ const completeEventNode = (
       status: "completed",
     },
   };
+  let reactions: ObservedReaction[] | undefined;
+  if (event.reactionPoolIds.length && resultKind !== "SAFE_FALLBACK") {
+    const resolved = resolveReactions(nextState, event, content);
+    reactions = resolved.reactions.map(({ poolId, entry, actorId }) => ({
+      poolId, reactionId: entry?.id ?? null, actorId, kind: entry?.kind ?? "none",
+      text: entry?.text ?? "No one responds.",
+    }));
+    const entries = resolved.reactions.flatMap(({ entry }) => entry ? [entry] : []);
+    nextState = { ...nextState, rngState: resolved.rngState,
+      flags: appendUnique(nextState.flags, entries.flatMap((entry) => entry.setFlags ?? [])),
+      relationshipMemories: [...nextState.relationshipMemories,
+        ...resolved.reactions.flatMap(({ entry, actorId }) => (entry?.relationshipMemories ?? []).map((memory) => ({
+          ...memory, ...(actorId ? { actorId } : {}), createdAtAgeStageId: state.currentAgeStageId,
+          createdAtTurn: state.turnNumber ?? 1,
+        })))],
+      scheduledFollowUps: enqueueFollowUps({ ...state, scheduledFollowUps: nextState.scheduledFollowUps },
+        entries.map((entry) => ({ immediateFollowUpEventIds: entry.followUpEventIds,
+          scheduledFollowUps: entry.scheduledFollowUps ?? [] })), "reaction-scheduled"),
+      reactionHistory: [...(state.reactionHistory ?? []), ...reactions.map((reaction) => ({
+        ...reaction, eventId: event.id, ageStageId: state.currentAgeStageId, turnId: state.currentTurnId!,
+      }))],
+      history: [...nextState.history, ...reactions.map((reaction, index) => ({
+        id: `reaction-${state.currentTurnId}-${nodeIndex + 1}-${index}`,
+        ageStageId: state.currentAgeStageId, turnId: state.currentTurnId!,
+        kind: "reaction" as const, text: reaction.text,
+      }))] };
+  }
   if (resultKind === "SAFE_FALLBACK") {
     const waitingForLaterTurn = nextState.scheduledFollowUps.some((item) => item.status === "pending" &&
       item.targetAgeStageId === nextState.currentAgeStageId && item.immediateTurnId === undefined);
@@ -386,6 +401,7 @@ const completeEventNode = (
     eventId: event.id,
     choiceId: choice?.id ?? null,
     resourceDeltas: choice ? { ...choice.resourceDeltas } : {},
+    ...(reactions ? { reactions } : {}),
   };
 
   return makeResolution(state, input, nextState, result);
@@ -485,6 +501,7 @@ const resolveChoice = (
   const resolved = completeEventNode(
     state,
     event,
+    content,
     input,
     state.rngState,
     "EVENT_RESOLVED",
@@ -565,7 +582,7 @@ const runTransition = (
     if (executableEvent(pendingEvent, state).choices.length < 2) {
       const fallback = content.events.find((event) => event.id === content.fallbackEventId);
       if (!fallback || fallback.mode !== "AUTO_ADVANCE") throw new Error("safe fallback is unavailable");
-      const resolved = completeEventNode(state, fallback, input, state.rngState, "SAFE_FALLBACK");
+      const resolved = completeEventNode(state, fallback, content, input, state.rngState, "SAFE_FALLBACK");
       return { state: resolved.state, mode: "AUTO_ADVANCE", stopReason: "FALLBACK",
         pendingEvent: null, results: [resolved.result], trace: [resolved.trace] };
     }
@@ -608,6 +625,7 @@ const runTransition = (
       const resolved = completeEventNode(
         currentState,
         fallback,
+        content,
         input,
         currentState.rngState,
         "SAFE_FALLBACK",
@@ -658,7 +676,7 @@ const runTransition = (
       };
     }
 
-    const resolved = completeEventNode(currentState, event, input, selected.rngState);
+    const resolved = completeEventNode(currentState, event, content, input, selected.rngState);
     currentState = resolved.state;
     automaticNodeCount += 1;
     results.push(resolved.result);
