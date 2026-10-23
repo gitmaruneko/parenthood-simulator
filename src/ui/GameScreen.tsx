@@ -152,13 +152,7 @@ export function FamilyLog({ game }: { game: GamePresentation }) {
             choice && game.choiceTexts[`${choice.eventId}/${choice.choiceId}`];
           return (
             <li className="log-entry" key={entry.id}>
-              <small>
-                階段{" "}
-                {game.stages.findIndex(
-                  (stage) => stage.id === entry.ageStageId,
-                ) + 1}{" "}
-                · {game.turnLabels[entry.turnId]}
-              </small>
+              <small>{game.storyTimeLabels[entry.turnId]}</small>
               <span>
                 <strong>
                   {game.eventTitles[entry.resolvedEventId!] ?? "生活片段"}

@@ -28,7 +28,7 @@ const game: GamePresentation = {
   stageLabel: "AgeStage 1 / 12",
   ageLabel: "0 個月",
   turnLabel: "Turn 1",
-  turnLabels: { "turn-1": "Turn 1" },
+  storyTimeLabels: { "turn-1": "2 個月 1 天" },
   turnEnded: true,
   stages: [],
   family: { text: "這是眼前的家庭", conditions: [] },
@@ -113,7 +113,7 @@ it("keeps one compact record per resolved event instead of separate narrative an
             current: true,
           },
         ],
-        turnLabels: { "turn-1": "Turn 1", "turn-2": "Turn 2" },
+        storyTimeLabels: { "turn-1": "2 個月 1 天", "turn-2": "2 個月 2 天" },
         eventTitles: {
           night: "凌晨的交接",
           reflection: "凌晨的交接之後",
@@ -136,7 +136,12 @@ it("keeps one compact record per resolved event instead of separate narrative an
   expect(records[2]!.textContent).toContain(
     "凌晨的交接 — 今晚先自己承接，明天再談安排",
   );
-  expect(records[0]!.textContent).toContain("Turn 2");
+  expect(records[0]!.textContent).toContain("2 個月 2 天");
+  expect(records[1]!.textContent).toContain("2 個月 1 天");
+  expect(records[2]!.textContent).toContain("2 個月 1 天");
+  expect(
+    screen.getByRole("list", { name: "已發生的事件" }).textContent,
+  ).not.toMatch(/階段|Turn/);
   expect(records[1]!.textContent).toContain("凌晨的交接之後");
   expect(screen.queryByText("記得與安排的細節。")).toBeNull();
   expect(screen.queryByText("人物反應的細節。")).toBeNull();

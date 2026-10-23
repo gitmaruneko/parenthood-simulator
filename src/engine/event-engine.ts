@@ -696,6 +696,10 @@ export const transitionGame = (
   return { ...transition, trace: [{ ...first!, beforeState: state, rngStateBefore: state.rngState }, ...rest] };
 };
 
+const formatChildAge = (months: number): string => months < 12
+  ? `${months} 個月`
+  : `${Math.floor(months / 12)} 歲${months % 12 ? ` ${months % 12} 個月` : ""}`;
+
 // Read-only projection: lifecycle and eligibility stay behind the engine boundary.
 export const getPlayerView = (state: GameState, content: ContentPack) => {
   const stage = content.ageStages.find(
@@ -726,7 +730,7 @@ export const getPlayerView = (state: GameState, content: ContentPack) => {
           ? { type: "START_TURN" }
           : { type: "ADVANCE" };
   const months = stage.childAgeMonths;
-  const turnLabels: Record<string, string> = {};
+  const storyTimeLabels: Record<string, string> = {};
   for (const ageStage of content.ageStages) {
     const turns = [
       ...new Set(
@@ -736,7 +740,7 @@ export const getPlayerView = (state: GameState, content: ContentPack) => {
       ),
     ];
     turns.forEach((id, index) => {
-      turnLabels[id] = `Turn ${index + 1}`;
+      storyTimeLabels[id] = `${formatChildAge(ageStage.childAgeMonths)} ${index + 1} 天`;
     });
   }
   return {
@@ -751,12 +755,9 @@ export const getPlayerView = (state: GameState, content: ContentPack) => {
           ? "開始下一個 Turn"
           : "走進下一段生活",
     stageLabel: `AgeStage ${stage.order + 1} / ${content.ageStages.length}`,
-    ageLabel:
-      months < 12
-        ? `${months} 個月`
-        : `${Math.floor(months / 12)} 歲${months % 12 ? ` ${months % 12} 個月` : ""}`,
+    ageLabel: formatChildAge(months),
     turnLabel: `Turn ${state.ageStageProgress?.turnCount ?? 1}`,
-    turnLabels,
+    storyTimeLabels,
     turnEnded:
       !!state.turn && !["active", "awaitingInput"].includes(state.turn.status),
     stages: content.ageStages.map((item) => ({
