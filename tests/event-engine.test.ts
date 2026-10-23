@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { gameStateSchema } from "../src/domain/schemas.js";
+import { eventNodeSchema, gameStateSchema, reactionEntrySchema } from "../src/domain/schemas.js";
 
 import {
   initializePrngState,
@@ -8,6 +8,7 @@ import {
   type EngineTransition,
 } from "../src/engine/index.js";
 import { AGE_STAGE_MONTHS, type ContentPack, type EventNode, type GameState } from "../src/domain/index.js";
+import { createPlanningStory } from "../src/content/planning-story.js";
 
 const makeChoiceEvent = (id: string, weight = 1): EventNode => ({
   id,
@@ -139,6 +140,239 @@ const makeState = (seed = 123456789): GameState => ({
 
 const replay = (state: GameState, content: ContentPack): EngineTransition =>
   transitionGame(state, content, { type: "ADVANCE" });
+
+describe("invisible planning work", () => {
+  it.each(["pickup", "meals", "school-notices", "household"])("lets repeated %s responsibility unlock fatigue and support", (task) => {
+    const content = makeContent(createPlanningStory("age-stage-1"), ["age-stage-1-planning"]);
+    let state = makeState();
+    for (let turn = 1; turn <= 2; turn += 1) {
+      const waiting = replay(state, content);
+      expect(waiting.pendingEvent?.choices.map((choice) => choice.id)).toContain(task);
+      state = transitionGame(waiting.state, content, { type: "CHOOSE", choiceId: task }).state;
+      if (turn === 1) {
+        state = transitionGame(state, content, { type: "END_TURN" }).state;
+        state = transitionGame(state, content, { type: "START_TURN" }).state;
+      }
+    }
+    const result = replay(state, content);
+    expect(result.state.completedEventIds).toContain("age-stage-1-support");
+    expect(result.state.relationshipMemories.filter((memory) => memory.id === `age-stage-1-${task}`)).toHaveLength(2);
+  });
+
+  it("retains the stage budget when restoring support history without lifecycle metadata", () => {
+    const support = { ...makeAutoEvent("support"), kind: "support" as const };
+    const content = makeContent([support]);
+    const first = transitionGame(makeState(), content, { type: "ADVANCE" }, { maxAutoAdvanceNodes: 1 });
+    const { ageStageProgress, ...legacy } = first.state;
+    legacy.history.push({ id: "story-personal-note", ageStageId: "age-stage-1", turnId: "turn-1",
+      kind: "support", text: "An extra narrative note is not a resolved node." });
+    const result = replay(legacy, content);
+    expect(result.state.ageStageProgress?.nodeCount).toBe(2);
+  });
+
+  it("keeps large finite burden and tendency changes serializable", () => {
+    const event = eventNodeSchema.parse({ ...makeChoiceEvent("heavy-work"),
+      planningLoadDelta: Number.MAX_VALUE, tendencyDeltas: { responsibility: Number.MAX_VALUE },
+      resourceDeltas: { energy: Number.MAX_VALUE }, choices: [
+        { ...makeChoiceEvent("heavy-work").choices[0], planningLoadDelta: Number.MAX_VALUE,
+          tendencyDeltas: { responsibility: Number.MAX_VALUE }, resourceDeltas: { energy: Number.MAX_VALUE } },
+        makeChoiceEvent("heavy-work").choices[1],
+      ] });
+    const content = makeContent([event]);
+    const initial = makeState();
+    const result = transitionGame(replay(initial, content).state, content, { type: "CHOOSE", choiceId: "rest" });
+    expect(gameStateSchema.safeParse(result.state).success).toBe(true);
+    expect(result.state.planningLoad).toBe(Number.MAX_VALUE);
+    expect(result.state.tendencies.responsibility).toBe(Number.MAX_VALUE);
+    expect(result.results[0]!.resourceDeltas.energy).toBe(Number.MAX_VALUE);
+    expect(JSON.parse(JSON.stringify(result.state))).toEqual(result.state);
+  });
+
+  it.each(["rest", "delegate"])("plays repeated responsibilities, support, and %s through a later repair at zero resources", (recovery) => {
+    const events = createPlanningStory("age-stage-1");
+    const content = makeContent(events, ["age-stage-1-planning"]);
+    const initial = makeState();
+    initial.resources = { finances: 0, energy: 0, support: 0, timeFlexibility: 0, connection: 0 };
+    const play = (start: GameState) => {
+      const transitions: EngineTransition[] = [];
+      let state = start;
+      const act = (input: Parameters<typeof transitionGame>[2]) => {
+        const result = transitionGame(state, content, input);
+        state = result.state;
+        transitions.push(result);
+        return result;
+      };
+      act({ type: "ADVANCE" });
+      act({ type: "CHOOSE", choiceId: "pickup" });
+      expect(state.planningLoad).toBe(2);
+      expect(act({ type: "ADVANCE" }).pendingEvent?.id).toBe("age-stage-1-planning");
+      act({ type: "CHOOSE", choiceId: "school-notices" });
+      expect(state.planningLoad).toBe(4);
+      const supported = act({ type: "ADVANCE" });
+      expect(supported.stopReason).toBe("TURN_NODE_LIMIT");
+      expect(state.planningLoad).toBe(3);
+      act({ type: "START_TURN" });
+      expect(act({ type: "ADVANCE" }).pendingEvent?.id).toBe("age-stage-1-coordinate");
+      act({ type: "CHOOSE", choiceId: recovery });
+      expect(state.planningLoad).toBe(1);
+      act({ type: "ADVANCE" });
+      expect(state.planningLoad).toBe(0);
+      expect(state.history.some((entry) => entry.kind === "support")).toBe(true);
+      expect(state.history.some((entry) => entry.kind === "repair")).toBe(true);
+      expect(state.relationshipMemories.map((memory) => memory.category)).toEqual(["care", "care", "conflict", "support", "support", "repair"]);
+      expect(state.flags).not.toContain("carrying-alone");
+      expect(state.flags).not.toContain("strained");
+      expect(state.flags).toContain("shared-plan");
+      expect(gameStateSchema.parse(JSON.parse(JSON.stringify(state)))).toEqual(state);
+      act({ type: "NEXT_AGE_STAGE" });
+      expect(state.currentAgeStageId).toBe("age-stage-2");
+      for (let stage = 2; stage <= 12; stage += 1) {
+        act({ type: "ADVANCE" });
+        const next = act({ type: "NEXT_AGE_STAGE" });
+        if (stage === 12) expect(next.stopReason).toBe("GAME_COMPLETED");
+      }
+      return transitions;
+    };
+    expect(play(initial)).toEqual(play(gameStateSchema.parse(JSON.parse(JSON.stringify(initial)))));
+    expect(initial.planningLoad).toBe(0);
+    expect(initial.history).toEqual([]);
+  });
+
+  it("lets an independently selected partner response transform burden and remember shared ownership", () => {
+    const { state, event, content } = reactionScenario();
+    state.planningLoad = 4;
+    state.flags = ["strained"];
+    event.choices[0]!.planningLoadDelta = 1;
+    content.reactionPools[0]!.entries = [reactionEntrySchema.parse({
+      id: "take-over", kind: "support", text: "I can handle the whole pickup routine.", weight: 1,
+      actorRoles: ["partner"], requirements: { kind: "planningLoadAtLeast", value: 5 },
+      planningLoadDelta: -3, resourceDeltas: { energy: 3 }, tendencyDeltas: { sharedCare: 1 },
+      clearFlags: ["strained"], setFlags: ["shared-pickup"],
+      relationshipMemories: [{ id: "partner-pickup", category: "support", text: "The partner remembered, arranged, and followed up." }],
+      storyEntries: [{ kind: "support", text: "The pickup plan has another owner now." }],
+    })];
+    content.actors[0] = { ...content.actors[0]!, id: "partner-1", role: "partner" };
+    state.family.persistentActorIds = ["partner-1"];
+    event.actorIds = ["partner-1"];
+    const initial = structuredClone(state);
+    const result = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" });
+    expect(result.state.planningLoad).toBe(2);
+    expect(result.state.flags).toEqual(["shared-pickup"]);
+    expect(result.state.relationshipMemories).toContainEqual(expect.objectContaining({
+      id: "partner-pickup", actorId: "partner-1", createdAtTurn: 1,
+    }));
+    expect(result.state.tendencies.sharedCare).toBe(1);
+    expect(result.state.resources.energy).toBe(63);
+    expect(result.results[0]!.resourceDeltas).toEqual({ energy: 13 });
+    expect(state).toEqual(initial);
+    expect(transitionGame(gameStateSchema.parse(JSON.parse(JSON.stringify(state))), content,
+      { type: "CHOOSE", choiceId: "rest" })).toEqual(result);
+  });
+
+  it("lets rest, delegation, and repair reduce burden without erasing the relationship story", () => {
+    const rest = eventNodeSchema.parse({ ...makeChoiceEvent("respite"), choices: [
+      { ...makeChoiceEvent("respite").choices[0], planningLoadDelta: -3, tendencyDeltas: { selfCare: 1 },
+        storyEntries: [{ kind: "support", text: "You paused the optional tasks and rested." }] },
+      makeChoiceEvent("respite").choices[1],
+    ] });
+    const coordinate = eventNodeSchema.parse({ ...makeChoiceEvent("coordinate"),
+      eligibility: { kind: "planningLoadAtLeast", value: 1 }, choices: [
+        { ...makeChoiceEvent("coordinate").choices[0], planningLoadDelta: -4,
+          tendencyDeltas: { sharedCare: 1, responsibility: -1 }, setFlags: ["workflow-delegated"],
+          clearFlags: ["carrying-alone"],
+          relationshipMemories: [{ id: "whole-workflow", category: "support", text: "A helper owns the reminders and follow-through too." }],
+          immediateFollowUpEventIds: ["repair"] },
+        makeChoiceEvent("coordinate").choices[1],
+      ] });
+    const repair = eventNodeSchema.parse({ ...makeAutoEvent("repair"), kind: "repair",
+      eligibility: { kind: "all", conditions: [
+        { kind: "flag", flag: "workflow-delegated" },
+        { kind: "relationshipMemory", category: "conflict", withinTurns: 3 },
+        { kind: "tendencyAtLeast", tendency: "sharedCare", value: 1 },
+      ] }, planningLoadDelta: -4, resourceDeltas: { connection: 5 },
+      clearFlags: ["strained"], setFlags: ["repair-started"],
+      relationshipMemories: [{ id: "talked-again", category: "repair", text: "We acknowledged the rushed handoff and agreed to check in." }] });
+    const content = makeContent([rest, coordinate, repair], [rest.id]);
+    const initial = makeState();
+    initial.planningLoad = 8;
+    initial.flags = ["carrying-alone", "strained"];
+    initial.relationshipMemories = [{ id: "handoff", category: "conflict", text: "A rushed handoff.",
+      createdAtAgeStageId: initial.currentAgeStageId, createdAtTurn: 1 }];
+    let state = transitionGame(replay(initial, content).state, content, { type: "CHOOSE", choiceId: "rest" }).state;
+    expect(state.planningLoad).toBe(5);
+    content.ageStages[0]!.entryEventIds = [coordinate.id];
+    state = transitionGame(replay(state, content).state, content, { type: "CHOOSE", choiceId: "rest" }).state;
+    expect(state.planningLoad).toBe(1);
+    state = replay(state, content).state;
+    expect(state.planningLoad).toBe(0);
+    expect(state.flags).toEqual(["workflow-delegated", "repair-started"]);
+    expect(state.tendencies).toMatchObject({ selfCare: 1, sharedCare: 1, responsibility: -1 });
+    expect(state.relationshipMemories.map((memory) => memory.category)).toEqual(["conflict", "support", "repair"]);
+    expect(state.history).toContainEqual(expect.objectContaining({ kind: "repair", text: repair.text }));
+    expect(state.resources.connection).toBe(55);
+    expect(gameStateSchema.parse(state)).toEqual(state);
+  });
+
+  it("turns accumulated work into fatigue and a state-triggered support scene", () => {
+    const work = eventNodeSchema.parse({ ...makeChoiceEvent("work"), choices: [
+      { ...makeChoiceEvent("work").choices[0], planningLoadDelta: 4, tendencyDeltas: { responsibility: 1 },
+        relationshipMemories: [{ id: "school-notice", category: "care", text: "You tracked the school notice." }],
+        immediateFollowUpEventIds: ["fatigue"] }, makeChoiceEvent("work").choices[1],
+    ] });
+    const fatigue = eventNodeSchema.parse({ ...makeAutoEvent("fatigue"),
+      eligibility: { kind: "all", conditions: [
+        { kind: "planningLoadAtLeast", value: 4 },
+        { kind: "tendencyAtLeast", tendency: "responsibility", value: 1 },
+        { kind: "relationshipMemory", category: "care", memoryId: "school-notice", withinTurns: 2 },
+      ] }, resourceDeltas: { energy: -15 }, setFlags: ["needs-support"],
+      relationshipMemories: [{ id: "strained-handoff", category: "conflict", text: "The handoff felt rushed." }],
+      storyEntries: [{ kind: "planning", text: "Remembering every detail left you tired at the handoff." }],
+      immediateFollowUpEventIds: ["support-scene"] });
+    const support = eventNodeSchema.parse({ ...makeAutoEvent("support-scene"), kind: "support",
+      eligibility: { kind: "flag", flag: "needs-support" }, planningLoadDelta: -2,
+      resourceDeltas: { energy: 5 }, clearFlags: ["needs-support"], setFlags: ["accepted-support"],
+      relationshipMemories: [{ id: "shared-list", category: "support", text: "Someone took over tracking the list." }] });
+    const content = makeContent([work, fatigue, support], [work.id]);
+    const waiting = replay(makeState(), content);
+    const chosen = transitionGame(waiting.state, content, { type: "CHOOSE", choiceId: "rest" });
+    const result = replay(chosen.state, content);
+    expect(result.results.slice(0, 2).map((entry) => entry.eventId)).toEqual(["fatigue", "support-scene"]);
+    expect(result.state.planningLoad).toBe(2);
+    expect(result.state.resources.energy).toBe(50);
+    expect(result.state.flags).toEqual(["accepted-support"]);
+    expect(result.state.history).toContainEqual(expect.objectContaining({ kind: "support", text: support.text }));
+    expect(result.state.relationshipMemories.map((memory) => memory.category)).toEqual(["care", "conflict", "support"]);
+    const declined = transitionGame(waiting.state, content, { type: "CHOOSE", choiceId: "continue" });
+    expect(replay(declined.state, content).state.completedEventIds).not.toContain("fatigue");
+  });
+
+  it("accumulates repeated planning choices as hidden burden and concrete memories", () => {
+    const event = eventNodeSchema.parse({ ...makeChoiceEvent("planning"), repeatable: true,
+      choices: [{ ...makeChoiceEvent("planning").choices[0], planningLoadDelta: 2,
+        tendencyDeltas: { responsibility: 1 },
+        relationshipMemories: [{ id: "remembered-pickup", category: "care", text: "You remembered and arranged pickup." }],
+        storyEntries: [{ kind: "planning", text: "You checked the notice, coordinated pickup, and followed through." }] },
+      makeChoiceEvent("planning").choices[1]] });
+    const content = makeContent([event]);
+    const initial = makeState();
+    const waiting = replay(initial, content);
+    expect(waiting.state.planningLoad).toBe(0);
+    let state = transitionGame(waiting.state, content, { type: "CHOOSE", choiceId: "rest" }).state;
+    state = transitionGame(state, content, { type: "END_TURN" }).state;
+    state = transitionGame(state, content, { type: "START_TURN" }).state;
+    state = transitionGame(replay(state, content).state, content, { type: "CHOOSE", choiceId: "rest" }).state;
+    expect(state.planningLoad).toBe(4);
+    expect(state.resources).not.toHaveProperty("planningLoad");
+    expect(state.tendencies.responsibility).toBe(2);
+    expect(state.relationshipMemories).toEqual([
+      expect.objectContaining({ id: "remembered-pickup", createdAtTurn: 1 }),
+      expect.objectContaining({ id: "remembered-pickup", createdAtTurn: 2 }),
+    ]);
+    expect(state.history.filter((entry) => entry.kind === "planning")).toHaveLength(2);
+    expect(initial.planningLoad).toBe(0);
+    expect(gameStateSchema.parse(state)).toEqual(state);
+  });
+});
 
 const reactionScenario = (seed = 1) => {
   const event = makeChoiceEvent("care");

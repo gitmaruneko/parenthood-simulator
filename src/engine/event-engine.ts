@@ -5,11 +5,13 @@ import type {
   ResourceKey,
   ObservedReaction,
   ScheduledFollowUp,
+  NarrativeEffects,
 } from "../domain/schemas.js";
 import { conditionMatches } from "./conditions.js";
 import { nextPrng } from "./prng.js";
 import { resolveReactions } from "./reactions.js";
 import { ensureStageProgress, finishStage, nextStage, startTurn } from "./lifecycle.js";
+import { applyNarrativeEffects, sumResourceDeltas } from "./narrative-effects.js";
 
 export type EngineMode = "PLAYER_INPUT_REQUIRED" | "AUTO_ADVANCE";
 export type EngineStopReason =
@@ -180,27 +182,6 @@ const getEntryEvents = (state: GameState, content: ContentPack): EventNode[] => 
   );
 };
 
-const RESOURCE_KEYS = [
-  "finances",
-  "energy",
-  "support",
-  "timeFlexibility",
-  "connection",
-] as const satisfies readonly ResourceKey[];
-
-const clampResource = (value: number): number => Math.min(100, Math.max(0, value));
-
-const applyResourceDeltas = (
-  resources: GameState["resources"],
-  deltas: Readonly<Partial<Record<ResourceKey, number>>>,
-): GameState["resources"] => {
-  const nextResources = { ...resources };
-  for (const key of RESOURCE_KEYS) {
-    nextResources[key] = clampResource(resources[key] + (deltas[key] ?? 0));
-  }
-  return nextResources;
-};
-
 const appendUnique = (values: readonly string[], additions: readonly string[]): string[] => [
   ...values,
   ...additions.filter((addition) => !values.includes(addition)),
@@ -320,10 +301,6 @@ const completeEventNode = (
     scheduledFollowUps: enqueueFollowUps(state, [event, ...(choice ? [choice] : [])]),
     turnNumber: state.turnNumber ?? 1,
     eventLastResolvedTurn: { ...state.eventLastResolvedTurn, [event.id]: state.turnNumber ?? 1 },
-    resources: choice
-      ? applyResourceDeltas(state.resources, choice.resourceDeltas)
-      : state.resources,
-    flags: choice ? appendUnique(state.flags, choice.setFlags) : state.flags,
     completedEventIds: appendUnique(state.completedEventIds, [event.id]),
     choiceHistory: choice
       ? [
@@ -341,9 +318,10 @@ const completeEventNode = (
       ...state.history,
       {
         id: `story-${state.currentTurnId}-${nodeIndex + 1}`,
+        resolvedEventId: event.id,
         ageStageId: state.currentAgeStageId,
         turnId: state.currentTurnId,
-        kind: "event",
+        kind: event.kind === "support" || event.kind === "repair" ? event.kind : "event",
         text: event.text,
       },
     ],
@@ -362,6 +340,9 @@ const completeEventNode = (
       status: "completed",
     },
   };
+  nextState = applyNarrativeEffects(nextState, event, "node-effect");
+  if (choice) nextState = applyNarrativeEffects(nextState, choice, "choice-effect");
+  const resourceSources: NarrativeEffects[] = [event, ...(choice ? [choice] : [])];
   let reactions: ObservedReaction[] | undefined;
   if (event.reactionPoolIds.length && resultKind !== "SAFE_FALLBACK") {
     const resolved = resolveReactions(nextState, event, content);
@@ -370,13 +351,16 @@ const completeEventNode = (
       text: entry?.text ?? "No one responds.",
     }));
     const entries = resolved.reactions.flatMap(({ entry }) => entry ? [entry] : []);
+    resourceSources.push(...entries);
+    resolved.reactions.forEach(({ entry, actorId }, index) => {
+      if (!entry) return;
+      nextState = applyNarrativeEffects(nextState, { ...entry,
+        relationshipMemories: (entry.relationshipMemories ?? []).map((memory) => ({
+          ...memory, ...(actorId ? { actorId } : {}),
+        })),
+      }, `reaction-effect-${index}`);
+    });
     nextState = { ...nextState, rngState: resolved.rngState,
-      flags: appendUnique(nextState.flags, entries.flatMap((entry) => entry.setFlags ?? [])),
-      relationshipMemories: [...nextState.relationshipMemories,
-        ...resolved.reactions.flatMap(({ entry, actorId }) => (entry?.relationshipMemories ?? []).map((memory) => ({
-          ...memory, ...(actorId ? { actorId } : {}), createdAtAgeStageId: state.currentAgeStageId,
-          createdAtTurn: state.turnNumber ?? 1,
-        })))],
       scheduledFollowUps: enqueueFollowUps({ ...state, scheduledFollowUps: nextState.scheduledFollowUps },
         entries.map((entry) => ({ immediateFollowUpEventIds: entry.followUpEventIds,
           scheduledFollowUps: entry.scheduledFollowUps ?? [] })), "reaction-scheduled"),
@@ -400,7 +384,7 @@ const completeEventNode = (
     kind: resultKind,
     eventId: event.id,
     choiceId: choice?.id ?? null,
-    resourceDeltas: choice ? { ...choice.resourceDeltas } : {},
+    resourceDeltas: sumResourceDeltas(resourceSources),
     ...(reactions ? { reactions } : {}),
   };
 

@@ -7,7 +7,8 @@ export const ensureStageProgress = (state: GameState): GameState => {
     ageStageProgress: {
       ageStageId: state.currentAgeStageId,
       status: "active",
-      nodeCount: state.history.filter((entry) => entry.ageStageId === state.currentAgeStageId && entry.kind === "event").length,
+      nodeCount: state.history.filter((entry) => entry.ageStageId === state.currentAgeStageId &&
+        (entry.kind === "event" || entry.resolvedEventId !== undefined)).length,
       turnCount: 1,
     },
   };

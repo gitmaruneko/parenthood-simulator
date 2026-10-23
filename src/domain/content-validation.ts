@@ -7,6 +7,7 @@ import {
   type EventNode,
   type ReactionPool,
   type ScheduledFollowUp,
+  type NarrativeEffects,
 } from "./schemas.js";
 
 export const contentValidationIssueCodeSchema = z.enum([
@@ -84,6 +85,15 @@ const checkReference = (
   }
 };
 
+const validateMemoryActors = (
+  effects: NarrativeEffects, path: string, actorIds: ReadonlyMap<string, number>, issues: ContentValidationIssue[],
+): void => {
+  effects.relationshipMemories?.forEach((memory, index) => {
+    if (memory.actorId) checkReference(memory.actorId, actorIds,
+      `${path}.relationshipMemories[${index}].actorId`, "memory actor", issues);
+  });
+};
+
 const visitCondition = (
   condition: Condition,
   path: string,
@@ -113,6 +123,10 @@ const visitCondition = (
     case "flag":
     case "resourceAtLeast":
     case "resourceAtMost":
+    case "planningLoadAtLeast":
+    case "planningLoadAtMost":
+    case "tendencyAtLeast":
+    case "tendencyAtMost":
     case "location":
     case "contextTag":
     case "relationshipMemory":
@@ -290,6 +304,7 @@ const validateCrossReferences = (content: ContentPack): ContentValidationIssue[]
   );
 
   content.events.forEach((event, eventIndex) => {
+    validateMemoryActors(event, `events[${eventIndex}]`, actorIds, issues);
     checkReference(event.ageStageId, ageStageIds, `events[${eventIndex}].ageStageId`, "age-stage reference", issues);
     event.actorIds.forEach((actorId, actorIndex) =>
       checkReference(actorId, actorIds, `events[${eventIndex}].actorIds[${actorIndex}]`, "actor reference", issues),
@@ -338,6 +353,7 @@ const validateCrossReferences = (content: ContentPack): ContentValidationIssue[]
     }
 
     event.choices.forEach((choice, choiceIndex) => {
+      validateMemoryActors(choice, `events[${eventIndex}].choices[${choiceIndex}]`, actorIds, issues);
       choice.knowledgeCardIds.forEach((cardId, cardIdIndex) =>
         checkReference(
           cardId,

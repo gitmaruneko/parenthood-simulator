@@ -62,3 +62,21 @@ condition references, and reaction schedule event/stage/condition references.
 Reaction schedules contribute graph edges for reachability and guarded-cycle
 validation. Their target chronology is checked against every event using the
 pool, so a shared pool cannot silently schedule into a past stage.
+
+## Planning and relationship effects (issue #8)
+
+`narrativeEffectsSchema` defines optional burden, tendency, resource, flag,
+concrete memory, and story effects shared by nodes, choices, and reactions.
+Choice resource deltas and flag additions keep their existing empty defaults;
+new fields are optional, preserving existing content and state parsing.
+Memory actor references on nodes and choices are checked against the pack's
+actor catalogue. Reaction memory actors are supplied by the resolver.
+
+Conditions include hidden planning-load thresholds, named tendency thresholds,
+and optional concrete `memoryId` matching within the existing category/recency
+condition. Numeric changes must be finite; planning thresholds are nonnegative.
+`planningLoad` remains separate from `resourceKeySchema` and resource state.
+No relationship score is introduced. See [Event engine](EVENT_ENGINE.md#invisible-planning-support-and-repair-issue-8)
+for effect order, recovery, narrative history, and reference-story integration.
+Base node history optionally records `resolvedEventId` for lifecycle recovery;
+additional authored story effects do not count as resolved nodes.

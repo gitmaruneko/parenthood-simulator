@@ -45,11 +45,13 @@ export type Condition =
   | { kind: "eventNotCompleted"; eventId: string }
   | { kind: "resourceAtLeast"; resource: z.infer<typeof resourceKeySchema>; value: number }
   | { kind: "resourceAtMost"; resource: z.infer<typeof resourceKeySchema>; value: number }
+  | { kind: "planningLoadAtLeast" | "planningLoadAtMost"; value: number }
+  | { kind: "tendencyAtLeast" | "tendencyAtMost"; tendency: string; value: number }
   | { kind: "actorAvailable"; actorId: string }
   | { kind: "location"; locationId: string }
   | { kind: "contextTag"; tag: string }
   | { kind: "recentEvent"; eventId: string; withinTurns: number }
-  | { kind: "relationshipMemory"; category: "care" | "conflict" | "support" | "repair" | "connection"; withinTurns: number }
+  | { kind: "relationshipMemory"; category: "care" | "conflict" | "support" | "repair" | "connection"; withinTurns: number; memoryId?: string | undefined }
   | { kind: "all"; conditions: Condition[] }
   | { kind: "any"; conditions: Condition[] }
   | { kind: "not"; condition: Condition };
@@ -75,11 +77,15 @@ export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
       })
       .strict(),
     z.object({ kind: z.literal("actorAvailable"), actorId: identifierSchema }).strict(),
+    z.object({ kind: z.enum(["planningLoadAtLeast", "planningLoadAtMost"]), value: z.number().finite().min(0) }).strict(),
+    z.object({ kind: z.enum(["tendencyAtLeast", "tendencyAtMost"]), tendency: identifierSchema,
+      value: z.number().finite() }).strict(),
     z.object({ kind: z.literal("location"), locationId: identifierSchema }).strict(),
     z.object({ kind: z.literal("contextTag"), tag: identifierSchema }).strict(),
     z.object({ kind: z.literal("recentEvent"), eventId: identifierSchema, withinTurns: z.number().int().min(0) }).strict(),
     z.object({ kind: z.literal("relationshipMemory"),
       category: z.enum(["care", "conflict", "support", "repair", "connection"]),
+      memoryId: identifierSchema.optional(),
       withinTurns: z.number().int().min(0) }).strict(),
     z
       .object({ kind: z.literal("all"), conditions: z.array(conditionSchema).min(1) })
@@ -122,6 +128,21 @@ export const relationshipMemorySchema = z
   })
   .strict();
 
+export const narrativeEffectsSchema = z.object({
+  resourceDeltas: resourceDeltaSchema.optional(),
+  setFlags: z.array(identifierSchema).optional(),
+  clearFlags: z.array(identifierSchema).optional(),
+  planningLoadDelta: z.number().finite().optional(),
+  tendencyDeltas: z.record(identifierSchema, z.number().finite()).optional(),
+  relationshipMemories: z.array(relationshipMemorySchema.omit({
+    createdAtAgeStageId: true, createdAtTurn: true,
+  })).optional(),
+  storyEntries: z.array(z.object({
+    kind: z.enum(["planning", "support", "repair"]),
+    text: z.string().min(1),
+  }).strict()).optional(),
+}).strict();
+
 export const actorDefinitionSchema = z
   .object({
     id: identifierSchema,
@@ -139,6 +160,7 @@ export const reactionKindSchema = z.enum(["support", "understanding", "neutral",
 
 export const reactionEntrySchema = z
   .object({
+    ...narrativeEffectsSchema.shape,
     id: identifierSchema,
     kind: reactionKindSchema,
     text: z.string().min(1),
@@ -198,6 +220,7 @@ export const knowledgeCardSchema = z
 
 export const eventChoiceSchema = z
   .object({
+    ...narrativeEffectsSchema.shape,
     id: identifierSchema,
     text: z.string().min(1),
     anticipatedJudgment: z.string().min(1).optional(),
@@ -213,6 +236,7 @@ export const eventChoiceSchema = z
 
 export const eventNodeSchema = z
   .object({
+    ...narrativeEffectsSchema.shape,
     id: identifierSchema,
     ageStageId: identifierSchema,
     kind: eventNodeKindSchema,
@@ -360,6 +384,7 @@ export const choiceHistoryEntrySchema = z
 export const storyEntrySchema = z
   .object({
     id: identifierSchema,
+    resolvedEventId: identifierSchema.optional(),
     ageStageId: identifierSchema,
     turnId: identifierSchema,
     kind: z.enum(["event", "reaction", "support", "repair", "planning"]),
@@ -459,3 +484,4 @@ export type KnowledgeCard = z.infer<typeof knowledgeCardSchema>;
 export type ScheduledFollowUp = z.infer<typeof scheduledFollowUpSchema>;
 export type Turn = z.infer<typeof turnSchema>;
 export type ObservedReaction = z.infer<typeof observedReactionSchema>;
+export type NarrativeEffects = z.infer<typeof narrativeEffectsSchema>;
