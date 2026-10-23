@@ -52,4 +52,3 @@ export const conditionMatches = (
       return !conditionMatches(condition.condition, state, context);
   }
 };
-
