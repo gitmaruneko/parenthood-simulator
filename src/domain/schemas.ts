@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { familyLifeDirectionIdSchema } from "./family-life-direction.js";
 
 export const AGE_STAGE_MONTHS = [2, 6, 10, 15, 21, 27, 33, 39, 45, 52, 61, 71] as const;
 
@@ -449,6 +450,7 @@ export const reactionHistoryEntrySchema = observedReactionSchema.extend({
 
 export const gameStateSchema = z
   .object({
+    activeFamilyLifeDirectionId: familyLifeDirectionIdSchema.default("flexible"),
     schemaVersion: z.number().int().positive(),
     seed: z.number().int().min(0).max(0xffffffff),
     rngState: z.number().int().min(0).max(0xffffffff),

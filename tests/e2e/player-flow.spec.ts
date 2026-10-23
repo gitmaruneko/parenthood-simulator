@@ -34,6 +34,31 @@ async function start(page: Page, assessment = false) {
   ).toBeVisible();
 }
 
+test("persistent direction selection saves immediately, preserves pending story and supports keyboard", async ({ page, isMobile }) => {
+  await start(page);
+  await page.getByRole("button", { name: "開始這個家庭" }).click();
+  const group = page.getByRole("group", { name: "家庭生活方向" });
+  await expect(group.getByRole("radio")).toHaveCount(6);
+  for (const radio of await group.getByRole("radio").all()) await expect(radio).toBeVisible();
+  const rawBefore = await page.evaluate((key) => localStorage.getItem(key), key);
+  const selected = group.getByRole("radio", { name: /照顧者身心/ });
+  await selected.check();
+  await expect(selected).toBeChecked();
+  await expect(selected).toBeFocused();
+  await expect(page.getByText("已儲存", { exact: true }).first()).toBeVisible();
+  const rawAfter = await page.evaluate((key) => localStorage.getItem(key), key);
+  const before = JSON.parse(rawBefore!).state;
+  expect(JSON.parse(rawAfter!).state).toEqual({ ...before, activeFamilyLifeDirectionId: "caregiver-wellbeing" });
+  await selected.press("ArrowRight");
+  await expect(group.getByRole("radio", { name: /生活探索/ })).toBeChecked();
+  await page.screenshot({ path: `test-results/direction-${isMobile ? "mobile" : "desktop"}.png`, fullPage: true });
+  await page.reload();
+  await page.getByRole("button", { name: "繼續上次生活" }).click();
+  await expect(page.getByRole("radio", { name: /生活探索/ })).toBeChecked();
+  const restored = JSON.parse((await page.evaluate((key) => localStorage.getItem(key), key))!).state;
+  expect(restored).toEqual({ ...before, activeFamilyLifeDirectionId: "life-exploration" });
+});
+
 test("browse original previews, reroll, choose, read reactions, restore and preserve tabs", async ({
   page,
   isMobile,

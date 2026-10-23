@@ -1,4 +1,5 @@
 import type { ContentPack, GameState } from "../domain/schemas.js";
+import type { FamilyLifeDirectionId } from "../domain/family-life-direction.js";
 import { createMvpContent } from "../content/mvp.js";
 import {
   createFamilyRun,
@@ -84,6 +85,17 @@ export const createPlayerSession = (
   let confirmedRaw: string | null | undefined;
   let dialogRaw: string | null = null;
   let needsSave = false;
+  let directionQueue: Promise<void> = Promise.resolve();
+  const waitForDirection = () => new Promise<void>((resolve) => {
+    const ready = () => {
+      if (!snapshot.busy && (!needsSave || snapshot.page !== "game")) {
+        listeners.delete(ready);
+        resolve();
+      }
+    };
+    listeners.add(ready);
+    ready();
+  });
   const inspect = () => {
     const result = inspectPlayerSave(store, content);
     publish({ home: result.view });
@@ -405,6 +417,16 @@ export const createPlayerSession = (
           return;
         execute({ type: "CHOOSE", choiceId });
       }),
+    setDirection: (directionId: FamilyLifeDirectionId) => {
+      directionQueue = directionQueue.then(async () => {
+        await waitForDirection();
+        await operate("儲存中…", () => {
+          if (!state || snapshot.page !== "game" || getPlayerView(state, content).completed) return;
+          execute({ type: "SET_FAMILY_LIFE_DIRECTION", directionId });
+        });
+      });
+      return directionQueue;
+    },
     retrySave: () =>
       !snapshot.canRetrySave
         ? Promise.resolve()

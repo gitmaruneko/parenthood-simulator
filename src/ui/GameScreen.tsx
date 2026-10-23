@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { FamilySummary } from "../engine/index.js";
 import type { GamePresentation } from "./player-session.js";
 import { Illustration } from "./Illustration.js";
+import type { FamilyLifeDirectionId } from "../domain/family-life-direction.js";
 
 export function FamilyDetails({
   family,
@@ -191,6 +192,7 @@ export interface GameScreenProps {
   blocked: boolean;
   onChoose: (choice: string) => void;
   onAdvance: () => void;
+  onDirection?: (id: FamilyLifeDirectionId) => void;
   initialTab?: "life" | "records";
 }
 export function GameScreen({
@@ -199,6 +201,7 @@ export function GameScreen({
   blocked,
   onChoose,
   onAdvance,
+  onDirection,
   initialTab = "life",
 }: GameScreenProps) {
   const [tab, setTab] = useState<string>(initialTab);
@@ -286,6 +289,27 @@ export function GameScreen({
               : "家庭日常"}{" "}
             · 這一段生活
           </p>
+        </section>
+        <section
+          className="direction-panel panel"
+          aria-labelledby="direction-title"
+        >
+          <fieldset disabled={blocked || game.completed} aria-describedby="direction-help">
+            <legend id="direction-title">家庭生活方向</legend>
+            <p id="direction-help" className="muted">隨時可更換，影響接下來尚未抽選的故事。</p>
+            <div className="direction-options">
+              {game.familyLifeDirections.map((direction) => (
+                <label key={direction.id} className="direction-option">
+                  <input type="radio" name="family-life-direction" value={direction.id}
+                    checked={game.activeFamilyLifeDirectionId === direction.id}
+                    onChange={() => onDirection?.(direction.id)} />
+                  <span><strong>{direction.name}</strong><small>{direction.description}</small>
+                    {game.activeFamilyLifeDirectionId === direction.id && <small className="direction-current">✓ 目前方向</small>}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
         </section>
         <section
           className="event-panel panel"

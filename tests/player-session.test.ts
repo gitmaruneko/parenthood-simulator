@@ -18,6 +18,47 @@ const memory = () => {
   };
 };
 
+it("saves every rapid direction switch in order and restores the pending story", async () => {
+  const storage = memory();
+  const session = createPlayerSession(createLocalSaveStore(storage), () => 42);
+  await session.check(); await session.newStory(); session.reveal(); await session.startFamily();
+  const before = session.getSnapshot().game!;
+  const writes: string[] = [];
+  const original = storage.setItem;
+  storage.setItem = (key, value) => { writes.push(JSON.parse(value).state.activeFamilyLifeDirectionId); original(key, value); };
+  await Promise.all([session.setDirection("parent-child-time"), session.setDirection("work-and-finances"),
+    session.setDirection("life-exploration")]);
+  expect(writes).toEqual(["parent-child-time", "work-and-finances", "life-exploration"]);
+  const after = session.getSnapshot().game!;
+  expect(after).toEqual({ ...before, activeFamilyLifeDirectionId: "life-exploration" });
+  const restored = createPlayerSession(createLocalSaveStore(storage));
+  await restored.check(); await restored.resume();
+  expect(restored.getSnapshot().game).toEqual(after);
+});
+
+it("keeps an unsaved direction visible, blocks progression, and retries without replaying", async () => {
+  const storage = memory();
+  let fail = false;
+  const store = createLocalSaveStore({ ...storage, setItem: (key, value) => {
+    if (fail) throw new DOMException("full", "QuotaExceededError");
+    storage.setItem(key, value);
+  } });
+  const session = createPlayerSession(store, () => 42);
+  await session.check(); await session.newStory(); session.reveal(); await session.startFamily();
+  const raw = storage.getItem(LOCAL_SAVE_KEY);
+  fail = true;
+  await session.setDirection("caregiver-wellbeing");
+  const unsaved = session.getSnapshot().game;
+  expect(unsaved!.activeFamilyLifeDirectionId).toBe("caregiver-wellbeing");
+  expect(session.getSnapshot().error).toContain("尚未儲存");
+  expect(storage.getItem(LOCAL_SAVE_KEY)).toBe(raw);
+  await session.choose("coordinate");
+  expect(session.getSnapshot().game).toEqual(unsaved);
+  fail = false; await session.retrySave();
+  expect(store.load()).toMatchObject({ status: "restored", state: { activeFamilyLifeDirectionId: "caregiver-wellbeing" } });
+  expect(session.getSnapshot().game).toEqual(unsaved);
+});
+
 it("keeps previews unsaved, saves the revealed family, and restores the exact pending choice", async () => {
   const storage = memory();
   const session = createPlayerSession(createLocalSaveStore(storage), () => 42);

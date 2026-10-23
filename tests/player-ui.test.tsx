@@ -8,6 +8,7 @@ import { HomePage } from "../src/ui/HomePage.js";
 import type { HomeSaveView } from "../src/persistence/index.js";
 import { eventNodeSchema } from "../src/domain/schemas.js";
 import { SaveNotice } from "../src/ui/SaveNotice.js";
+import { FAMILY_LIFE_DIRECTIONS } from "../src/domain/family-life-direction.js";
 
 beforeAll(() => {
   vi.stubGlobal(
@@ -20,7 +21,23 @@ beforeAll(() => {
 });
 
 afterEach(cleanup);
+it("renders all directions as one accessible group and retains focus when the selection updates", async () => {
+  const onDirection = vi.fn();
+  const props = { game, busy: false, blocked: false, onChoose: vi.fn(), onAdvance: vi.fn(), onDirection };
+  const view = render(<GameScreen {...props} />);
+  const group = screen.getByRole("group", { name: "家庭生活方向" });
+  expect(within(group).getAllByRole("radio")).toHaveLength(6);
+  const radio = within(group).getByRole("radio", { name: /照顧者身心/ });
+  await userEvent.click(radio);
+  expect(onDirection).toHaveBeenCalledWith("caregiver-wellbeing");
+  view.rerender(<GameScreen {...props} game={{ ...game, activeFamilyLifeDirectionId: "caregiver-wellbeing" }} />);
+  expect((radio as HTMLInputElement).checked).toBe(true);
+  expect(document.activeElement).toBe(radio);
+  expect(within(group).getAllByRole("radio").filter((item) => (item as HTMLInputElement).checked)).toHaveLength(1);
+});
 const game: GamePresentation = {
+  activeFamilyLifeDirectionId: "flexible",
+  familyLifeDirections: FAMILY_LIFE_DIRECTIONS,
   completed: false,
   pendingEvent: null,
   nextInput: { type: "ADVANCE" },
