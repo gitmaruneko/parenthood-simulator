@@ -50,6 +50,7 @@ export interface PlayerSnapshot {
     descriptions: readonly string[];
   } | null;
   readonly game: GamePresentation | null;
+  readonly gameTab: "life" | "records";
 }
 
 const freshSeed = () => crypto.getRandomValues(new Uint32Array(1))[0]!;
@@ -69,6 +70,7 @@ export const createPlayerSession = (
     dialog: null,
     reveal: null,
     game: null,
+    gameTab: "life",
   };
   const listeners = new Set<() => void>();
   const publish = (change: Partial<PlayerSnapshot>) => {
@@ -190,8 +192,17 @@ export const createPlayerSession = (
     }
   };
   const enterOpening = () =>
-    publish({ page: "assessment", dialog: null, reveal: null, game: null });
-  const installState = (loaded: GameState) => {
+    publish({
+      page: "assessment",
+      dialog: null,
+      reveal: null,
+      game: null,
+      gameTab: "life",
+    });
+  const installState = (
+    loaded: GameState,
+    gameTab: "life" | "records" = "life",
+  ) => {
     state = loaded;
     // Recreate only the seeded actor catalogue through the family-generation boundary.
     const generated = createFamilyRun({ seed: state.seed });
@@ -211,6 +222,7 @@ export const createPlayerSession = (
     publish({
       page: state.turn || state.ageStageProgress ? "game" : "reveal",
       game: presentGame(),
+      gameTab,
       reveal: {
         seed: state.seed,
         summary: describeFamily(state.family),
@@ -297,13 +309,13 @@ export const createPlayerSession = (
     recovery: () => {
       if (!snapshot.busy) publish({ dialog: "recovery" });
     },
-    resume: () =>
+    resume: (target: "life" | "records" = "life") =>
       operate("正在開啟故事…", () => {
         const loaded = inspect();
         if (loaded.status !== "restored" || loaded.migratedFrom !== null)
           return;
         expectedRaw = loaded.rawData;
-        installState(loaded.state);
+        installState(loaded.state, target);
       }),
     migrate: () =>
       operate("正在更新存檔…", () => {
@@ -373,7 +385,7 @@ export const createPlayerSession = (
             : store.replaceAfterConfirmation(state, confirmedRaw!);
         if (!savingResult(saved)) return;
         confirmedRaw = undefined;
-        publish({ page: "game", game: presentGame() });
+        publish({ page: "game", game: presentGame(), gameTab: "life" });
         execute({ type: "ADVANCE" });
       }),
     advance: () =>

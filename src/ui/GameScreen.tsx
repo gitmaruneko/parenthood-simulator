@@ -100,6 +100,37 @@ const storyNames = {
   repair: "重新連結",
 };
 
+function ConfirmedChoice({
+  game,
+  entry,
+}: {
+  game: GamePresentation;
+  entry: GamePresentation["history"][number];
+}) {
+  if (!entry.resolvedEventId) return null;
+  return (
+    <>
+      {game.choices
+        .filter(
+          (choice) =>
+            choice.eventId === entry.resolvedEventId &&
+            choice.turnId === entry.turnId,
+        )
+        .map((choice) => (
+          <div className="chosen" key={`${choice.eventId}/${choice.choiceId}`}>
+            <p>
+              你的選擇：
+              {game.choiceTexts[`${choice.eventId}/${choice.choiceId}`]}
+            </p>
+            {choice.anticipatedJudgment && (
+              <p>當時的預期評價：{choice.anticipatedJudgment}</p>
+            )}
+          </div>
+        ))}
+    </>
+  );
+}
+
 export function FamilyLog({ game }: { game: GamePresentation }) {
   return (
     <section aria-labelledby="log-title">
@@ -119,27 +150,7 @@ export function FamilyLog({ game }: { game: GamePresentation }) {
             <h3>{game.eventTitles[entry.resolvedEventId]}</h3>
           )}
           <p>{entry.text}</p>
-          {entry.resolvedEventId &&
-            game.choices
-              .filter(
-                (choice) =>
-                  choice.eventId === entry.resolvedEventId &&
-                  choice.turnId === entry.turnId,
-              )
-              .map((choice) => (
-                <div
-                  className="chosen"
-                  key={`${choice.eventId}/${choice.choiceId}`}
-                >
-                  <p>
-                    你的選擇：
-                    {game.choiceTexts[`${choice.eventId}/${choice.choiceId}`]}
-                  </p>
-                  {choice.anticipatedJudgment && (
-                    <p>當時的預期評價：{choice.anticipatedJudgment}</p>
-                  )}
-                </div>
-              ))}
+          <ConfirmedChoice game={game} entry={entry} />
         </article>
       ))}
     </section>
@@ -170,6 +181,7 @@ export interface GameScreenProps {
   blocked: boolean;
   onChoose: (choice: string) => void;
   onAdvance: () => void;
+  initialTab?: "life" | "records";
 }
 export function GameScreen({
   game,
@@ -177,8 +189,9 @@ export function GameScreen({
   blocked,
   onChoose,
   onAdvance,
+  initialTab = "life",
 }: GameScreenProps) {
-  const [tab, setTab] = useState("life");
+  const [tab, setTab] = useState<string>(initialTab);
   const [drawer, setDrawer] = useState(false);
   const [readThrough, setReadThrough] = useState(0);
   const title = useRef<HTMLHeadingElement>(null);
@@ -192,8 +205,12 @@ export function GameScreen({
     ? `story-${game.history.length}`
     : (event?.id ?? game.nextLabel);
   useEffect(() => {
-    title.current?.focus();
-  }, [focusKey]);
+    if (initialTab === "records") document.getElementById("log-title")?.focus();
+    else title.current?.focus();
+  }, [focusKey, initialTab]);
+  const lastReaction = game.reactions
+    .filter((reaction) => reaction.turnId === game.currentTurnId)
+    .at(-1);
   const recentThoughts = game.history
     .filter((entry) => ["planning", "support", "repair"].includes(entry.kind))
     .slice(-4);
@@ -265,6 +282,21 @@ export function GameScreen({
           aria-labelledby="event-title"
           aria-busy={busy}
         >
+          <p
+            className="sr-only"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {reading
+              ? `故事更新，這個 Turn 已有 ${turnStories.length} 段紀錄。`
+              : event
+                ? `新的事件：${event.title}。等待你的選擇。`
+                : game.nextLabel}
+            {lastReaction
+              ? `最近的實際觀察：${reactionNames[lastReaction.kind] ?? lastReaction.kind}。${lastReaction.text}`
+              : ""}
+          </p>
           <p className="eyebrow">
             {reading
               ? "故事正在發展"
@@ -288,28 +320,7 @@ export function GameScreen({
                   <h3>{game.eventTitles[entry.resolvedEventId]}</h3>
                 )}
                 <p>{entry.text}</p>
-                {entry.resolvedEventId &&
-                  game.choices
-                    .filter(
-                      (choice) =>
-                        choice.eventId === entry.resolvedEventId &&
-                        choice.turnId === entry.turnId,
-                    )
-                    .map((choice) => (
-                      <div key={choice.choiceId}>
-                        <p className="chosen">
-                          你的選擇：
-                          {
-                            game.choiceTexts[
-                              `${choice.eventId}/${choice.choiceId}`
-                            ]
-                          }
-                        </p>
-                        {choice.anticipatedJudgment && (
-                          <p>預期評價：{choice.anticipatedJudgment}</p>
-                        )}
-                      </div>
-                    ))}
+                <ConfirmedChoice game={game} entry={entry} />
               </article>
             ))}
           </div>

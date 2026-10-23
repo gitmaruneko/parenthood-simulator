@@ -6,6 +6,8 @@ import { GameScreen } from "../src/ui/GameScreen.js";
 import type { GamePresentation } from "../src/ui/player-session.js";
 import { HomePage } from "../src/ui/HomePage.js";
 import type { HomeSaveView } from "../src/persistence/index.js";
+import { eventNodeSchema } from "../src/domain/schemas.js";
+import { SaveNotice } from "../src/ui/SaveNotice.js";
 
 beforeAll(() => {
   vi.stubGlobal(
@@ -148,4 +150,126 @@ it("keeps vignette expansion local, blocks busy commands and removes overlay act
   expect(command).not.toHaveBeenCalled();
   rerender(<HomePage {...props} overlay />);
   expect(screen.queryByRole("region", { name: "遊戲操作" })).toBeNull();
+});
+
+it("presents only supplied player choices and distinguishes anticipation from observed reactions", async () => {
+  const choose = vi.fn();
+  const advance = vi.fn();
+  const pendingEvent = eventNodeSchema.parse({
+    id: "handoff",
+    ageStageId: "age-stage-1",
+    kind: "choice",
+    mode: "PLAYER_INPUT_REQUIRED",
+    title: "晚餐前的交接",
+    text: "有人能一起分擔嗎？",
+    weight: 1,
+    choices: [
+      {
+        id: "ask",
+        text: "一起確認可以接手的事",
+        anticipatedJudgment: "也許對方正忙",
+      },
+      { id: "pause", text: "先休息一下" },
+    ],
+  });
+  render(
+    <GameScreen
+      game={{
+        ...game,
+        pendingEvent,
+        history: [],
+        turnEnded: false,
+        cause: "上一次交接時，你提出一起確認時段。",
+        reactions: [
+          {
+            poolId: "family",
+            reactionId: "heard",
+            actorId: "child",
+            kind: "understanding",
+            text: "對方說可以接下一段。",
+            eventId: "previous",
+            ageStageId: "age-stage-1",
+            turnId: "turn-1",
+          },
+        ],
+      }}
+      busy={false}
+      blocked={false}
+      onChoose={choose}
+      onAdvance={advance}
+    />,
+  );
+  expect(screen.getByText("心裡預期：也許對方正忙")).toBeTruthy();
+  expect(screen.getByText(/實際觀察 · 孩子 · 理解與支持/)).toBeTruthy();
+  expect(screen.getByText(/前一段生活：上一次交接時/)).toBeTruthy();
+  expect(
+    within(screen.getByRole("tabpanel", { name: "生活" })).getByRole("status")
+      .textContent,
+  ).toContain("最近的實際觀察");
+  await userEvent.click(
+    screen.getByRole("button", { name: /一起確認可以接手的事/ }),
+  );
+  expect(choose).toHaveBeenCalledExactlyOnceWith("ask");
+  expect(advance).not.toHaveBeenCalled();
+});
+
+it("focuses a recoverable save error and offers only supported recovery commands", async () => {
+  const retry = vi.fn();
+  const home = vi.fn();
+  const { rerender } = render(
+    <SaveNotice
+      message="儲存空間不足，既有存檔仍保留。"
+      busy={false}
+      canRetry
+      onRetry={retry}
+      onHome={home}
+    />,
+  );
+  expect(document.activeElement).toBe(screen.getByRole("alert"));
+  await userEvent.click(screen.getByRole("button", { name: "重試儲存" }));
+  expect(retry).toHaveBeenCalledOnce();
+  rerender(
+    <SaveNotice
+      message="儲存空間不足，既有存檔仍保留。"
+      busy
+      canRetry
+      onRetry={retry}
+      onHome={home}
+    />,
+  );
+  await userEvent.click(screen.getByRole("button", { name: "重試儲存" }));
+  expect(retry).toHaveBeenCalledOnce();
+  rerender(
+    <SaveNotice
+      message="存檔已改變，請重新讀取。"
+      busy={false}
+      canRetry={false}
+      onRetry={retry}
+      onHome={home}
+    />,
+  );
+  expect(screen.queryByRole("button", { name: "重試儲存" })).toBeNull();
+  await userEvent.click(
+    screen.getByRole("button", { name: "返回首頁並重新讀取" }),
+  );
+  expect(home).toHaveBeenCalledOnce();
+});
+
+it("opens completed family records directly and focuses their title", () => {
+  render(
+    <GameScreen
+      game={{ ...game, completed: true, nextInput: null }}
+      initialTab="records"
+      busy={false}
+      blocked={false}
+      onChoose={vi.fn()}
+      onAdvance={vi.fn()}
+    />,
+  );
+  expect(
+    screen.getByRole("tab", { name: "紀錄" }).getAttribute("aria-selected"),
+  ).toBe("true");
+  expect(document.activeElement).toBe(
+    screen.getByRole("heading", { name: "家庭生活紀錄" }),
+  );
 });

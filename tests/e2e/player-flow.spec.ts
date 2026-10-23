@@ -40,6 +40,9 @@ test("browse original previews, reroll, choose, read reactions, restore and pres
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
+  await page.screenshot({
+    path: `test-results/home-${isMobile ? "mobile" : "desktop"}.png`,
+  });
   await expect(
     page.getByRole("heading", { name: "每個家庭， 都有正在發生的生活" }),
   ).toBeVisible();
@@ -111,8 +114,19 @@ test("completes all five assessment questions and cancels new-story confirmation
   await expect(
     page.getByRole("button", { name: "保留原本的故事" }),
   ).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(
+    page.getByRole("button", { name: "確認開始新故事" }),
+  ).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("button", { name: "保留原本的故事" }),
+  ).toBeFocused();
   await expect(page.getByRole("region", { name: "遊戲操作" })).toHaveCount(0);
   await page.keyboard.press("Escape");
+  await expect(
+    page.getByRole("button", { name: "開始新的故事", exact: true }),
+  ).toBeFocused();
   expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(
     saved,
   );
@@ -245,11 +259,12 @@ test("finishes twelve stages and reopens the existing family log without advanci
     page.getByRole("region", { name: "遊戲操作" }).getByRole("status"),
   ).toHaveText("這段生活已成為家庭紀錄");
   await page.getByRole("button", { name: "重看家庭紀錄" }).click();
-  if (isMobile)
-    await page.getByRole("tab", { name: "紀錄", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "家庭生活紀錄" }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "家庭生活紀錄" }),
+  ).toBeFocused();
   expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(
     saved,
   );

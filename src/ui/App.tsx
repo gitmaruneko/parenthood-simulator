@@ -4,6 +4,7 @@ import { createPlayerSession, type PlayerSession } from "./player-session.js";
 import { HomePage } from "./HomePage.js";
 import { FamilyDetails, GameScreen } from "./GameScreen.js";
 import { Illustration } from "./Illustration.js";
+import { SaveNotice } from "./SaveNotice.js";
 
 const questions = getAssessmentQuestions();
 function Assessment({ session }: { session: PlayerSession }) {
@@ -45,7 +46,6 @@ export function App({ session: provided }: { session?: PlayerSession }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const cancel = useRef<HTMLButtonElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
-  const error = useRef<HTMLDivElement>(null);
   useEffect(() => {
     void session.check();
     const recheck = () => {
@@ -67,14 +67,7 @@ export function App({ session: provided }: { session?: PlayerSession }) {
       document.querySelector<HTMLElement>("main h1, main h2")?.focus();
   }, [snapshot.page]);
   useEffect(() => {
-    if (snapshot.error) error.current?.focus();
-  }, [snapshot.error]);
-  useEffect(() => {
     if (snapshot.dialog) {
-      previousFocus.current =
-        document.activeElement instanceof HTMLElement
-          ? document.activeElement
-          : null;
       dialog.current?.showModal();
       cancel.current?.focus();
     } else if (dialog.current?.open) {
@@ -83,10 +76,15 @@ export function App({ session: provided }: { session?: PlayerSession }) {
         const target = previousFocus.current;
         if (target?.isConnected && !target.closest("[hidden]")) target.focus();
         else document.getElementById("game-actions")?.focus();
+        previousFocus.current = null;
       });
     }
   }, [snapshot.dialog]);
   const homePrimary = () => {
+    previousFocus.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     switch (snapshot.home.kind) {
       case "empty":
       case "completed":
@@ -115,8 +113,14 @@ export function App({ session: provided }: { session?: PlayerSession }) {
           status={snapshot.status}
           overlay={snapshot.dialog !== null}
           onPrimary={homePrimary}
-          onNew={() => void session.newStory()}
-          onRecords={() => void session.resume()}
+          onNew={() => {
+            previousFocus.current =
+              document.activeElement instanceof HTMLElement
+                ? document.activeElement
+                : null;
+            void session.newStory();
+          }}
+          onRecords={() => void session.resume("records")}
         />
       ) : (
         <>
@@ -184,6 +188,7 @@ export function App({ session: provided }: { session?: PlayerSession }) {
               game={snapshot.game}
               busy={snapshot.busy}
               blocked={snapshot.error !== null}
+              initialTab={snapshot.gameTab}
               onChoose={(id) => void session.choose(id)}
               onAdvance={() => void session.advance()}
             />
@@ -191,25 +196,39 @@ export function App({ session: provided }: { session?: PlayerSession }) {
         </>
       )}
       {snapshot.error && !snapshot.dialog && (
-        <div className="error-banner" role="alert" ref={error} tabIndex={-1}>
-          <p>{snapshot.error}</p>
-          {snapshot.page === "game" && snapshot.canRetrySave && (
-            <button
-              disabled={snapshot.busy}
-              onClick={() => void session.retrySave()}
-            >
-              重試儲存
-            </button>
-          )}
-          <button disabled={snapshot.busy} onClick={session.home}>
-            返回首頁並重新讀取
-          </button>
-        </div>
+        <SaveNotice
+          message={snapshot.error}
+          busy={snapshot.busy}
+          canRetry={snapshot.page === "game" && snapshot.canRetrySave}
+          onRetry={() => void session.retrySave()}
+          onHome={session.home}
+        />
       )}
       <dialog
         ref={dialog}
         aria-labelledby="dialog-title"
         aria-describedby="dialog-description"
+        onKeyDown={(event) => {
+          if (event.key !== "Tab") return;
+          const controls = [
+            ...event.currentTarget.querySelectorAll<HTMLButtonElement>(
+              "button:not(:disabled)",
+            ),
+          ];
+          const first = controls[0];
+          const last = controls.at(-1);
+          if (!first || !last) {
+            event.preventDefault();
+            return;
+          }
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }}
         onCancel={(event) => {
           event.preventDefault();
           session.closeDialog();
