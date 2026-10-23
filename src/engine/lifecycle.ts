@@ -22,6 +22,7 @@ export const startTurn = (state: GameState): GameState => {
   const id = `${state.currentAgeStageId}-turn-${turnCount}`;
   return {
     ...state,
+    turnNumber: (state.turnNumber ?? (state.turn ? 1 : 0)) + 1,
     ageStageProgress: { ...state.ageStageProgress, turnCount },
     currentTurnId: id,
     turn: { id, ageStageId: state.currentAgeStageId, status: "active", nodeCount: 0,

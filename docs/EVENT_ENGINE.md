@@ -16,7 +16,7 @@ Issue #3 establishes the pure event-transition boundary and deterministic PRNG u
 
 `transitionGame` accepts a complete `GameState`, a validated `ContentPack`, and one explicit input:
 
-- `ADVANCE` selects eligible AgeStage entry events through stable ID ordering and seeded weighted selection. It resolves `AUTO_ADVANCE` nodes until it reaches player input or a safety boundary.
+- `ADVANCE` processes immediate follow-ups, due scheduled events, then eligible AgeStage entry events. Entry selection uses stable ID ordering and seeded weighted selection. It resolves `AUTO_ADVANCE` nodes until it reaches player input or a safety boundary.
 - `CHOOSE` resolves one choice for the current `PLAYER_INPUT_REQUIRED` node.
 
 The function never mutates its input. It returns:
@@ -43,12 +43,57 @@ The seed is not read during transitions. Callers initialise `rngState` once, aft
 
 This ticket leaves later ticket ownership intact:
 
-- Issue #6 owns immediate follow-ups, scheduled events, cooldowns, cancellation, and cross-Turn chains.
 - Issue #7 owns reaction-pool resolution and will extend event results when reactions exist.
 - Issue #8 owns planning-load, relationship-memory, support, and repair effects.
 - Issue #9 owns serialization, migration, and storage adapters.
 
 Later systems attach their results to the same public transition trace when their owning tickets are implemented; Issue #3 does not reserve or populate speculative reaction or scheduling fields.
+
+## Immediate and scheduled chains (issue #6)
+
+Completing an EventNode queues its `immediateFollowUpEventIds` and
+`scheduledFollowUps`, plus those of the chosen option. Only the chosen option
+contributes follow-ups. `CHOOSE` still resolves one node; the next `ADVANCE`
+continues the chain. A follow-up can be a reaction, environment event, or another
+choice with narrative consequences. Reaction-pool selection and additional
+family effects belong to issues #7 and #8.
+
+All follow-ups use the serializable `GameState.scheduledFollowUps` queue:
+
+- Immediate items have `immediateTurnId` and run only within that Turn. They
+  take precedence over scheduled items; within each group, higher `priority`
+  runs first, then ascending stable schedule ID breaks ties. IDs derive from
+  the source Turn, node number, and declaration index (node declarations before
+  choice declarations). Queue array order has no effect on selection.
+- `delayTurns: 0` means the current Turn. A delay of one means the next Turn.
+  For a later `targetAgeStageId`, zero means that stage's first Turn, one its
+  second Turn. Stored `dueAfterTurns` is the zero-based target-stage Turn
+  threshold, rather than a countdown decremented on every `ADVANCE`.
+- A due item retains its authored `condition`, target stage, priority, and
+  status. Conditions are evaluated when due, after prior choices have applied.
+  A false condition, failed event eligibility/continuation guard, insufficient
+  executable choices, or already-completed non-repeatable event expires the
+  item. Missing targets and items for past stages or past immediate Turns also
+  expire. Terminal items are retained for inspection and persistence.
+- `CANCEL_SCHEDULED_EVENT` with `scheduledEventId` changes a pending item to
+  `cancelled`. Unknown or terminal IDs are no-ops. Cancellation preserves pending
+  player input, Turn progress, and PRNG state, and works at lifecycle boundaries.
+- `cooldownTurns` and a `cooldown` termination guard use the larger interval.
+  An interval of two permits recurrence in Turn N+2 after resolution in Turn N.
+  Cooling events are excluded from entry selection; due schedules remain pending
+  until cooling ends or their target stage/Turn expires. `turnNumber` is the
+  run-wide clock and `eventLastResolvedTurn` records cooldown origins.
+- A `condition` termination guard is a continuation condition: false makes
+  the event ineligible. Existing per-Turn visit limits and four-node Turn and
+  six-node stage limits also apply to chained events, so cycles terminate.
+
+Scheduled dispatch consumes no randomness. Consuming, expiring, and creating
+queue items is included in the event transition trace, with contiguous before
+and after states. An automatic traversal budget can pause a chain; the returned
+queue resumes on the next `ADVANCE`, including after JSON/schema restoration.
+If no schedule is eligible, normal entry selection and safe fallback continue.
+Queue metadata and cooldown clocks round-trip through `gameStateSchema` and
+JSON; storage adapters and migrations remain owned by issue #9.
 
 ## AgeStage and Turn lifecycle (issue #5)
 

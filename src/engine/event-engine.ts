@@ -21,7 +21,8 @@ export type EngineStopReason =
   | "AGE_STAGE_COMPLETED"
   | "GAME_COMPLETED"
   | "TURN_STARTED"
-  | "AGE_STAGE_STARTED";
+  | "AGE_STAGE_STARTED"
+  | "SCHEDULE_CANCELLED";
 
 export interface EngineOptions {
   readonly maxAutoAdvanceNodes: number;
@@ -29,6 +30,7 @@ export interface EngineOptions {
 
 export type EngineInput =
   | Readonly<{ type: "ADVANCE" }>
+  | Readonly<{ type: "CANCEL_SCHEDULED_EVENT"; scheduledEventId: string }>
   | Readonly<{ type: "CHOOSE"; choiceId: string }>
   | Readonly<{ type: "START_TURN" }>
   | Readonly<{ type: "END_TURN" }>
@@ -47,7 +49,8 @@ export interface EngineEventResult {
     | "AGE_STAGE_COMPLETED"
     | "GAME_COMPLETED"
     | "TURN_STARTED"
-    | "AGE_STAGE_STARTED";
+    | "AGE_STAGE_STARTED"
+    | "SCHEDULE_CANCELLED";
   readonly eventId: string | null;
   readonly choiceId: string | null;
   readonly resourceDeltas: Readonly<Partial<Record<ResourceKey, number>>>;
@@ -130,6 +133,51 @@ const executableEvent = (event: EventNode, state: GameState): EventNode => ({
   choices: event.choices.filter((choice) => !choice.requirements || conditionMatches(choice.requirements, state)),
 });
 
+const eventEligible = (event: EventNode, state: GameState): boolean =>
+  event.ageStageId === state.currentAgeStageId &&
+  (event.mode !== "PLAYER_INPUT_REQUIRED" || executableEvent(event, state).choices.length >= 2) &&
+  conditionMatches(event.eligibility, state) &&
+  (event.terminationGuard?.kind !== "condition" || conditionMatches(event.terminationGuard.condition, state)) &&
+  (event.repeatable || !state.completedEventIds.includes(event.id));
+
+const eventCoolingDown = (event: EventNode, state: GameState): boolean => {
+  const lastTurn = state.eventLastResolvedTurn?.[event.id];
+  const cooldown = Math.max(event.cooldownTurns,
+    event.terminationGuard?.kind === "cooldown" ? event.terminationGuard.turns : 0);
+  return lastTurn !== undefined && cooldown > 0 && (state.turnNumber ?? 1) - lastTurn < cooldown;
+};
+
+const selectScheduledEvent = (state: GameState, content: ContentPack): {
+  state: GameState; event: EventNode | undefined;
+} => {
+  const stageOrder = new Map(content.ageStages.map((stage) => [stage.id, stage.order]));
+  const scheduledFollowUps = state.scheduledFollowUps.map((item) => {
+    if (item.status !== "pending") return item;
+    const targetOrder = stageOrder.get(item.targetAgeStageId);
+    const currentOrder = stageOrder.get(state.currentAgeStageId)!;
+    const due = item.targetAgeStageId === state.currentAgeStageId &&
+      item.dueAfterTurns < state.ageStageProgress!.turnCount;
+    const event = content.events.find((event) => event.id === item.eventId);
+    if (targetOrder === undefined || targetOrder < currentOrder || !event ||
+        (item.immediateTurnId !== undefined && item.immediateTurnId !== state.currentTurnId) ||
+        (due && ((!eventEligible(event, state)) ||
+          (item.condition !== undefined && !conditionMatches(item.condition, state))))) {
+      return { ...item, status: "expired" as const };
+    }
+    return item;
+  });
+  const due = scheduledFollowUps.filter((item) => item.status === "pending" &&
+    item.targetAgeStageId === state.currentAgeStageId &&
+    item.dueAfterTurns < state.ageStageProgress!.turnCount &&
+    !eventCoolingDown(content.events.find((event) => event.id === item.eventId)!, state))
+    .sort((a, b) => Number(!!b.immediateTurnId) - Number(!!a.immediateTurnId) ||
+      b.priority - a.priority || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const selected = due[0];
+  return { state: { ...state, scheduledFollowUps: scheduledFollowUps.map((item) => item.id === selected?.id
+    ? { ...item, status: "consumed" } : item) },
+    event: selected && content.events.find((event) => event.id === selected.eventId) };
+};
+
 const lifecycleTransition = (
   before: GameState, state: GameState, input: EngineInput, stopReason: Extract<EngineStopReason, EngineEventResult["kind"]>,
 ): EngineTransition => {
@@ -150,10 +198,7 @@ const getEntryEvents = (state: GameState, content: ContentPack): EventNode[] => 
     (event) =>
       entryIds.has(event.id) &&
       event.id !== content.fallbackEventId &&
-      event.ageStageId === state.currentAgeStageId &&
-      (event.mode !== "PLAYER_INPUT_REQUIRED" || executableEvent(event, state).choices.length >= 2) &&
-      conditionMatches(event.eligibility, state) &&
-      (event.repeatable || !state.completedEventIds.includes(event.id)),
+      eventEligible(event, state) && !eventCoolingDown(event, state),
   );
 };
 
@@ -267,6 +312,25 @@ const completeEventNode = (
     ...state,
     ageStageProgress: { ...state.ageStageProgress!, nodeCount: state.ageStageProgress!.nodeCount + 1 },
     rngState: rngStateAfter,
+    scheduledFollowUps: [
+      ...state.scheduledFollowUps,
+      ...[event, ...(choice ? [choice] : [])].flatMap((source) => [
+        ...source.immediateFollowUpEventIds.map((eventId) => ({
+          eventId, targetAgeStageId: state.currentAgeStageId, delayTurns: 0,
+          priority: 0, immediateTurnId: state.currentTurnId!,
+        })),
+        ...source.scheduledFollowUps,
+      ]).map((followUp, index) => ({
+        ...followUp,
+        id: `scheduled-${state.currentTurnId}-${nodeIndex + 1}-${index}`,
+        targetAgeStageId: followUp.targetAgeStageId ?? state.currentAgeStageId,
+        dueAfterTurns: (followUp.targetAgeStageId && followUp.targetAgeStageId !== state.currentAgeStageId
+          ? 0 : state.ageStageProgress!.turnCount - 1) + followUp.delayTurns,
+        status: "pending" as const,
+      })).map(({ delayTurns: _delayTurns, ...scheduled }) => scheduled),
+    ],
+    turnNumber: state.turnNumber ?? 1,
+    eventLastResolvedTurn: { ...state.eventLastResolvedTurn, [event.id]: state.turnNumber ?? 1 },
     resources: choice
       ? applyResourceDeltas(state.resources, choice.resourceDeltas)
       : state.resources,
@@ -436,6 +500,14 @@ const runTransition = (
   options: EngineOptions = { maxAutoAdvanceNodes: 4 },
 ): EngineTransition => {
   const originalState = state;
+  if (input.type === "CANCEL_SCHEDULED_EVENT") {
+    const pending = state.scheduledFollowUps.some((item) => item.id === input.scheduledEventId && item.status === "pending");
+    const next = pending ? { ...state, scheduledFollowUps: state.scheduledFollowUps.map((item) =>
+      item.id === input.scheduledEventId && item.status === "pending" ? { ...item, status: "cancelled" as const } : item) } : state;
+    const transition = lifecycleTransition(state, next, input, "SCHEDULE_CANCELLED");
+    const active = content.events.find((event) => event.id === state.turn?.activeEventId);
+    return active ? { ...transition, mode: "PLAYER_INPUT_REQUIRED", pendingEvent: executableEvent(active, state) } : transition;
+  }
   state = ensureStageProgress(state);
   const stages = [...content.ageStages].sort((a, b) => a.order - b.order);
   const lastStage = stages.at(-1)?.id === state.currentAgeStageId;
@@ -514,7 +586,11 @@ const runTransition = (
     if (boundary) return { ...boundary, results: [...results, ...boundary.results],
       trace: [...trace, ...boundary.trace] };
 
-    const candidates = getEntryEvents(currentState, content);
+    const selectionBefore = currentState;
+    const scheduledSelection = selectScheduledEvent(currentState, content);
+    currentState = scheduledSelection.state;
+    const scheduledEvent = scheduledSelection.event;
+    const candidates = scheduledEvent ? [scheduledEvent] : getEntryEvents(currentState, content);
     if (candidates.length === 0) {
       const fallback = content.events.find((event) => event.id === content.fallbackEventId);
       if (!fallback || fallback.mode !== "AUTO_ADVANCE") {
@@ -529,7 +605,7 @@ const runTransition = (
         "SAFE_FALLBACK",
       );
       results.push(resolved.result);
-      trace.push(resolved.trace);
+      trace.push(makeTrace(selectionBefore, input, resolved.state, resolved.result));
       return {
         state: resolved.state,
         mode: "AUTO_ADVANCE",
@@ -540,7 +616,8 @@ const runTransition = (
       };
     }
 
-    const selected = chooseWeightedEvent(candidates, currentState.rngState);
+    const selected = scheduledEvent ? { event: scheduledEvent, rngState: currentState.rngState }
+      : chooseWeightedEvent(candidates, currentState.rngState);
     const event = selected.event;
     const priorVisits = currentState.turn!.processedEventIds.filter(
       (eventId) => eventId === event.id,
@@ -548,7 +625,7 @@ const runTransition = (
     if (priorVisits >= getMaximumVisits(event)) {
       const stopped = stopAtCycle(currentState, event, input, selected.rngState);
       results.push(stopped.result);
-      trace.push(stopped.trace);
+      trace.push(makeTrace(selectionBefore, input, stopped.state, stopped.result));
       return {
         state: stopped.state,
         mode: "AUTO_ADVANCE",
@@ -562,7 +639,7 @@ const runTransition = (
     if (event.mode === "PLAYER_INPUT_REQUIRED") {
       const boundary = awaitPlayerInput(currentState, event, input, selected.rngState);
       results.push(boundary.result);
-      trace.push(boundary.trace);
+      trace.push(makeTrace(selectionBefore, input, boundary.state, boundary.result));
       return {
         state: boundary.state,
         mode: "PLAYER_INPUT_REQUIRED",
@@ -577,7 +654,7 @@ const runTransition = (
     currentState = resolved.state;
     automaticNodeCount += 1;
     results.push(resolved.result);
-    trace.push(resolved.trace);
+    trace.push(makeTrace(selectionBefore, input, resolved.state, resolved.result));
 
     if (automaticNodeCount >= options.maxAutoAdvanceNodes) {
       return {
