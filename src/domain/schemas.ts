@@ -316,7 +316,9 @@ export const scheduledEventStateSchema = z
     targetAgeStageId: identifierSchema,
     dueAfterTurns: z.number().int().min(0),
     priority: z.number().int(),
-    status: z.enum(["pending", "cancelled", "consumed"]),
+    condition: conditionSchema.optional(),
+    immediateTurnId: identifierSchema.optional(),
+    status: z.enum(["pending", "cancelled", "consumed", "expired"]),
   })
   .strict();
 
@@ -391,6 +393,8 @@ export const gameStateSchema = z
     eventProgress: eventProgressSchema.nullable(),
     ageStageProgress: ageStageProgressSchema.optional(),
     completedAgeStages: z.array(completedAgeStageSchema).optional(),
+    turnNumber: z.number().int().min(0).optional(),
+    eventLastResolvedTurn: z.record(identifierSchema, z.number().int().min(0)).optional(),
     resources: resourceStateSchema,
     planningLoad: z.number().finite().min(0),
     family: familyProfileSchema,

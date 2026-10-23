@@ -141,6 +141,248 @@ const replay = (state: GameState, content: ContentPack): EngineTransition =>
   transitionGame(state, content, { type: "ADVANCE" });
 
 describe("Core Event Engine Public Boundary", () => {
+  it("progresses through an empty waiting Turn while enforcing the stage budget", () => {
+    const first = makeChoiceEvent("first");
+    const future = makeChoiceEvent("future");
+    first.choices[0]!.scheduledFollowUps = [{ eventId: future.id, delayTurns: 2, priority: 0 }];
+    const content = makeContent([first, future], [first.id]);
+    const run = () => {
+      let state = transitionGame(makeState(), content, { type: "ADVANCE" }).state;
+      state = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" }).state;
+      return transitionGame(state, content, { type: "ADVANCE" }).state;
+    };
+    let state = run();
+    expect(state.ageStageProgress?.status).toBe("active");
+    state = transitionGame(state, content, { type: "START_TURN" }).state;
+    const waiting = transitionGame(state, content, { type: "ADVANCE" });
+    expect(waiting.stopReason).toBe("FALLBACK");
+    expect(waiting.state.turn?.status).toBe("completed");
+    expect(waiting.state.ageStageProgress?.status).toBe("active");
+    state = transitionGame(waiting.state, content, { type: "START_TURN" }).state;
+    expect(transitionGame(state, content, { type: "ADVANCE" }).pendingEvent?.id).toBe("future");
+
+    first.choices[0]!.scheduledFollowUps[0]!.delayTurns = 100;
+    state = run();
+    let last: EngineTransition | undefined;
+    for (let i = 0; i < 4; i += 1) {
+      state = transitionGame(state, content, { type: "START_TURN" }).state;
+      last = transitionGame(state, content, { type: "ADVANCE" });
+      state = last.state;
+    }
+    expect(last?.stopReason).toBe("AGE_STAGE_NODE_LIMIT");
+    expect(state.ageStageProgress).toMatchObject({ status: "safelyEnded", nodeCount: 6 });
+  });
+
+  it("resumes an interrupted immediate chain before higher-priority same-Turn schedules", () => {
+    const first = makeAutoEvent("first");
+    first.immediateFollowUpEventIds = ["reaction"];
+    first.scheduledFollowUps = [{ eventId: "scheduled", delayTurns: 0, priority: 99 }];
+    const reaction = makeChoiceEvent("reaction");
+    const content = makeContent([first, reaction, makeChoiceEvent("scheduled")], [first.id]);
+    const paused = transitionGame(makeState(), content, { type: "ADVANCE" }, { maxAutoAdvanceNodes: 1 });
+    const state = gameStateSchema.parse(JSON.parse(JSON.stringify(paused.state)));
+    const resumed = transitionGame(state, content, { type: "ADVANCE" });
+    expect(resumed.pendingEvent?.id).toBe("reaction");
+    const chosen = transitionGame(resumed.state, content, { type: "CHOOSE", choiceId: "rest" });
+    const scheduled = transitionGame(chosen.state, content, { type: "ADVANCE" });
+    expect(scheduled.pendingEvent?.id).toBe("scheduled");
+    expect(scheduled.state.rngState).toBe(paused.state.rngState);
+  });
+
+  it("preserves the run-wide Turn clock across an AgeStage boundary", () => {
+    const first = makeChoiceEvent("first");
+    const later = makeChoiceEvent("later");
+    later.ageStageId = "age-stage-2";
+    const content = makeContent([first, later]);
+    content.ageStages[1]!.entryEventIds = [later.id];
+    let state = transitionGame(makeState(), content, { type: "ADVANCE" }).state;
+    state = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" }).state;
+    state = transitionGame(state, content, { type: "COMPLETE_AGE_STAGE" }).state;
+    state = transitionGame(state, content, { type: "NEXT_AGE_STAGE" }).state;
+    state = transitionGame(state, content, { type: "ADVANCE" }).state;
+    expect(state.turnNumber).toBe(2);
+    expect(state.eventLastResolvedTurn?.first).toBe(1);
+  });
+
+  it("keeps causal cycles bounded and every trace state contiguous", () => {
+    const a = makeAutoEvent("loop-a", { repeatable: true, maxVisits: 1 });
+    const b = makeAutoEvent("loop-b", { repeatable: true, maxVisits: 1 });
+    a.immediateFollowUpEventIds = [b.id];
+    b.immediateFollowUpEventIds = [a.id];
+    const content = makeContent([a, b], [a.id]);
+    const result = transitionGame(makeState(), content, { type: "ADVANCE" });
+    expect(result.stopReason).toBe("CYCLE_PROTECTED");
+    expect(result.results.map((entry) => entry.eventId)).toEqual(["loop-a", "loop-b", "loop-a"]);
+    for (let i = 1; i < result.trace.length; i += 1) {
+      expect(result.trace[i]!.beforeState).toEqual(result.trace[i - 1]!.afterState);
+    }
+    expect(result.trace.at(-1)?.afterState).toEqual(result.state);
+    a.terminationGuard = { kind: "maxVisits", count: 100 };
+    b.terminationGuard = { kind: "maxVisits", count: 100 };
+    const bounded = transitionGame(makeState(), content, { type: "ADVANCE" });
+    expect(bounded.stopReason).toBe("TURN_NODE_LIMIT");
+    expect(bounded.state.turn?.nodeCount).toBe(4);
+    const ended = transitionGame(bounded.state, content, { type: "START_TURN" });
+    expect(transitionGame(ended.state, content, { type: "ADVANCE" }).stopReason).toBe("AGE_STAGE_NODE_LIMIT");
+  });
+
+  it("checks future-stage conditions only when due and orders schedules independently of array order", () => {
+    const first = makeChoiceEvent("first");
+    const future = makeChoiceEvent("future");
+    future.ageStageId = "age-stage-2";
+    first.choices[0]!.scheduledFollowUps = [
+      { eventId: future.id, targetAgeStageId: "age-stage-2", delayTurns: 1, priority: 10,
+        condition: { kind: "flag", flag: "ready" } },
+      { eventId: "low", delayTurns: 0, priority: 1 },
+      { eventId: "high", delayTurns: 0, priority: 5 },
+    ];
+    const ready = makeChoiceEvent("ready");
+    ready.ageStageId = "age-stage-2";
+    ready.choices[0]!.setFlags = ["ready"];
+    const content = makeContent([first, future, ready, makeChoiceEvent("low"), makeChoiceEvent("high")], [first.id]);
+    content.ageStages[1]!.entryEventIds = [ready.id];
+    const run = (reverse: boolean) => {
+      const transitions: EngineTransition[] = [];
+      let state = makeState();
+      const act = (input: Parameters<typeof transitionGame>[2]) => {
+        const result = transitionGame(state, content, input);
+        transitions.push(result);
+        state = result.state;
+        return result;
+      };
+      act({ type: "ADVANCE" });
+      act({ type: "CHOOSE", choiceId: "rest" });
+      if (reverse) state = { ...state, scheduledFollowUps: [...state.scheduledFollowUps].reverse() };
+      const high = act({ type: "ADVANCE" });
+      expect(high.pendingEvent?.id).toBe("high");
+      expect(high.state.rngState).toBe(transitions[0]!.state.rngState);
+      act({ type: "CHOOSE", choiceId: "continue" });
+      expect(act({ type: "ADVANCE" }).pendingEvent?.id).toBe("low");
+      act({ type: "CHOOSE", choiceId: "continue" });
+      act({ type: "COMPLETE_AGE_STAGE" });
+      act({ type: "NEXT_AGE_STAGE" });
+      expect(act({ type: "ADVANCE" }).pendingEvent?.id).toBe("ready");
+      act({ type: "CHOOSE", choiceId: "rest" });
+      act({ type: "END_TURN" });
+      act({ type: "START_TURN" });
+      expect(act({ type: "ADVANCE" }).pendingEvent?.id).toBe("future");
+      return transitions;
+    };
+    const normal = run(false);
+    expect(run(false)).toEqual(normal);
+    expect(run(true).flatMap((entry) => entry.results)).toEqual(normal.flatMap((entry) => entry.results));
+  });
+
+  it.each(["cooldownTurns", "guard"])("defers a scheduled repeat during its %s and resumes after the cooldown", (kind) => {
+    const repeat = makeChoiceEvent("repeat");
+    repeat.repeatable = true;
+    if (kind === "guard") repeat.terminationGuard = { kind: "cooldown", turns: 2 };
+    else repeat.cooldownTurns = 2;
+    repeat.choices[0]!.scheduledFollowUps = [{ eventId: "repeat", delayTurns: 0, priority: 4 }];
+    const ordinary = makeChoiceEvent("ordinary");
+    ordinary.eligibility = { kind: "eventCompleted", eventId: "repeat" };
+    const content = makeContent([repeat, ordinary]);
+    let state = transitionGame(makeState(), content, { type: "ADVANCE" }).state;
+    state = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" }).state;
+    const cooling = transitionGame(state, content, { type: "ADVANCE" });
+    expect(cooling.pendingEvent?.id).toBe("ordinary");
+    expect(cooling.state.scheduledFollowUps[0]?.status).toBe("pending");
+    state = transitionGame(cooling.state, content, { type: "CHOOSE", choiceId: "continue" }).state;
+    state = transitionGame(state, content, { type: "END_TURN" }).state;
+    state = transitionGame(state, content, { type: "START_TURN" }).state;
+    // Turn 2 is still inside the two-Turn interval; use a new ordinary event.
+    const next = makeChoiceEvent("next");
+    content.events.push(next);
+    content.ageStages[0]!.entryEventIds.push(next.id);
+    const during = transitionGame(state, content, { type: "ADVANCE" });
+    expect(during.pendingEvent?.id).toBe("next");
+    state = transitionGame(during.state, content, { type: "CHOOSE", choiceId: "continue" }).state;
+    state = transitionGame(state, content, { type: "END_TURN" }).state;
+    state = transitionGame(state, content, { type: "START_TURN" }).state;
+    const resumed = transitionGame(gameStateSchema.parse(JSON.parse(JSON.stringify(state))), content, { type: "ADVANCE" });
+    expect(resumed.pendingEvent?.id).toBe("repeat");
+    expect(resumed.state.scheduledFollowUps[0]?.status).toBe("consumed");
+  });
+
+  it("invalidates a chain when its continuation guard becomes false", () => {
+    const first = makeChoiceEvent("first");
+    const guarded = makeChoiceEvent("guarded");
+    guarded.terminationGuard = { kind: "condition", condition: { kind: "not", condition: { kind: "flag", flag: "stop" } } };
+    first.choices[0]!.setFlags = ["stop"];
+    first.choices[0]!.immediateFollowUpEventIds = ["guarded"];
+    const content = makeContent([first, guarded], [first.id]);
+    let state = transitionGame(makeState(), content, { type: "ADVANCE" }).state;
+    state = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" }).state;
+    const result = transitionGame(state, content, { type: "ADVANCE" });
+    expect(result.stopReason).toBe("FALLBACK");
+    expect(result.state.scheduledFollowUps[0]?.status).toBe("expired");
+  });
+
+  it("cancels a pending schedule idempotently without advancing input or randomness", () => {
+    const choice = makeChoiceEvent("planning");
+    choice.choices[0]!.scheduledFollowUps = [{ eventId: "followup", delayTurns: 0, priority: 9 }];
+    const content = makeContent([choice, makeChoiceEvent("followup"), makeChoiceEvent("ordinary")],
+      [choice.id, "ordinary"]);
+    content.events.find((event) => event.id === "ordinary")!.eligibility = { kind: "eventCompleted", eventId: "planning" };
+    const pending = transitionGame(makeState(), content, { type: "ADVANCE" });
+    const resolved = transitionGame(pending.state, content, { type: "CHOOSE", choiceId: "rest" });
+    const id = resolved.state.scheduledFollowUps[0]!.id;
+    const cancelled = transitionGame(resolved.state, content, { type: "CANCEL_SCHEDULED_EVENT", scheduledEventId: id });
+    expect(cancelled.state.scheduledFollowUps[0]?.status).toBe("cancelled");
+    expect(cancelled.state.rngState).toBe(resolved.state.rngState);
+    expect(cancelled.state.turn).toEqual(resolved.state.turn);
+    expect(transitionGame(cancelled.state, content, { type: "CANCEL_SCHEDULED_EVENT", scheduledEventId: id }).trace).toEqual([]);
+    expect(transitionGame(cancelled.state, content, { type: "ADVANCE" }).pendingEvent?.id).toBe("ordinary");
+  });
+
+  it.each(["condition", "missing", "past-stage", "old-turn", "completed", "choices"])(
+    "expires an invalid %s schedule and still selects an ordinary entry", (reason) => {
+      const target = makeChoiceEvent("scheduled-decision");
+      if (reason === "choices") target.choices[0]!.requirements = { kind: "flag", flag: "missing" };
+      const content = makeContent([target, makeChoiceEvent("ordinary")], ["ordinary"]);
+      const state = makeState();
+      state.scheduledFollowUps = [{ id: "invalid", eventId: reason === "missing" ? "missing" : target.id,
+        targetAgeStageId: "age-stage-1", dueAfterTurns: 0, priority: 10, status: "pending",
+        ...(reason === "condition" ? { condition: { kind: "flag" as const, flag: "missing" } } : {}),
+        ...(reason === "old-turn" ? { immediateTurnId: "previous-turn" } : {}),
+      }];
+      if (reason === "completed") state.completedEventIds = [target.id];
+      if (reason === "past-stage") {
+        state.currentAgeStageId = "age-stage-2";
+        content.events.find((event) => event.id === "ordinary")!.ageStageId = "age-stage-2";
+        content.ageStages[1]!.entryEventIds = ["ordinary"];
+      }
+      const result = transitionGame(state, content, { type: "ADVANCE" });
+      expect(result.pendingEvent?.id).toBe("ordinary");
+      expect(result.state.scheduledFollowUps[0]?.status).toBe("expired");
+      expect(state.scheduledFollowUps[0]?.status).toBe("pending");
+    },
+  );
+
+  it("continues a chosen three-node story through an immediate reaction and a later Turn", () => {
+    const choice = makeChoiceEvent("ask-for-help");
+    choice.choices[0]!.immediateFollowUpEventIds = ["partner-agrees"];
+    const reaction = makeAutoEvent("partner-agrees");
+    reaction.kind = "reaction";
+    reaction.text = "Your partner agrees to take the next care shift.";
+    reaction.scheduledFollowUps = [{ eventId: "care-handoff", delayTurns: 1, priority: 3,
+      condition: { kind: "eventCompleted", eventId: "partner-agrees" } }];
+    const handoff = makeChoiceEvent("care-handoff");
+    const content = makeContent([choice, reaction, handoff], [choice.id]);
+    let state = transitionGame(makeState(), content, { type: "ADVANCE" }).state;
+    state = transitionGame(state, content, { type: "CHOOSE", choiceId: "rest" }).state;
+    const immediate = transitionGame(state, content, { type: "ADVANCE" });
+    expect(immediate.results[0]?.eventId).toBe("partner-agrees");
+    expect(immediate.state.history.some((entry) => entry.text === reaction.text)).toBe(true);
+    expect(immediate.state.ageStageProgress?.status).toBe("active");
+    state = transitionGame(immediate.state, content, { type: "START_TURN" }).state;
+    const restored = gameStateSchema.parse(JSON.parse(JSON.stringify(state)));
+    const later = transitionGame(restored, content, { type: "ADVANCE" });
+    expect(later.pendingEvent?.id).toBe("care-handoff");
+    expect(later.state.scheduledFollowUps.map((item) => item.status)).toEqual(["consumed", "consumed"]);
+    expect(later).toEqual(transitionGame(state, content, { type: "ADVANCE" }));
+  });
+
   it("enters stage-owned events in milestone order even when content arrays are reversed", () => {
     const content = makeContent([]);
     const events = content.ageStages.map((stage) => ({ ...makeChoiceEvent(`decision-${stage.order}`), ageStageId: stage.id }));
