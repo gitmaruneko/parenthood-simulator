@@ -1,7 +1,25 @@
+import type { NarrativeEffects } from "../domain/schemas.js";
+
+interface MvpTopic {
+  slug: string;
+  title: string;
+  location: string;
+  text: string;
+  plan: string;
+  carry: string;
+  reflection: string;
+  reflectionKind?: "routine" | "support" | "environment";
+  reflectionEffects?: NarrativeEffects;
+  chain?: "night" | "preschool";
+  topic: string;
+  summary: string;
+  tip: string;
+}
+
 // Fictional scenes, not developmental deadlines or medical instructions.
-export const MVP_TOPICS = [
+export const MVP_TOPICS: readonly MvpTopic[] = [
   {
-    slug: "night-handoff", title: "凌晨的交接", location: "home",
+    slug: "night-handoff", title: "凌晨的交接", location: "home", chain: "night",
     text: "孩子醒來，你一邊安撫，一邊想著還沒洗的用品和明天的安排。輪班表上還有空白，眼前的照顧和之後要記住的事疊在一起。",
     plan: "把今晚需要的事列出來，協調一段可交接的時間", carry: "今晚先自己承接，明天再談安排",
     reflection: "天亮後，用品和待辦仍在桌邊。你發現昨晚除了安撫，也花了力氣記住誰何時能接手。",
@@ -44,12 +62,16 @@ export const MVP_TOPICS = [
     slug: "shared-ownership", title: "誰會記得補用品", location: "home",
     text: "用品又快用完了。有人願意幫忙購買，卻等著你提醒品項與數量。雙照顧者也可能像獨自照顧，執行有人接手，追蹤卻仍留在同一人身上。",
     plan: "討論從盤點到補齊的完整責任", carry: "這次先自己盤點和補貨",
-    reflection: "用品補上後，你把發現需求、比對清單與確認送達也算進工作。分工是否改變，要看之後還需不需要你逐項提醒。",
+    reflection: "你找到一份可重複使用的用品清單，把每次都要憑記憶盤點的工作放下一小段。支持也可以是一個讓安排更省力的工具，不必等到有人能接手全部。",
+    reflectionKind: "support",
+    reflectionEffects: { planningLoadDelta: -1, relationshipMemories: [
+      { id: "shared-ownership-checklist-support", category: "support", text: "重複使用的用品清單，接住了一部分需要記住的事。" },
+    ] },
     topic: "完整接手與幫忙", summary: "共同分工不只是執行，也包含記住、規劃與追蹤；照顧參與可能隨工作條件改變。",
     tip: "挑一項工作確認負責範圍和回報方式，並保留重新協調的機會。",
   },
   {
-    slug: "rainy-pickup", title: "雨天的接送變更", location: "street",
+    slug: "rainy-pickup", title: "雨天的接送變更", location: "street", reflectionKind: "environment",
     text: "雨勢改變了原來的交通安排，你得重新確認接送地點。即使平常共同分擔，今天也可能各有工作卡住；備援是否有空還需要問過。",
     plan: "重新確認接送時間與可用的備援", carry: "先自己改道接送，把其他工作延後",
     reflection: "抵達後你才有空收起濕掉的物品。交通變動也帶來聯絡與確認工作，這些時間沒有出現在原本的行程裡。",
@@ -57,7 +79,7 @@ export const MVP_TOPICS = [
     tip: "在平靜時討論一個備援聯絡順序，並確認每個人能承接的範圍。",
   },
   {
-    slug: "preschool-handoff", title: "教室門口的停頓", location: "school",
+    slug: "preschool-handoff", title: "教室門口的停頓", location: "school", chain: "preschool",
     text: "孩子到了教室門口卻停住腳步。你想陪一會，也看見上班時間逼近；老師正在接待其他家庭，今天的交接需要重新安排。",
     plan: "與老師約定交接方式並調整工作通知", carry: "先陪孩子安頓，自己承接後續工作協調",
     reflection: "離開教室後，工作訊息接著響起。入園不只是一段告別，也連著接送、用品與誰負責追蹤今天的消息。",
@@ -96,4 +118,4 @@ export const MVP_TOPICS = [
     topic: "面對新的生活階段", summary: "轉換階段需要新的協調，不是檢驗過去是否完美；已有的支持與修復經驗可以成為起點。",
     tip: "與孩子和支持者交換各自的期待，把還不確定的事情留作下一次討論。",
   },
-] as const;
+];

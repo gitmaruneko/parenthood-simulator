@@ -25,7 +25,7 @@ export const createMvpContent = (familyActors: readonly Actor[] = defaultFamilyA
     const ageStageId = `age-stage-${index + 1}`;
     const id = (suffix: string) => `${scene.slug}-${suffix}`;
     const cardId = `${scene.slug}-card`;
-    const chain = index === 0 || index === 7;
+    const chain = scene.chain !== undefined;
     const resultCard = { knowledgeCardIds: [cardId] };
     const scheduled = (suffix: string) => chain
       ? [{ eventId: id(suffix), delayTurns: 1, priority: 10 }] : [];
@@ -69,15 +69,11 @@ export const createMvpContent = (familyActors: readonly Actor[] = defaultFamilyA
       ],
     });
     events.push({
-      id: id("reflection"), ageStageId, kind: index === 5 ? "support" : index === 6 ? "environment" : "routine",
-      mode: "AUTO_ADVANCE", title: `${scene.title}之後`,
-      text: index === 5
-        ? "你找到一份可重複使用的用品清單，把每次都要憑記憶盤點的工作放下一小段。支持也可以是一個讓安排更省力的工具，不必等到有人能接手全部。"
-        : scene.reflection,
+      id: id("reflection"), ageStageId, kind: scene.reflectionKind ?? "routine",
+      mode: "AUTO_ADVANCE", title: `${scene.title}之後`, text: scene.reflection,
       weight: 1, knowledgeCardIds: [cardId],
       eligibility: { kind: "eventCompleted", eventId: id("choice") },
-      ...(index === 5 ? { planningLoadDelta: -1,
-        relationshipMemories: [{ id: id("checklist-support"), category: "support", text: "重複使用的用品清單，接住了一部分需要記住的事。" }] } : {}),
+      ...scene.reflectionEffects,
     });
     stageEntries.push([id("choice")]);
     if (!chain) return;
@@ -85,7 +81,7 @@ export const createMvpContent = (familyActors: readonly Actor[] = defaultFamilyA
     events.push({
       id: id("support"), ageStageId, kind: "support", mode: "AUTO_ADVANCE",
       title: "把安排變成可用的支持",
-      text: index === 0
+      text: scene.chain === "night"
         ? "過了那一晚，你再次確認可用的協助，也把能延後的用品整理挪開。支持先從減少一段工作開始，不必等到有人能接下全部。"
         : "下一次交接前，你和老師確認了聯絡方式，也把可延後的工作另作安排。有人接住一段訊息追蹤，並不表示每個困難都消失了。",
       weight: 1, eligibility: { kind: "eventCompleted", eventId: id("choice") },
@@ -95,7 +91,7 @@ export const createMvpContent = (familyActors: readonly Actor[] = defaultFamilyA
     }, {
       id: id("strain"), ageStageId, kind: "environment", mode: "AUTO_ADVANCE",
       title: "又一個需要記住的提醒",
-      text: index === 0
+      text: scene.chain === "night"
         ? "到了下一段照顧時間，你才發現用品還沒整理。睡得零碎加上接連的提醒，讓你在交接時說得比原先想的急。"
         : "下一次接送又碰上工作訊息，用品和回覆都等著確認。匆忙中，你與孩子的對話中斷了，彼此都有話沒說完。",
       weight: 1, eligibility: { kind: "planningLoadAtLeast", value: 3 },
