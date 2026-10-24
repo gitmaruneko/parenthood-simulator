@@ -22,8 +22,12 @@ The CI `verify` job runs it, typechecking and build on Node 22 and 24. The new
 failed runs retain `test-results/` for seven days. Local execution is evidence
 for this checkout, not proof that a remote GitHub Actions run passed.
 
-Local results will be recorded after final verification. Remote CI remains
-pending until these commits are pushed and both jobs pass.
+Local final verification passed: **199 Vitest tests across 13 files**, **22
+Playwright cases** (11 each desktop/mobile), typechecking and the production
+build. The acceptance-only Vitest file also passed independently (four cases).
+These tests verify existing product behavior; no new gameplay implementation
+or artificial failing test was needed. Remote CI remains pending until these
+commits are pushed and both jobs pass.
 
 ## Issue #13 technical criteria
 
