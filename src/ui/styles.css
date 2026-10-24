@@ -989,3 +989,11 @@ dialog h2 {
 .direction-current { color: #3c5443; font-weight: 700; }
 .direction-option:has(input:focus-visible) { outline: 2px solid #4b6352; outline-offset: 3px; }
 @media (max-width: 480px) { .direction-options { grid-template-columns: 1fr; } }
+.review-shell { max-width: 900px; margin: 0 auto; padding: 24px 16px 80px; display: grid; gap: 20px; }
+.review-shell .panel { padding: clamp(16px, 4vw, 32px); min-width: 0; overflow-wrap: anywhere; }
+.review-shell textarea { display: block; width: 100%; box-sizing: border-box; margin: 12px 0; font: inherit; }
+.review-choice { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+.review-moment { border-left: 2px solid var(--border, #d7cfc1); padding: 4px 16px; margin: 16px 0; }
+.review-timeline { padding-left: 24px; }
+.review-timeline > li { padding: 10px 0; }
+.preserve-lines { white-space: pre-line; }

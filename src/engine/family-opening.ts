@@ -94,6 +94,8 @@ const buildFamilyRun = (input: FamilyRunInput, previousFamily?: FamilyProfile): 
     tendencies, flags: [], relationshipMemories: [], completedEventIds: [],
     scheduledFollowUps: [], choiceHistory: [], history: [],
   });
+  state.replayOrigin = { resources: { ...state.resources }, tendencies: { ...state.tendencies },
+    rngState: state.rngState, actors: structuredClone(actors) };
   return { state, actors, summary: describeFamily(state.family), assessment };
 };
 
@@ -107,7 +109,8 @@ export const rerollFamilyRun = (previous: FamilyRun, input: FamilyRunInput): Fam
   if (input.answers !== undefined) return run;
   return {
     ...run,
-    state: { ...run.state, tendencies: { ...previous.state.tendencies } },
+    state: { ...run.state, tendencies: { ...previous.state.tendencies },
+      replayOrigin: { ...run.state.replayOrigin!, tendencies: { ...previous.state.tendencies } } },
     assessment: { status: previous.assessment.status, descriptions: describeTendencies(previous.state.tendencies) },
   };
 };

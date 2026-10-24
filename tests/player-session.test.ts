@@ -6,6 +6,82 @@ import {
 } from "../src/persistence/index.js";
 import { createFamilyRun } from "../src/engine/index.js";
 import { serializeGame } from "../src/persistence/index.js";
+import { completedStory } from "./helpers/completed-story.js";
+
+it("restores the review, saves selected moments and confirms a seed replay before replacing", async () => {
+  const { state } = completedStory();
+  const storage = memory();
+  storage.setItem(LOCAL_SAVE_KEY, serializeGame(state));
+  const store = createLocalSaveStore(storage);
+  const session = createPlayerSession(store, () => 43);
+  await session.check(); await session.resume("records");
+  const game = session.getSnapshot().game!;
+  expect(game.review!.timeline).toHaveLength(12);
+  const ids = [...game.review!.keyMomentIds].reverse();
+  await session.selectMoments(ids);
+  const restored = createPlayerSession(store);
+  await restored.check(); await restored.resume();
+  expect(restored.getSnapshot().game!.review!.keyMomentIds).toEqual(ids);
+  const raw = storage.getItem(LOCAL_SAVE_KEY);
+  await session.replay();
+  expect(session.getSnapshot().dialog).toBe("confirm");
+  session.closeDialog();
+  expect(storage.getItem(LOCAL_SAVE_KEY)).toBe(raw);
+  await session.replay(); await session.confirmNew();
+  expect(session.getSnapshot().reveal!.seed).toBe(42);
+  expect(storage.getItem(LOCAL_SAVE_KEY)).toBe(raw);
+  await session.startFamily();
+  const replayed = store.load();
+  expect(replayed.status === "restored" && replayed.state.seed).toBe(42);
+  expect(session.getSnapshot().game!.review).toBeNull();
+  expect(session.getSnapshot().game!.choices).toHaveLength(0);
+});
+
+it("retries selected moments without advancing and refuses replay over another tab's save", async () => {
+  const { state } = completedStory();
+  const storage = memory();
+  storage.setItem(LOCAL_SAVE_KEY, serializeGame(state));
+  let fail = false;
+  const store = createLocalSaveStore({ ...storage, setItem: (key, value) => {
+    if (fail) throw new DOMException("full", "QuotaExceededError");
+    storage.setItem(key, value);
+  } });
+  const session = createPlayerSession(store);
+  await session.check(); await session.resume();
+  const ids = [...session.getSnapshot().game!.review!.keyMomentIds].reverse();
+  fail = true;
+  await session.selectMoments(ids);
+  expect(session.getSnapshot().canRetrySave).toBe(true);
+  expect(session.getSnapshot().game!.review!.keyMomentIds).toEqual(ids);
+  fail = false; await session.retrySave();
+  const saved = store.load();
+  expect(saved.status === "restored" && saved.state.review!.keyMomentIds).toEqual(ids);
+  expect(saved.status === "restored" && saved.state.rngState).toBe(state.rngState);
+  const newer = serializeGame({ ...state, planningLoad: state.planningLoad + 1 });
+  storage.setItem(LOCAL_SAVE_KEY, newer);
+  await session.replay();
+  expect(session.getSnapshot().dialog).toBeNull();
+  expect(session.getSnapshot().error).toContain("存檔已改變");
+  expect(storage.getItem(LOCAL_SAVE_KEY)).toBe(newer);
+});
+
+it("starts the new-family opening only after confirmation while preserving the completed story", async () => {
+  const { state } = completedStory();
+  const storage = memory();
+  const original = serializeGame(state);
+  storage.setItem(LOCAL_SAVE_KEY, original);
+  const session = createPlayerSession(createLocalSaveStore(storage), () => 43);
+  await session.check(); await session.resume(); await session.newStory();
+  session.closeDialog();
+  expect(storage.getItem(LOCAL_SAVE_KEY)).toBe(original);
+  await session.newStory(); await session.confirmNew();
+  expect(session.getSnapshot().page).toBe("assessment");
+  session.reveal();
+  expect(session.getSnapshot().reveal!.seed).toBe(43);
+  expect(storage.getItem(LOCAL_SAVE_KEY)).toBe(original);
+  await session.startFamily();
+  expect(session.getSnapshot().game!.review).toBeNull();
+});
 
 const memory = () => {
   const data = new Map<string, string>();

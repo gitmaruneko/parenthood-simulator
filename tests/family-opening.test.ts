@@ -131,7 +131,9 @@ describe("Family opening public boundary", () => {
         const [responsibility, flexibility, selfCare, sharedCare] = totals[questionIndex]![choiceIndex]!;
         expect(run.state.tendencies).toEqual({ responsibility, flexibility, selfCare, sharedCare });
         expect(run).toEqual(createFamilyRun({ seed: 0xffffffff, answers }));
-        expect({ ...run.state, tendencies: neutral.state.tendencies }).toEqual(neutral.state);
+        expect(run.state.replayOrigin?.tendencies).toEqual(run.state.tendencies);
+        expect({ ...run.state, tendencies: neutral.state.tendencies,
+          replayOrigin: { ...run.state.replayOrigin!, tendencies: neutral.state.tendencies } }).toEqual(neutral.state);
         expect(run.actors).toEqual(neutral.actors);
         expect(run.assessment.descriptions.join("")).not.toMatch(/\d|分數|診斷|某型|媽媽|爸爸|成功率/);
       });

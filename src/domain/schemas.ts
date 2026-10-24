@@ -475,6 +475,12 @@ export const gameStateSchema = z
     reactionHistory: z.array(reactionHistoryEntrySchema).optional(),
     history: z.array(storyEntrySchema),
     review: reviewDataSchema.optional(),
+    replayOrigin: z.object({
+      resources: resourceStateSchema,
+      tendencies: z.record(identifierSchema, z.number().finite()),
+      rngState: z.number().int().min(0).max(0xffffffff),
+      actors: z.array(actorDefinitionSchema),
+    }).strict().optional(),
   })
   .strict();
 
