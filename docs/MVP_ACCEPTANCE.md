@@ -26,8 +26,18 @@ Local final verification passed: **199 Vitest tests across 13 files**, **22
 Playwright cases** (11 each desktop/mobile), typechecking and the production
 build. The acceptance-only Vitest file also passed independently (four cases).
 These tests verify existing product behavior; no new gameplay implementation
-or artificial failing test was needed. Remote CI remains pending until these
-commits are pushed and both jobs pass.
+or artificial failing test was needed.
+
+Remote CI run [40104636559](https://github.com/gitmaruneko/parenthood-simulator/actions/runs/40104636559)
+passed both Node verification jobs but failed nine browser cases. The tests
+read storage before yielded startup saves completed, checked a controlled radio
+before its asynchronous update, and inspected the ending before the last
+transition completed. Browser tests now wait for the header's saved status
+after starting a family and after each playthrough action, and assert radio
+selection with a retrying expectation after clicking. A temporary 100 ms delay
+on zero-delay browser timers reproduced all failure types before the fix;
+all 22 cases passed with that delay after the fix. The timer override was
+removed afterward. A successful remote run of the fix remains required.
 
 ## Issue #13 technical criteria
 
