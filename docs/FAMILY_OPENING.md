@@ -17,7 +17,7 @@ import {
   describeTendencies,
 } from "../src/engine/index.js";
 
-const questions = getAssessmentQuestions(); // Five questions, four choices each.
+const questions = getAssessmentQuestions(); // Five questions; dinner/restaurant have six candidates, others four.
 const run = createFamilyRun({ seed: 42 }); // Omit answers or use null to skip.
 const answered = createFamilyRun({
   seed: 42,
@@ -111,7 +111,7 @@ they cannot verify a source's accuracy or understand every possible paraphrase.
 ## Acceptance and verification
 
 - `tests/family-opening.test.ts`: seeded replay, valid GameState and actor IDs,
-  all 48 family combinations, participation configuration, all 20 assessment
+  all 48 family combinations, participation configuration, all 24 assessment
   branches, neutral skip, answer isolation, mutable descriptions, invalid input,
   fresh reroll, address preservation, and immediate-repeat protection.
 - `tests/family-conditions.test.ts`: display lookup/isolation, content coverage,
@@ -121,3 +121,9 @@ they cannot verify a source's accuracy or understand every possible paraphrase.
 
 React UI (#11), lifecycle (#5), scheduling, reactions, later tendency effects,
 and persistence remain with their respective tickets.
+
+2026-10-24: Dinner and restaurant copy explicitly describes hypothetical situations
+before family generation. Each offers six candidates; the UI initially shows four
+and can expand the remainder. Phone/tablet and comfort-toy answers carry identical
+neutral narrative weights. No EventNode cardinality or family contract changed.
+See [impact analysis and contract gaps](implementation/OPENING-FAMILY-IMPACT.md).

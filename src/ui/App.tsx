@@ -7,8 +7,9 @@ import { Illustration } from "./Illustration.js";
 import { SaveNotice } from "./SaveNotice.js";
 
 const questions = getAssessmentQuestions();
-function Assessment({ session }: { session: PlayerSession }) {
+export function Assessment({ session }: { session: PlayerSession }) {
   const [answers, setAnswers] = useState<string[]>([]);
+  const [expanded, setExpanded] = useState(false);
   const question = questions[answers.length]!;
   return (
     <section className="opening panel" aria-labelledby="assessment-title">
@@ -17,8 +18,9 @@ function Assessment({ session }: { session: PlayerSession }) {
         {question.text}
       </h1>
       <p>沒有標準答案。這是眼前的傾向，也可以隨日常改變。</p>
-      <div className="decisions">
-        {question.choices.map((choice) => (
+      <p className="muted">先想像這個情境；如果選項提到家人或物品，可以假設當時有這些條件。這不代表接下來會生成的家庭。</p>
+      <div className="decisions" id="assessment-choices">
+        {question.choices.slice(0, expanded ? undefined : 4).map((choice) => (
           <button
             key={choice.id}
             onClick={() => {
@@ -26,6 +28,7 @@ function Assessment({ session }: { session: PlayerSession }) {
               if (next.length === questions.length) session.reveal(next);
               else {
                 setAnswers(next);
+                setExpanded(false);
                 requestAnimationFrame(() =>
                   document.getElementById("assessment-title")?.focus(),
                 );
@@ -36,6 +39,12 @@ function Assessment({ session }: { session: PlayerSession }) {
           </button>
         ))}
       </div>
+      {question.choices.length > 4 && (
+        <button aria-expanded={expanded} aria-controls="assessment-choices"
+          onClick={() => setExpanded(!expanded)}>
+          {expanded ? "收起其他做法" : "看看其他做法"}
+        </button>
+      )}
       <button onClick={() => session.reveal()}>跳過測驗，從當下開始</button>
     </section>
   );

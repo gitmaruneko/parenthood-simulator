@@ -148,7 +148,7 @@ MVP 需要一個可重現、可測試、可擴充的事件引擎，讓玩家的�
 
 ### Opening assessment
 
-- The assessment has five optional situational questions with four choices each.
+- The assessment has five optional situational questions. Dinner and restaurant each have six candidate actions (four initially visible, remainder expandable); the other questions have four. These are hypothetical scenarios before family generation and do not change the EventNode choice limit.
 - Answers contribute a weighted vector across multiple narrative tendencies.
 - The result displays two or three text descriptions as current tendencies, not a diagnosis or fixed type.
 - Skipping uses neutral tendencies.

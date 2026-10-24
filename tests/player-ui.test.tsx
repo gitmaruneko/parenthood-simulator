@@ -9,6 +9,10 @@ import type { HomeSaveView } from "../src/persistence/index.js";
 import { eventNodeSchema } from "../src/domain/schemas.js";
 import { SaveNotice } from "../src/ui/SaveNotice.js";
 import { FAMILY_LIFE_DIRECTIONS } from "../src/domain/family-life-direction.js";
+import { Assessment } from "../src/ui/App.js";
+import { createPlayerSession } from "../src/ui/player-session.js";
+import { createLocalSaveStore } from "../src/persistence/index.js";
+import { createFamilyRun, describeFamily } from "../src/engine/index.js";
 
 beforeAll(() => {
   vi.stubGlobal(
@@ -21,6 +25,73 @@ beforeAll(() => {
 });
 
 afterEach(cleanup);
+it("expands opening candidates without answering and resets expansion for the next situation", async () => {
+  const session = createPlayerSession(createLocalSaveStore({
+    getItem: () => null, setItem: () => {},
+  }), () => 42);
+  await session.check();
+  await session.newStory();
+  render(<main><Assessment session={session} /></main>);
+  const main = within(screen.getByRole("main"));
+  expect(main.getByRole("heading", { name: /假設忙了一天/ })).toBeTruthy();
+  expect(main.queryByRole("button", { name: /外食、外帶或叫外送/ })).toBeNull();
+  await userEvent.click(main.getByRole("button", { name: "看看其他做法" }));
+  expect(main.getByRole("button", { name: /同住家人已經煮好飯/ })).toBeTruthy();
+  expect(session.getSnapshot().reveal).toBeNull();
+  await userEvent.click(main.getByRole("button", { name: /外食、外帶或叫外送/ }));
+  expect(main.getByRole("heading", { name: /假設和孩子在餐廳/ })).toBeTruthy();
+  expect(main.queryByRole("button", { name: /安撫玩具/ })).toBeNull();
+  await userEvent.click(main.getByRole("button", { name: "看看其他做法" }));
+  expect(main.getByRole("button", { name: /手機或平板/ })).toBeTruthy();
+  await userEvent.click(main.getByRole("button", { name: /事先準備的安撫玩具/ }));
+  expect(main.getByRole("heading", { name: /孩子睡著了/ })).toBeTruthy();
+  expect(main.queryByRole("button", { name: "看看其他做法" })).toBeNull();
+  await userEvent.click(main.getByRole("button", { name: "跳過測驗，從當下開始" }));
+  expect(session.getSnapshot().page).toBe("reveal");
+  expect(session.getSnapshot().reveal).not.toBeNull();
+}, 15000);
+
+it("shows compact member relationships and expands household context without simulation commands", async () => {
+  const choose = vi.fn();
+  const advance = vi.fn();
+  const props = { game: { ...game, members: [...game.members, {
+    id: "support", displayName: "支持家人（不同住）", relationship: "不同住的支持家人",
+    ageLabel: null, context: ["家庭照顧安排：目前會先確認彼此能接手的時間。"], recent: null,
+    recentTimeLabel: null, memories: [],
+  }] }, busy: false, blocked: false, onChoose: choose, onAdvance: advance };
+  const view = render(<GameScreen {...props} />);
+  const family = within(screen.getByRole("tabpanel", { name: "家庭" }));
+  expect(family.getByText("你的孩子 · 2 個月")).toBeTruthy();
+  expect(family.getAllByRole("article")).toHaveLength(2);
+  await userEvent.click(family.getByText("查看支持家人（不同住）的生活脈絡"));
+  expect(family.getByText(/家庭照顧安排/).closest("details")!.open).toBe(true);
+  expect(choose).not.toHaveBeenCalled(); expect(advance).not.toHaveBeenCalled();
+  view.rerender(<GameScreen {...props} game={{ ...props.game, members: props.game.members.map((member) =>
+    member.id === "support" ? { ...member, recent: "今天確認了能幫忙的時間。" } : member) }} />);
+  expect(family.getByText("最近：今天確認了能幫忙的時間。")).toBeTruthy();
+  view.rerender(<GameScreen {...props} game={{ ...props.game, members: props.game.members.map((member) =>
+    member.id === "support" ? { ...member, displayName: "共同照顧者", relationship: "共同照顧者" } : member) }} />);
+  expect(within(family.getByRole("article", { name: "共同照顧者" })).getAllByText("共同照顧者")).toHaveLength(1);
+});
+it("shows household summaries, dates recorded reactions and reveals only stored personal memories", async () => {
+  const familySummary = describeFamily({ ...createFamilyRun({ seed: 42 }).state.family,
+    careParticipation: "shared", workArrangement: "flexible" });
+  render(<GameScreen game={{ ...game, family: familySummary, members: [{ ...game.members[0]!,
+    recent: "孩子拉著你的手。", recentTimeLabel: "2 個月 1 天", memories: ["你陪孩子一起緩了下來。"],
+  }] }} busy={false} blocked={false} onChoose={vi.fn()} onAdvance={vi.fn()} />);
+  const family = within(screen.getByRole("tabpanel", { name: "家庭" }));
+  expect(family.getByText("照顧安排").tagName).toBe("DT");
+  expect(family.getAllByRole("definition").map((item) => item.textContent))
+    .toEqual(["共同分擔照顧", "彈性工作安排"]);
+  const child = within(family.getByRole("article", { name: "孩子" }));
+  expect(child.getByText("2 個月 1 天")).toBeTruthy();
+  expect(child.getByText(/最近：孩子拉著你的手/)).toBeTruthy();
+  const memory = child.getByText("你陪孩子一起緩了下來。");
+  expect(memory.closest("details")!.open).toBe(false);
+  await userEvent.click(child.getByText("查看孩子的生活脈絡"));
+  expect(memory.closest("details")!.open).toBe(true);
+  expect(child.queryByText(/家庭工作安排/)).toBeNull();
+});
 it("renders all directions as one accessible group and retains focus when the selection updates", async () => {
   const onDirection = vi.fn();
   const props = { game, busy: false, blocked: false, onChoose: vi.fn(), onAdvance: vi.fn(), onDirection };
@@ -67,7 +138,7 @@ const game: GamePresentation = {
   ],
   choices: [],
   reactions: [],
-  members: [{ id: "child", displayName: "孩子", recent: null }],
+  members: [{ id: "child", displayName: "孩子", relationship: "你的孩子", ageLabel: "2 個月", context: [], recent: null, recentTimeLabel: null, memories: [] }],
   currentTurnId: "turn-1",
   currentAgeStageId: "age-stage-1",
   cause: null,

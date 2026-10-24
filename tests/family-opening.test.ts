@@ -28,12 +28,12 @@ describe("Family opening public boundary", () => {
     expect(run.summary.conditions).toHaveLength(3);
   });
 
-  it("offers five optional situations with four choices and describes current tendencies without scores", () => {
+  it("offers five optional situations with expanded opening candidates and no scores", () => {
     const questions = getAssessmentQuestions();
     expect(questions).toHaveLength(5);
     for (const question of questions) {
-      expect(question.choices).toHaveLength(4);
-      expect(new Set(question.choices.map((choice) => choice.id)).size).toBe(4);
+      expect(question.choices).toHaveLength(["dinner", "restaurant"].includes(question.id) ? 6 : 4);
+      expect(new Set(question.choices.map((choice) => choice.id)).size).toBe(question.choices.length);
       for (const choice of question.choices) expect(Object.keys(choice).sort()).toEqual(["id", "text"]);
     }
     const answers = questions.map((question) => question.choices[0]!.id);
@@ -117,8 +117,8 @@ describe("Family opening public boundary", () => {
     const neutral = createFamilyRun({ seed: 0xffffffff });
     // Worked totals in responsibility, flexibility, self-care, shared-care order.
     const totals = [
-      [[3, 2, 4, 2], [5, 2, 3, 2], [3, 1, 4, 4], [3, 2, 5, 2]],
-      [[3, 2, 4, 2], [3, 1, 4, 4], [2, 3, 5, 2], [3, 1, 6, 2]],
+      [[3, 2, 4, 2], [5, 2, 3, 2], [3, 1, 4, 4], [3, 2, 5, 2], [3, 3, 4, 2], [3, 2, 3, 3]],
+      [[3, 2, 4, 2], [3, 1, 4, 4], [2, 3, 5, 2], [3, 1, 6, 2], [3, 2, 4, 2], [3, 2, 4, 2]],
       [[3, 2, 4, 2], [1, 4, 4, 2], [2, 2, 3, 4], [1, 3, 5, 2]],
       [[3, 2, 4, 2], [4, 2, 6, 0], [4, 4, 4, 0], [3, 4, 5, 0]],
       [[3, 2, 4, 2], [5, 2, 2, 3], [3, 2, 3, 4], [3, 4, 3, 2]],

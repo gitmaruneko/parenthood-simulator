@@ -186,6 +186,41 @@ function Growth({ game }: { game: GamePresentation }) {
     </section>
   );
 }
+function FamilyMembers({ game }: { game: GamePresentation }) {
+  return <>
+    <h2>家庭成員</h2>
+    <dl className="family-arrangements">
+      {game.family.conditions.filter((condition) => condition.dimension !== "householdComposition").map((condition) => (
+        <div key={condition.conditionId}>
+          <dt>{condition.dimension === "careParticipation" ? "照顧安排" : "家庭工作"}</dt>
+          <dd>{condition.title}</dd>
+        </div>
+      ))}
+    </dl>
+    {game.members.map((member) => (
+      <article className="member" key={member.id} aria-label={member.displayName}>
+        <header className="member-header">
+          <h3>{member.displayName}</h3>
+          {(member.relationship !== member.displayName || member.ageLabel) && <p className="member-relationship">
+            {member.relationship}{member.ageLabel && ` · ${member.ageLabel}`}
+          </p>}
+        </header>
+        {member.recent && <p className="member-recent">
+          {member.recentTimeLabel && <small>{member.recentTimeLabel}</small>}
+          最近：{member.recent}
+        </p>}
+        {(member.context.length > 0 || member.memories.length > 0) && <details>
+          <summary>查看{member.displayName}的生活脈絡</summary>
+          {member.context.map((text) => <p key={text}>{text}</p>)}
+          {member.memories.length > 0 && <>
+            <h4>一起留下的片段</h4>
+            <ul>{member.memories.map((text, index) => <li key={index}>{text}</li>)}</ul>
+          </>}
+        </details>}
+      </article>
+    ))}
+  </>;
+}
 export interface GameScreenProps {
   game: GamePresentation;
   busy: boolean;
@@ -259,12 +294,7 @@ export function GameScreen({
           <FamilyDetails family={game.family} compact />
         </section>
         <section className="mobile-members">
-          <h2>家庭成員</h2>
-          {game.members.map((member) => (
-            <p key={member.id}>
-              {member.displayName} · {member.recent ?? "一起走進今天的生活"}
-            </p>
-          ))}
+          <FamilyMembers game={game} />
         </section>
       </aside>
       <div
@@ -431,13 +461,7 @@ export function GameScreen({
         aria-label="心事"
       >
         <section className="desktop-members">
-          <h2>家庭成員</h2>
-          {game.members.map((member) => (
-            <article className="member" key={member.id}>
-              <h3>{member.displayName}</h3>
-              <p>{member.recent ?? "一起走進今天的生活"}</p>
-            </article>
-          ))}
+          <FamilyMembers game={game} />
         </section>
         <section>
           <p className="eyebrow">留給照顧者的一頁</p>
