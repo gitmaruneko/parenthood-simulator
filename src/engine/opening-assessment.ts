@@ -16,21 +16,25 @@ interface WeightedQuestion extends AssessmentQuestion {
 // Fictional narrative weights, not a psychological scale. Positions carry no fixed meaning.
 const QUESTIONS: readonly WeightedQuestion[] = [
   {
-    id: "dinner", text: "忙了一天，晚餐還沒準備，你現在想怎麼安排？",
+    id: "dinner", text: "假設忙了一天，到了安排晚餐的時間，你會想怎麼吃？",
     choices: [
-      { id: "simple-meal", text: "先用簡單的餐點，留一點力氣休息。", weights: { flexibility: 1, selfCare: 1 } },
+      { id: "simple-meal", text: "簡單煮一餐，留一點力氣休息。", weights: { flexibility: 1, selfCare: 1 } },
       { id: "cook-plan", text: "照原本的安排煮飯，讓晚上的作息熟悉一些。", weights: { responsibility: 2, flexibility: 1 } },
-      { id: "share-meal", text: "問問可支援的人，能否分擔備餐或收拾。", weights: { sharedCare: 2, selfCare: 1 } },
+      { id: "share-meal", text: "如果有伴侶或家人能幫忙，問問能不能一起準備晚餐。", weights: { sharedCare: 2, selfCare: 1 } },
       { id: "pause-meal", text: "先坐一下，再決定今晚怎麼吃。", weights: { selfCare: 2, flexibility: 1 } },
+      { id: "buy-meal", text: "外食、外帶或叫外送，今天先省下煮飯的力氣。", weights: { flexibility: 2, selfCare: 1 } },
+      { id: "prepared-meal", text: "如果有同住家人已經煮好飯，就一起吃準備好的飯菜。", weights: { sharedCare: 1, flexibility: 1 } },
     ],
   },
   {
-    id: "restaurant", text: "在餐廳裡，孩子哭了起來，你現在想先做什麼？",
+    id: "restaurant", text: "假設和孩子在餐廳吃飯，孩子哭了起來，你會想先做什麼？",
     choices: [
-      { id: "quiet-corner", text: "先找安靜一點的地方，陪孩子緩一緩。", weights: { responsibility: 1, flexibility: 1 } },
-      { id: "take-turns", text: "若有人同行，商量輪流陪伴與用餐。", weights: { sharedCare: 2, responsibility: 1 } },
+      { id: "quiet-corner", text: "先和孩子到安靜一點的地方，讓彼此緩一緩。", weights: { responsibility: 1, flexibility: 1 } },
+      { id: "take-turns", text: "如果孩子的爸爸、家人或朋友也在，商量輪流陪孩子、輪流吃飯。", weights: { sharedCare: 2, responsibility: 1 } },
       { id: "pack-meal", text: "改成外帶，換個比較合適的節奏。", weights: { flexibility: 2, selfCare: 1 } },
-      { id: "settle-first", text: "先讓自己呼吸一下，再回應孩子。", weights: { selfCare: 2, responsibility: 1 } },
+      { id: "settle-first", text: "在座位上先陪孩子安定下來，也讓自己喘口氣。", weights: { selfCare: 2, responsibility: 1 } },
+      { id: "screen-soothe", text: "如果手邊有手機或平板，先拿出來轉移孩子的注意。", weights: { responsibility: 1, flexibility: 1 } },
+      { id: "comfort-toy", text: "如果有帶事先準備的安撫玩具，拿給孩子試試。", weights: { responsibility: 1, flexibility: 1 } },
     ],
   },
   {

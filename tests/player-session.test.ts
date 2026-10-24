@@ -18,6 +18,79 @@ const memory = () => {
   };
 };
 
+it("restores each person's own memories and dates earlier reactions without changing their age", async () => {
+  const run = createFamilyRun({ seed: 42 });
+  const adultId = run.state.family.persistentActorIds[0]!;
+  const storage = memory();
+  storage.setItem(LOCAL_SAVE_KEY, serializeGame({
+    ...run.state, currentAgeStageId: "age-stage-8",
+    history: [{ id: "remembered-reaction", kind: "reaction", text: "對方說週末能來幫忙。",
+      ageStageId: "age-stage-1", turnId: "remembered-turn" }],
+    reactionHistory: [{ poolId: "everyday-responses", reactionId: "understanding", actorId: adultId,
+      kind: "understanding", text: "對方說週末能來幫忙。", eventId: "night-handoff-choice",
+      ageStageId: "age-stage-1", turnId: "remembered-turn" }],
+    relationshipMemories: [
+      { id: "family-note", category: "care", text: "這是全家的紀錄。", createdAtAgeStageId: "age-stage-1" },
+      { id: "adult-note", actorId: adultId, category: "support", text: "你們確認了週末幫忙的時間。", createdAtAgeStageId: "age-stage-1" },
+      { id: "child-note", actorId: run.state.family.childId, category: "connection", text: "孩子拉著你的手。", createdAtAgeStageId: "age-stage-1" },
+    ],
+  }));
+  const session = createPlayerSession(createLocalSaveStore(storage));
+  await session.check(); await session.resume();
+  const game = session.getSnapshot().game!;
+  const adult = game.members.find((member) => member.id === adultId)!;
+  expect(adult).toMatchObject({ recent: "對方說週末能來幫忙。", recentTimeLabel: "2 個月 1 天",
+    memories: ["你們確認了週末幫忙的時間。"] });
+  expect(game.members[0]).toMatchObject({ ageLabel: "3 歲 3 個月", recentTimeLabel: null,
+    memories: ["孩子拉著你的手。"] });
+});
+
+it("presents only generated family members with relationships and the child's current age", async () => {
+  const covered = new Set<string>();
+  for (let seed = 0; seed < 64 && covered.size < 3; seed++) {
+    const run = createFamilyRun({ seed });
+    if (covered.has(run.state.family.householdComposition)) continue;
+    covered.add(run.state.family.householdComposition);
+    const session = createPlayerSession(createLocalSaveStore(memory()), () => seed);
+    await session.check(); await session.newStory(); session.reveal(); await session.startFamily();
+    const game = session.getSnapshot().game!;
+    expect(game.members.map((member) => member.id)).toEqual(run.actors.map((actor) => actor.id));
+    expect(game.members[0]).toMatchObject({ displayName: "孩子", relationship: "你的孩子", ageLabel: "2 個月" });
+    for (const member of game.members.slice(1)) {
+      expect(member.ageLabel).toBeNull();
+      expect(member.context.join("")).toContain("家庭照顧安排");
+      expect(member.context.join("")).toContain("家庭工作安排");
+    }
+    if (run.state.family.householdComposition === "singleCaregiver") {
+      expect(game.members).toHaveLength(2);
+      expect(game.members[1]!.relationship).toBe("不同住的支持家人");
+      expect(game.pendingEvent!.choices.map((choice) => choice.id)).not.toContain("handoff");
+    } else if (run.state.family.householdComposition === "twoCaregivers") {
+      expect(game.members).toHaveLength(2);
+      expect(game.members[1]!.relationship).toBe("共同照顧者");
+      expect(game.pendingEvent!.choices.map((choice) => choice.id)).not.toContain("ask-family");
+    } else {
+      expect(game.members).toHaveLength(3);
+      expect(game.members[2]!.relationship).toBe("同住長輩");
+    }
+    const before = game.members.map((member) => ({ ...member }));
+    await session.choose("coordinate");
+    const after = session.getSnapshot().game!;
+    for (const member of after.members) {
+      const reaction = after.reactions.filter((entry) => entry.actorId === member.id).at(-1);
+      expect(member.recent).toBe(reaction?.text ?? null);
+    }
+    expect(game.members).toEqual(before);
+    // Age is read from the persisted stage, rather than fixed at generation.
+    const storage = memory();
+    storage.setItem(LOCAL_SAVE_KEY, serializeGame({ ...run.state, currentAgeStageId: "age-stage-8" }));
+    const older = createPlayerSession(createLocalSaveStore(storage));
+    await older.check(); await older.resume();
+    expect(older.getSnapshot().game!.members[0]!.ageLabel).toBe("3 歲 3 個月");
+  }
+  expect(covered.size).toBe(3);
+}, 15000);
+
 it("saves every rapid direction switch in order and restores the pending story", async () => {
   const storage = memory();
   const session = createPlayerSession(createLocalSaveStore(storage), () => 42);

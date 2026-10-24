@@ -29,7 +29,12 @@ export interface GamePresentation extends ReturnType<typeof getPlayerView> {
   readonly members: readonly {
     id: string;
     displayName: string;
+    relationship: string;
+    ageLabel: string | null;
+    context: readonly string[];
     recent: string | null;
+    recentTimeLabel: string | null;
+    memories: readonly string[];
   }[];
   readonly currentTurnId: string | null;
   readonly currentAgeStageId: string;
@@ -105,6 +110,7 @@ export const createPlayerSession = (
   };
   const presentGame = (): GamePresentation => {
     const view = getPlayerView(state!, content);
+    const family = describeFamily(state!.family);
     const currentEventIds = new Set(
       state!.history
         .filter((entry) => entry.turnId === state!.currentTurnId)
@@ -137,7 +143,7 @@ export const createPlayerSession = (
       })[0] ?? null;
     return {
       ...view,
-      family: describeFamily(state!.family),
+      family,
       resources: { ...state!.resources },
       history: state!.history,
       choices: state!.choiceHistory,
@@ -148,14 +154,28 @@ export const createPlayerSession = (
             actor.id === state!.family.childId ||
             state!.family.persistentActorIds.includes(actor.id),
         )
-        .map((actor) => ({
-          id: actor.id,
-          displayName: actor.displayName,
-          recent:
-            [...(state!.reactionHistory ?? [])]
-              .reverse()
-              .find((reaction) => reaction.actorId === actor.id)?.text ?? null,
-        })),
+        .map((actor) => {
+          const recent = [...(state!.reactionHistory ?? [])].reverse()
+            .find((reaction) => reaction.actorId === actor.id);
+          return {
+            id: actor.id,
+            displayName: actor.displayName,
+            relationship: actor.role === "child" ? "你的孩子"
+              : actor.role === "partner" ? "共同照顧者"
+              : actor.role === "grandparent"
+                ? state!.family.householdComposition === "multigenerational" ? "同住長輩" : "不同住的支持家人"
+                : actor.displayName,
+            ageLabel: actor.id === state!.family.childId ? view.ageLabel : null,
+            // These describe household arrangements, never an individual's job or personality.
+            context: actor.role === "child" ? [] : family.conditions
+              .filter((condition) => condition.dimension !== "householdComposition")
+              .map((condition) => `${condition.dimension === "careParticipation" ? "家庭照顧安排" : "家庭工作安排"}：${condition.neutralSummary}`),
+            recent: recent?.text ?? null,
+            recentTimeLabel: recent ? view.storyTimeLabels[recent.turnId] ?? null : null,
+            memories: state!.relationshipMemories.filter((memory) => memory.actorId === actor.id)
+              .slice(-3).reverse().map((memory) => memory.text),
+          };
+        }),
       currentTurnId: state!.currentTurnId,
       currentAgeStageId: state!.currentAgeStageId,
       cause,

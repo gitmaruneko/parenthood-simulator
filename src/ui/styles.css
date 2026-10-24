@@ -591,9 +591,58 @@ button .muted,
 .member {
   border-bottom: 1px solid var(--line);
   padding: 12px 0;
+  overflow-wrap: anywhere;
 }
 .member p {
   color: var(--muted);
+}
+.member .member-relationship {
+  color: var(--green);
+  font-size: 1rem;
+}
+.member h3 {
+  margin: 0;
+}
+.member-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.member-header p {
+  margin: 0;
+}
+.member-recent small {
+  display: block;
+}
+.member details {
+  margin-top: 12px;
+}
+.family-arrangements {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  background: #eef1e8;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+.family-arrangements:empty {
+  display: none;
+}
+.family-arrangements > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.family-arrangements dt {
+  color: var(--muted);
+}
+.family-arrangements dd {
+  margin: 0;
+  color: var(--green);
+  font-weight: 600;
 }
 .thought-note {
   padding: 18px 12px;

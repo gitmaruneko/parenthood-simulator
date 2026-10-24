@@ -2,6 +2,36 @@ import { test, expect, type Page } from "@playwright/test";
 import { createFamilyRun } from "../../src/engine/index.js";
 
 const key = "parenthood-simulator.save";
+test("opening candidates expand and family members show current relationships", async ({ page, isMobile }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "開始我們的故事", exact: true }).click();
+  const main = page.getByRole("main");
+  await expect(main.getByRole("button", { name: /外食、外帶或叫外送/ })).toHaveCount(0);
+  await main.getByRole("button", { name: "看看其他做法" }).click();
+  await expect(main.getByRole("button", { name: /同住家人已經煮好飯/ })).toBeVisible();
+  await page.screenshot({ path: `test-results/opening-dinner-${isMobile ? "mobile" : "desktop"}.png`, fullPage: true });
+  await main.getByRole("button", { name: /外食、外帶或叫外送/ }).click();
+  await expect(main.getByRole("button", { name: /手機或平板/ })).toHaveCount(0);
+  await main.getByRole("button", { name: "看看其他做法" }).click();
+  await expect(main.getByRole("button", { name: /手機或平板/ })).toBeVisible();
+  await page.screenshot({ path: `test-results/opening-restaurant-${isMobile ? "mobile" : "desktop"}.png`, fullPage: true });
+  await main.getByRole("button", { name: /事先準備的安撫玩具/ }).click();
+  await main.getByRole("button", { name: "跳過測驗，從當下開始" }).click();
+  await page.getByRole("button", { name: "開始這個家庭" }).click();
+  if (isMobile) await page.getByRole("tab", { name: "家庭", exact: true }).click();
+  const family = page.getByRole("tabpanel", { name: isMobile ? "家庭" : "心事", exact: true });
+  await expect(family.getByText("你的孩子 · 2 個月")).toBeVisible();
+  await expect(family.getByText("照顧安排", { exact: true })).toBeVisible();
+  await expect(family.getByText("家庭工作", { exact: true })).toBeVisible();
+  await expect(family.getByText("一起走進今天的生活")).toHaveCount(0);
+  await page.screenshot({ path: `test-results/family-members-${isMobile ? "mobile" : "desktop"}.png`, fullPage: true });
+  await family.getByText(/查看.+的生活脈絡/).first().click();
+  await expect(family.getByText(/家庭照顧安排：/).first()).toBeVisible();
+  if (isMobile) await page.setViewportSize({ width: 320, height: 844 });
+  await page.screenshot({ path: `test-results/family-details-${isMobile ? "mobile-320" : "desktop"}.png`, fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
 async function seedSave(page: Page, raw: string) {
   await page.addInitScript(
     ({ key, raw }) => {
