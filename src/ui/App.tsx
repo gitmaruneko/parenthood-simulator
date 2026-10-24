@@ -5,6 +5,7 @@ import { HomePage } from "./HomePage.js";
 import { FamilyDetails, GameScreen } from "./GameScreen.js";
 import { Illustration } from "./Illustration.js";
 import { SaveNotice } from "./SaveNotice.js";
+import { ReviewScreen } from "./ReviewScreen.js";
 
 const questions = getAssessmentQuestions();
 export function Assessment({ session }: { session: PlayerSession }) {
@@ -192,7 +193,11 @@ export function App({ session: provided }: { session?: PlayerSession }) {
               </section>
             </main>
           )}
-          {snapshot.page === "game" && snapshot.game && (
+          {snapshot.page === "game" && snapshot.game && (snapshot.game.review ? (
+            <ReviewScreen game={snapshot.game} blocked={snapshot.busy || snapshot.error !== null}
+              onSelect={(ids) => void session.selectMoments(ids)} onReplay={() => void session.replay()}
+              onNew={() => void session.newStory()} />
+          ) : (
             <GameScreen
               game={snapshot.game}
               busy={snapshot.busy}
@@ -202,7 +207,7 @@ export function App({ session: provided }: { session?: PlayerSession }) {
               onAdvance={() => void session.advance()}
               onDirection={(id) => void session.setDirection(id)}
             />
-          )}
+          ))}
         </>
       )}
       {snapshot.error && !snapshot.dialog && (

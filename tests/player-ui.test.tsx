@@ -107,6 +107,9 @@ it("renders all directions as one accessible group and retains focus when the se
   expect(within(group).getAllByRole("radio").filter((item) => (item as HTMLInputElement).checked)).toHaveLength(1);
 });
 const game: GamePresentation = {
+  review: null,
+  planningLoad: 0,
+  openingResources: null,
   activeFamilyLifeDirectionId: "flexible",
   familyLifeDirections: FAMILY_LIFE_DIRECTIONS,
   completed: false,

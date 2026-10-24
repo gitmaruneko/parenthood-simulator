@@ -288,7 +288,7 @@ test("storage denial remains recoverable and does not offer a new-story shortcut
   ).toHaveCount(0);
 });
 
-test("finishes twelve stages and reopens the existing family log without advancing", async ({
+test("finishes twelve stages, edits the review and confirms replay safely", async ({
   page,
   isMobile,
 }) => {
@@ -296,7 +296,7 @@ test("finishes twelve stages and reopens the existing family log without advanci
   await page.getByRole("button", { name: "開始這個家庭" }).click();
   const life = page.getByRole("tabpanel", { name: "生活", exact: true });
   for (let step = 0; step < 120; step++) {
-    if (await life.getByText("十二個階段告一段落。", { exact: false }).count())
+    if (await page.getByRole("heading", { name: "我們的家庭生活回顧" }).count())
       break;
     const button = life.getByRole("button").first();
     await expect(button).toBeEnabled();
@@ -306,7 +306,7 @@ test("finishes twelve stages and reopens the existing family log without advanci
     page.getByText("AgeStage 12 / 12", { exact: true }),
   ).toBeVisible();
   await expect(
-    life.getByText("十二個階段告一段落。", { exact: false }),
+    page.getByRole("heading", { name: "我們的家庭生活回顧" }),
   ).toBeVisible();
   const saved = await page.evaluate((key) => localStorage.getItem(key), key);
   await page.getByRole("button", { name: "返回首頁", exact: true }).click();
@@ -315,14 +315,36 @@ test("finishes twelve stages and reopens the existing family log without advanci
   ).toHaveText("這段生活已成為家庭紀錄");
   await page.getByRole("button", { name: "重看家庭紀錄" }).click();
   await expect(
-    page.getByRole("heading", { name: "家庭生活紀錄" }),
+    page.getByRole("heading", { name: "我們的家庭生活回顧" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "家庭生活紀錄" }),
+    page.getByRole("heading", { name: "我們的家庭生活回顧" }),
   ).toBeFocused();
   expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(
     saved,
   );
+  await expect(page.locator(".review-timeline > li")).toHaveCount(12);
+  await page.getByText("調整三個關鍵時刻", { exact: true }).click();
+  await page.getByRole("checkbox", { checked: true }).first().uncheck();
+  await page.getByRole("checkbox", { checked: false }).last().check();
+  await page.getByRole("button", { name: "儲存關鍵時刻" }).click();
+  await expect(page.getByRole("button", { name: "相同種子，再走一次" })).toBeEnabled();
+  await expect(page.getByRole("textbox")).toHaveValue(/這是遊戲中的家庭紀錄/);
+  await page.screenshot({ path: `test-results/review-${isMobile ? "mobile" : "desktop"}.png`, fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const reviewed = await page.evaluate((key) => localStorage.getItem(key), key);
+  await page.getByRole("button", { name: "相同種子，再走一次" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.getByRole("button", { name: "保留原本的故事" }).click();
+  expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(reviewed);
+  await page.getByRole("button", { name: "相同種子，再走一次" }).click();
+  await page.getByRole("button", { name: "確認開始新故事" }).click();
+  await expect(page.getByRole("button", { name: "開始這個家庭" })).toBeVisible();
+  expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(reviewed);
+  await page.getByRole("button", { name: "開始這個家庭" }).click();
+  const replayed = JSON.parse((await page.evaluate((key) => localStorage.getItem(key), key))!);
+  expect(replayed.state.seed).toBe(JSON.parse(saved!).state.seed);
+  await expect(page.getByRole("heading", { name: "我們的家庭生活回顧" })).toHaveCount(0);
 });
 
 test("migration write failures remain in recovery and keep the original story", async ({

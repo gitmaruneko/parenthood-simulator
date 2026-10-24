@@ -7,6 +7,10 @@ import {
   describeFamily,
   describeTendencies,
   getPlayerView,
+  createFamilyReview,
+  selectReviewMoments,
+  replayFamilyRun,
+  type FamilyReview,
   type EngineInput,
   type FamilyRun,
 } from "../engine/index.js";
@@ -41,6 +45,9 @@ export interface GamePresentation extends ReturnType<typeof getPlayerView> {
   readonly cause: string | null;
   readonly eventTitles: Readonly<Record<string, string>>;
   readonly choiceTexts: Readonly<Record<string, string>>;
+  readonly review: FamilyReview | null;
+  readonly planningLoad: number;
+  readonly openingResources: GameState["resources"] | null;
 }
 export interface PlayerSnapshot {
   readonly page: "home" | "assessment" | "reveal" | "game";
@@ -89,6 +96,7 @@ export const createPlayerSession = (
   let expectedRaw: string | null = null;
   let confirmedRaw: string | null | undefined;
   let dialogRaw: string | null = null;
+  let pendingReplay: FamilyRun | null = null;
   let needsSave = false;
   let directionQueue: Promise<void> = Promise.resolve();
   let pendingDirections = 0;
@@ -143,6 +151,9 @@ export const createPlayerSession = (
       })[0] ?? null;
     return {
       ...view,
+      review: view.completed ? createFamilyReview(state!, content) : null,
+      planningLoad: state!.planningLoad,
+      openingResources: state!.replayOrigin?.resources ?? null,
       family,
       resources: { ...state!.resources },
       history: state!.history,
@@ -243,9 +254,10 @@ export const createPlayerSession = (
     state = loaded;
     // Recreate only the seeded actor catalogue through the family-generation boundary.
     const generated = createFamilyRun({ seed: state.seed });
-    content = createMvpContent(generated.actors);
+    content = createMvpContent(state.replayOrigin?.actors ?? generated.actors);
     run = {
       ...generated,
+      actors: state.replayOrigin?.actors ?? generated.actors,
       state: loaded,
       summary: describeFamily(loaded.family),
       assessment: {
@@ -311,6 +323,7 @@ export const createPlayerSession = (
       }),
     home: () => {
       if (snapshot.busy) return;
+      pendingReplay = null;
       storyGeneration++;
       confirmedRaw = undefined;
       publish({ page: "home", dialog: null, error: null });
@@ -318,6 +331,7 @@ export const createPlayerSession = (
     },
     newStory: () =>
       operate("正在確認目前的故事…", () => {
+        pendingReplay = null;
         const loaded = inspect();
         if (loaded.status === "empty") {
           confirmedRaw = null;
@@ -327,6 +341,24 @@ export const createPlayerSession = (
           publish({ dialog: "confirm" });
         }
       }),
+    replay: () => operate("正在準備相同家庭…", () => {
+      if (!state || needsSave || !getPlayerView(state, content).completed) return;
+      const loaded = inspect();
+      if (loaded.status !== "restored" || loaded.rawData !== expectedRaw) {
+        publish({ error: "存檔已改變，請重新讀取故事後再重玩。" });
+        return;
+      }
+      pendingReplay = replayFamilyRun(state);
+      dialogRaw = loaded.rawData;
+      publish({ dialog: "confirm" });
+    }),
+    selectMoments: (ids: readonly string[]) => operate("儲存中…", () => {
+      if (!state || needsSave || snapshot.page !== "game") return;
+      const next = selectReviewMoments(state, content, ids);
+      state = next;
+      savingResult(store.save(next, expectedRaw));
+      publish({ game: presentGame() });
+    }),
     confirmNew: () =>
       operate("正在確認目前的故事…", () => {
         const loaded = inspect();
@@ -339,10 +371,18 @@ export const createPlayerSession = (
           return;
         }
         confirmedRaw = loaded.rawData;
+        if (pendingReplay) {
+          storyGeneration++;
+          run = pendingReplay;
+          pendingReplay = null;
+          publish({ page: "reveal", dialog: null, game: null,
+            reveal: { seed: run.state.seed, summary: run.summary, descriptions: describeTendencies(run.state.tendencies) } });
+          return;
+        }
         enterOpening();
       }),
     closeDialog: () => {
-      if (!snapshot.busy) publish({ dialog: null });
+      if (!snapshot.busy) { pendingReplay = null; publish({ dialog: null }); }
     },
     recovery: () => {
       if (!snapshot.busy) publish({ dialog: "recovery" });
