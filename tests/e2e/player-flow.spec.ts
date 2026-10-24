@@ -193,10 +193,11 @@ test("completes all five assessment questions and cancels new-story confirmation
   );
 });
 
-test("preserves corrupt saves through recovery and safely replaces only on confirmation", async ({
+for (const [kind, raw] of [["corrupt", "broken-story"], ["incompatible", '{"schemaVersion":999,"state":{}}']] as const) {
+test(`preserves ${kind} saves through recovery and safely replaces only on confirmation`, async ({
   page,
 }) => {
-  await seedSave(page, "broken-story");
+  await seedSave(page, raw);
   await page.goto("/");
   await page.getByRole("button", { name: "查看恢復選項" }).click();
   await expect(page.getByRole("dialog")).toContainText("原始資料未刪除");
@@ -205,7 +206,7 @@ test("preserves corrupt saves through recovery and safely replaces only on confi
   await page.getByRole("button", { name: "確認開始新故事" }).click();
   await page.getByRole("button", { name: "跳過測驗，從當下開始" }).click();
   expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(
-    "broken-story",
+    raw,
   );
   await page.getByRole("button", { name: "開始這個家庭" }).click();
   expect(
@@ -213,11 +214,12 @@ test("preserves corrupt saves through recovery and safely replaces only on confi
       (key) => localStorage.getItem(`${key}.preserved.0`),
       key,
     ),
-  ).toBe("broken-story");
+  ).toBe(raw);
   await expect(
     page.getByText("AgeStage 1 / 12", { exact: true }),
   ).toBeVisible();
 });
+}
 
 test("explicit migration retains the original data before entering the story", async ({
   page,
