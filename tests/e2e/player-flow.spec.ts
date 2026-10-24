@@ -17,7 +17,7 @@ test("opening candidates expand and family members show current relationships", 
   await page.screenshot({ path: `test-results/opening-restaurant-${isMobile ? "mobile" : "desktop"}.png`, fullPage: true });
   await main.getByRole("button", { name: /事先準備的安撫玩具/ }).click();
   await main.getByRole("button", { name: "跳過測驗，從當下開始" }).click();
-  await page.getByRole("button", { name: "開始這個家庭" }).click();
+  await startFamily(page);
   if (isMobile) await page.getByRole("tab", { name: "家庭", exact: true }).click();
   const family = page.getByRole("tabpanel", { name: isMobile ? "家庭" : "心事", exact: true });
   await expect(family.getByText("你的孩子 · 2 個月")).toBeVisible();
@@ -31,6 +31,15 @@ test("opening candidates expand and family members show current relationships", 
   await page.screenshot({ path: `test-results/family-details-${isMobile ? "mobile-320" : "desktop"}.png`, fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
+
+// Click completion precedes the session's yielded save operation.
+async function waitForSaved(page: Page) {
+  await expect(page.locator(".game-header").getByRole("status")).toHaveText("已儲存");
+}
+async function startFamily(page: Page) {
+  await page.getByRole("button", { name: "開始這個家庭" }).click();
+  await waitForSaved(page);
+}
 
 async function seedSave(page: Page, raw: string) {
   await page.addInitScript(
@@ -66,13 +75,14 @@ async function start(page: Page, assessment = false) {
 
 test("persistent direction selection saves immediately, preserves pending story and supports keyboard", async ({ page, isMobile }) => {
   await start(page);
-  await page.getByRole("button", { name: "開始這個家庭" }).click();
+  await startFamily(page);
   const group = page.getByRole("group", { name: "家庭生活方向" });
   await expect(group.getByRole("radio")).toHaveCount(6);
   for (const radio of await group.getByRole("radio").all()) await expect(radio).toBeVisible();
   const rawBefore = await page.evaluate((key) => localStorage.getItem(key), key);
   const selected = group.getByRole("radio", { name: /照顧者身心/ });
-  await selected.check();
+  // The controlled radio updates after the asynchronous save completes.
+  await selected.click();
   await expect(selected).toBeChecked();
   await expect(selected).toBeFocused();
   await expect(page.getByText("已儲存", { exact: true }).first()).toBeVisible();
@@ -115,7 +125,7 @@ test("browse original previews, reroll, choose, read reactions, restore and pres
   await page.getByRole("button", { name: "重新抽選家庭" }).click();
   await expect(page.getByText(/家庭種子：/)).not.toHaveText(seed);
   expect(await page.getByRole("main").innerText()).not.toEqual(summary);
-  await page.getByRole("button", { name: "開始這個家庭" }).click();
+  await startFamily(page);
   await expect(
     page.getByText("AgeStage 1 / 12", { exact: true }),
   ).toBeVisible();
@@ -161,7 +171,7 @@ test("completes all five assessment questions and cancels new-story confirmation
   page,
 }) => {
   await start(page, true);
-  await page.getByRole("button", { name: "開始這個家庭" }).click();
+  await startFamily(page);
   const saved = await page.evaluate((key) => localStorage.getItem(key), key);
   await page.getByRole("button", { name: "返回首頁", exact: true }).click();
   await page.getByRole("button", { name: "開始新的故事", exact: true }).click();
@@ -193,10 +203,11 @@ test("completes all five assessment questions and cancels new-story confirmation
   );
 });
 
-test("preserves corrupt saves through recovery and safely replaces only on confirmation", async ({
+for (const [kind, raw] of [["corrupt", "broken-story"], ["incompatible", '{"schemaVersion":999,"state":{}}']] as const) {
+test(`preserves ${kind} saves through recovery and safely replaces only on confirmation`, async ({
   page,
 }) => {
-  await seedSave(page, "broken-story");
+  await seedSave(page, raw);
   await page.goto("/");
   await page.getByRole("button", { name: "查看恢復選項" }).click();
   await expect(page.getByRole("dialog")).toContainText("原始資料未刪除");
@@ -205,19 +216,20 @@ test("preserves corrupt saves through recovery and safely replaces only on confi
   await page.getByRole("button", { name: "確認開始新故事" }).click();
   await page.getByRole("button", { name: "跳過測驗，從當下開始" }).click();
   expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(
-    "broken-story",
+    raw,
   );
-  await page.getByRole("button", { name: "開始這個家庭" }).click();
+  await startFamily(page);
   expect(
     await page.evaluate(
       (key) => localStorage.getItem(`${key}.preserved.0`),
       key,
     ),
-  ).toBe("broken-story");
+  ).toBe(raw);
   await expect(
     page.getByText("AgeStage 1 / 12", { exact: true }),
   ).toBeVisible();
 });
+}
 
 test("explicit migration retains the original data before entering the story", async ({
   page,
@@ -293,7 +305,7 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
   isMobile,
 }) => {
   await start(page);
-  await page.getByRole("button", { name: "開始這個家庭" }).click();
+  await startFamily(page);
   const life = page.getByRole("tabpanel", { name: "生活", exact: true });
   for (let step = 0; step < 120; step++) {
     if (await page.getByRole("heading", { name: "我們的家庭生活回顧" }).count())
@@ -301,6 +313,7 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
     const button = life.getByRole("button").first();
     await expect(button).toBeEnabled();
     await button.click();
+    await waitForSaved(page);
   }
   await expect(
     page.getByText("AgeStage 12 / 12", { exact: true }),
@@ -342,7 +355,7 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
   await page.getByRole("button", { name: "確認開始新故事" }).click();
   await expect(page.getByRole("button", { name: "開始這個家庭" })).toBeVisible();
   expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(reviewed);
-  await page.getByRole("button", { name: "開始這個家庭" }).click();
+  await startFamily(page);
   const replayed = JSON.parse((await page.evaluate((key) => localStorage.getItem(key), key))!);
   expect(replayed.state.seed).toBe(JSON.parse(saved!).state.seed);
   await expect(page.getByRole("heading", { name: "我們的家庭生活回顧" })).toHaveCount(0);
