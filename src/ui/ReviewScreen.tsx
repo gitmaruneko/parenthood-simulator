@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { REVIEW_THEMES } from "../engine/index.js";
+import { REVIEW_THEMES, getReviewMomentEntries } from "../engine/index.js";
 import type { GamePresentation } from "./player-session.js";
 
 export function ReviewScreen({ game, blocked, onSelect, onReplay, onNew }: {
@@ -26,8 +26,7 @@ export function ReviewScreen({ game, blocked, onSelect, onReplay, onNew }: {
       {choice && <p>你曾選擇：{game.choiceTexts[`${choice.eventId}/${choice.choiceId}`]}</p>}
     </article>;
   };
-  const choices = game.history.filter((entry) => entry.kind === "event" && game.choices.some(
-    (choice) => choice.eventId === entry.resolvedEventId && choice.turnId === entry.turnId));
+  const choices = getReviewMomentEntries(game.history, game.choices);
   return <main className="review-shell">
     <section className="panel">
       <h1 ref={title} tabIndex={-1}>我們的家庭生活回顧</h1>

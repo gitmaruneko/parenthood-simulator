@@ -12,33 +12,38 @@ export const REVIEW_THEMES = {
 } as const;
 export type FamilyReview = NonNullable<GameState["review"]>;
 
+export function getReviewMomentEntries(history: GameState["history"], choices: GameState["choiceHistory"]) {
+  return history.filter((entry) => entry.kind === "event" && choices.some(
+    (choice) => choice.eventId === entry.resolvedEventId && choice.turnId === entry.turnId));
+}
+
 export function createFamilyReview(state: GameState, content: ContentPack): FamilyReview {
   if (!getPlayerView(state, content).completed) throw new Error("Review requires a completed story");
-  const moments = state.history.filter((entry) => entry.kind === "event" && state.choiceHistory.some(
-    (choice) => choice.eventId === entry.resolvedEventId && choice.turnId === entry.turnId));
+  const moments = getReviewMomentEntries(state.history, state.choiceHistory);
   if (moments.length < 3) throw new Error("Review requires three recorded choices");
   const support = state.history.filter((entry) => entry.kind === "support");
   const repair = state.history.filter((entry) => entry.kind === "repair");
-  const planning = state.history.filter((entry) => entry.kind === "planning");
   const confirmedChoices = state.choiceHistory.flatMap((choice) => {
-    const selected = content.events.find((event) => event.id === choice.eventId)?.choices.find((item) => item.id === choice.choiceId);
-    return selected ? [selected] : [];
+    const event = content.events.find((event) => event.id === choice.eventId);
+    const selected = event?.choices.find((item) => item.id === choice.choiceId);
+    return event && selected ? [{ event, selected }] : [];
   });
-  // Frequency selects overlapping story descriptions, never a parenting score.
-  // Ties follow this fixed catalogue order so the same history stays reproducible.
-  const evidence: [FamilyReview["themes"][number], number][] = [
-    ["growing-together", state.relationshipMemories.filter((memory) => memory.category === "connection").length],
-    ["dual-income-routine", state.family.workArrangement === "dualIncome"
-      ? confirmedChoices.filter((choice) => (choice.resourceDeltas.finances ?? 0) !== 0).length : 0],
-    ["supported-journey", support.length],
-    ["learning-self-care", confirmedChoices.filter((choice) => (choice.resourceDeltas.energy ?? 0) > 0).length],
-    ["repair-after-conflict", repair.length],
-    ["unexpected-growth", (state.reactionHistory ?? []).filter((reaction) =>
-      reaction.kind === "understanding" && state.choiceHistory.some((choice) =>
-        choice.turnId === reaction.turnId && choice.eventId === reaction.eventId && choice.anticipatedJudgment)).length],
-  ];
-  const themes = evidence.filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([theme]) => theme);
-  if (!themes.length) themes.push("growing-together");
+  const rested = confirmedChoices.some(({ event, selected }) => (selected.resourceDeltas.energy ?? 0) > 0 ||
+    (event.contextTags?.includes("quiet-time") && selected.id === "coordinate"));
+  const worked = confirmedChoices.some(({ event }) => event.locationId === "work");
+  const conflict = state.relationshipMemories.some((memory) => memory.category === "conflict");
+  const changedReaction = (state.reactionHistory ?? []).some((reaction, index, reactions) =>
+    reaction.actorId && reaction.kind === "understanding" && reactions.slice(0, index).some((earlier) =>
+      earlier.actorId === reaction.actorId && ["criticism", "conflict"].includes(earlier.kind)));
+  // Describe actual choices and changing interactions. These tags never control play.
+  const themes: FamilyReview["themes"] = [rested ? "learning-self-care"
+    : worked && state.family.workArrangement === "dualIncome" ? "dual-income-routine"
+    : conflict && repair.length ? "repair-after-conflict"
+    : support.length ? "supported-journey" : "growing-together"];
+  const companion = changedReaction ? "unexpected-growth"
+    : state.relationshipMemories.some((memory) => memory.category === "connection") ? "growing-together"
+    : repair.length ? "repair-after-conflict" : support.length ? "supported-journey" : null;
+  if (companion && !themes.includes(companion)) themes.push(companion);
   const summary = describeFamily(state.family);
   const eligibleIds = new Set(moments.map((entry) => entry.id));
   const savedIds = state.review?.keyMomentIds;
@@ -63,8 +68,7 @@ export function createFamilyReview(state: GameState, content: ContentPack): Fami
 
 export function selectReviewMoments(state: GameState, content: ContentPack, ids: readonly string[]): GameState {
   const generated = createFamilyReview(state, content);
-  const eligible = new Set(state.history.filter((entry) => entry.kind === "event" && state.choiceHistory.some(
-    (choice) => choice.eventId === entry.resolvedEventId && choice.turnId === entry.turnId)).map((entry) => entry.id));
+  const eligible = new Set(getReviewMomentEntries(state.history, state.choiceHistory).map((entry) => entry.id));
   if (ids.length !== 3 || new Set(ids).size !== 3 || ids.some((id) => !eligible.has(id)))
     throw new Error("Select three distinct recorded choices");
   return { ...state, review: { ...generated, keyMomentIds: [...ids] } };

@@ -195,8 +195,14 @@ export function App({ session: provided }: { session?: PlayerSession }) {
           )}
           {snapshot.page === "game" && snapshot.game && (snapshot.game.review ? (
             <ReviewScreen game={snapshot.game} blocked={snapshot.busy || snapshot.error !== null}
-              onSelect={(ids) => void session.selectMoments(ids)} onReplay={() => void session.replay()}
-              onNew={() => void session.newStory()} />
+              onSelect={(ids) => void session.selectMoments(ids)} onReplay={() => {
+                previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+                void session.replay();
+              }}
+              onNew={() => {
+                previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+                void session.newStory();
+              }} />
           ) : (
             <GameScreen
               game={snapshot.game}

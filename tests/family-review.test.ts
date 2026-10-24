@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { createFamilyRun, createFamilyReview, selectReviewMoments, replayFamilyRun, rerollFamilyRun } from "../src/engine/index.js";
+import { createFamilyRun, createFamilyReview, selectReviewMoments, replayFamilyRun, rerollFamilyRun, getAssessmentQuestions } from "../src/engine/index.js";
 import { restoreGame, serializeGame } from "../src/persistence/index.js";
 import { completedStory } from "./helpers/completed-story.js";
 
@@ -45,7 +45,7 @@ it("replays the initial circumstances instead of end-state resources or tendenci
 });
 
 it("retains an assessed and rerolled opening across save and replay", () => {
-  const assessed = createFamilyRun({ seed: 41 });
+  const assessed = createFamilyRun({ seed: 41, answers: getAssessmentQuestions().map((question) => question.choices[0]!.id) });
   const run = rerollFamilyRun(assessed, { seed: 42 });
   const saved = restoreGame(serializeGame(run.state));
   if (saved.status !== "restored") throw new Error("Restore failed");
@@ -65,26 +65,14 @@ it("shares only controlled narrative labels, excluding private data and random s
   expect(() => createFamilyReview(createFamilyRun({ seed: 42 }).state, content)).toThrow();
 });
 
-it.each(["growing-together", "dual-income-routine", "supported-journey", "learning-self-care", "repair-after-conflict", "unexpected-growth"] as const)(
-  "uses %s only as a narrative label when that experience is recorded", (theme) => {
-    const played = completedStory();
-    const state = structuredClone(played.state);
-    const content = structuredClone(played.content);
-    state.history = state.history.filter((entry) => entry.kind === "event");
-    state.relationshipMemories = [];
-    state.reactionHistory = [];
-    for (const event of content.events) for (const choice of event.choices) choice.resourceDeltas = {};
-    if (theme === "dual-income-routine") {
-      state.family.workArrangement = "dualIncome";
-      for (const event of content.events) for (const choice of event.choices) choice.resourceDeltas = { finances: -1 };
-    } else if (theme === "learning-self-care") {
-      for (const event of content.events) for (const choice of event.choices) choice.resourceDeltas = { energy: 1 };
-    } else if (theme === "supported-journey" || theme === "repair-after-conflict") {
-      state.history.push(played.state.history.find((entry) => entry.kind === (theme === "supported-journey" ? "support" : "repair"))!);
-    } else if (theme === "unexpected-growth") {
-      const choice = state.choiceHistory[0]!;
-      choice.anticipatedJudgment = "擔心被責備";
-      state.reactionHistory = [{ ...played.state.reactionHistory![0]!, turnId: choice.turnId, eventId: choice.eventId, kind: "understanding" }];
+it("reaches all six themes through complete games using unmodified MVP content", () => {
+  const themes = new Set<string>();
+  for (let seed = 0; seed < 32 && themes.size < 6; seed++) {
+    for (const choice of ["coordinate", "carry", "handoff"]) {
+      const { state, content } = completedStory(choice, seed);
+      for (const theme of createFamilyReview(state, content).themes) themes.add(theme);
     }
-    expect(createFamilyReview(state, content).themes).toEqual([theme]);
-  });
+  }
+  expect([...themes].sort()).toEqual(["dual-income-routine", "growing-together", "learning-self-care",
+    "repair-after-conflict", "supported-journey", "unexpected-growth"]);
+});

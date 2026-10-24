@@ -1,8 +1,8 @@
 import { createMvpContent } from "../../src/content/mvp.js";
 import { createFamilyRun, getPlayerView, transitionGame } from "../../src/engine/index.js";
 
-export function completedStory(decision = "coordinate") {
-  const run = createFamilyRun({ seed: 42 });
+export function completedStory(decision = "coordinate", seed = 42) {
+  const run = createFamilyRun({ seed });
   const content = createMvpContent(run.actors);
   let state = run.state;
   for (let step = 0; step < 250; step++) {

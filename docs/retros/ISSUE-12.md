@@ -2,6 +2,9 @@
 
 - Replay needs the original opening, not the final tendencies. New runs retain
   a validated opening snapshot, and a regression covers replay after changes.
+- Independent review caught theme signals that the shipped content never emits.
+  Complete-game reachability now checks all six labels using unmodified content;
+  synthetic classifier fixtures alone had hidden the gap.
 - Extending generated state exposed an existing whole-state assertion in the
   assessment test. It now checks snapshot tendencies explicitly while preserving
   the assertion that family/resources/PRNG are independent of assessment answers.

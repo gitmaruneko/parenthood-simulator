@@ -337,6 +337,7 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.getByRole("button", { name: "保留原本的故事" }).click();
   expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(reviewed);
+  await expect(page.getByRole("button", { name: "相同種子，再走一次" })).toBeFocused();
   await page.getByRole("button", { name: "相同種子，再走一次" }).click();
   await page.getByRole("button", { name: "確認開始新故事" }).click();
   await expect(page.getByRole("button", { name: "開始這個家庭" })).toBeVisible();
