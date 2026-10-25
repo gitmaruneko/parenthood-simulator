@@ -21,8 +21,8 @@ it("keeps revealed identities through pending events, reload, review and replay"
   expect(session.getSnapshot().game!.pendingEvent!.text).toContain(child.displayName);
   const restored = createPlayerSession(store);
   await restored.check(); await restored.resume();
-  expect(restored.getSnapshot().game!.members.map(({ id, displayName, relationship, lifeDetail }) =>
-    ({ id, displayName, relationship, lifeDetail }))).toEqual(members);
+  expect(restored.getSnapshot().game!.members.map(({ id, displayName, relationship, lifeDetail, ageLabel }) =>
+    ({ id, displayName, relationship, lifeDetail, ageLabel }))).toEqual(members);
   for (let step = 0; step < 250 && !restored.getSnapshot().game!.review; step++) {
     const game = restored.getSnapshot().game!;
     if (game.pendingEvent) await restored.choose(game.pendingEvent.choices[0]!.id);

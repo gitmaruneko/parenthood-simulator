@@ -31,10 +31,11 @@ it("introduces the saved family without displaying assessment tendencies", async
   render(<App session={session} />);
   for (const member of session.getSnapshot().reveal!.members) {
     const card = within(screen.getByRole("article", { name: member.displayName }));
-    expect(card.getByText(member.relationship)).toBeTruthy();
+    expect(card.getByText(`${member.relationship}${member.ageLabel ? ` · ${member.ageLabel}` : ""}`)).toBeTruthy();
     expect(card.getByText(member.lifeDetail!)).toBeTruthy();
   }
   expect(screen.queryByRole("heading", { name: "此刻的照顧傾向" })).toBeNull();
+  expect(screen.getByText("你的孩子 · 2 個月")).toBeTruthy();
   expect(screen.getByRole("button", { name: "重新抽選家庭" })).toBeTruthy();
 });
 it("expands opening candidates without answering and resets expansion for the next situation", async () => {

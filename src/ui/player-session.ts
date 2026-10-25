@@ -63,7 +63,7 @@ export interface PlayerSnapshot {
     seed: number;
     summary: FamilyRun["summary"];
     descriptions: readonly string[];
-    members: ReturnType<typeof resolveFamilyMembers>;
+    members: readonly (ReturnType<typeof resolveFamilyMembers>[number] & { ageLabel: string | null })[];
   } | null;
   readonly game: GamePresentation | null;
   readonly gameTab: "life" | "records";
@@ -94,6 +94,14 @@ export const createPlayerSession = (
     listeners.forEach((listener) => listener());
   };
   let content = createMvpContent();
+  const presentReveal = (familyRun: FamilyRun): NonNullable<PlayerSnapshot["reveal"]> => {
+    const ageLabel = getPlayerView(familyRun.state, content).ageLabel;
+    return { seed: familyRun.state.seed, summary: familyRun.summary,
+      descriptions: familyRun.assessment.descriptions,
+      members: resolveFamilyMembers(familyRun.state, familyRun.actors).map(member => ({
+        ...member, ageLabel: member.id === familyRun.state.family.childId ? ageLabel : null,
+      })) };
+  };
   let run: FamilyRun | null = null;
   let state: GameState | null = null;
   let expectedRaw: string | null = null;
@@ -265,12 +273,7 @@ export const createPlayerSession = (
       page: state.turn || state.ageStageProgress ? "game" : "reveal",
       game: presentGame(),
       gameTab,
-      reveal: {
-        seed: state.seed,
-        summary: describeFamily(state.family),
-        descriptions: describeTendencies(state.tendencies),
-        members: resolveFamilyMembers(state, content.actors),
-      },
+      reveal: presentReveal(run),
       dialog: null,
       status: "已儲存",
     });
@@ -370,8 +373,7 @@ export const createPlayerSession = (
           run = pendingReplay;
           pendingReplay = null;
           publish({ page: "reveal", dialog: null, game: null,
-            reveal: { seed: run.state.seed, summary: run.summary, descriptions: describeTendencies(run.state.tendencies),
-              members: resolveFamilyMembers(run.state, run.actors) } });
+            reveal: presentReveal(run) });
           return;
         }
         enterOpening();
@@ -413,12 +415,7 @@ export const createPlayerSession = (
       });
       publish({
         page: "reveal",
-        reveal: {
-          seed: run.state.seed,
-          summary: run.summary,
-          descriptions: run.assessment.descriptions,
-          members: resolveFamilyMembers(run.state, run.actors),
-        },
+        reveal: presentReveal(run),
       });
     },
     reroll: () => {
@@ -428,12 +425,7 @@ export const createPlayerSession = (
         seed: seed === run.state.seed ? (seed + 1) >>> 0 : seed,
       });
       publish({
-        reveal: {
-          seed: run.state.seed,
-          summary: run.summary,
-          descriptions: run.assessment.descriptions,
-          members: resolveFamilyMembers(run.state, run.actors),
-        },
+        reveal: presentReveal(run),
       });
     },
     startFamily: () =>
