@@ -99,6 +99,48 @@ test("persistent direction selection saves immediately, preserves pending story 
   expect(restored).toEqual({ ...before, activeFamilyLifeDirectionId: "life-exploration" });
 });
 
+test("compact directions and family details stay readable without changing the saved story", async ({ page, isMobile }) => {
+  await start(page);
+  await startFamily(page);
+  const before = await page.evaluate((key) => localStorage.getItem(key), key);
+  const group = page.getByRole("group", { name: "家庭生活方向" });
+  const help = page.getByText("方向說明", { exact: true });
+  await help.focus();
+  await help.press("Enter");
+  await expect(page.getByText("留意休息、自我照顧與照顧者需要", { exact: true })).toBeVisible();
+  await help.press("Enter");
+  await expect(page.getByText("留意休息、自我照顧與照顧者需要", { exact: true })).not.toBeVisible();
+  const widths = isMobile ? [320, 390] : [768, 1024, 1440];
+  for (const width of widths) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const radio of await group.getByRole("radio").all()) {
+      await expect(radio).toBeVisible();
+      const target = await radio.locator("..").boundingBox();
+      expect(target!.height).toBeGreaterThanOrEqual(44);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+  if (isMobile) await page.getByRole("tab", { name: "家庭", exact: true }).click();
+  const family = page.getByRole("heading", { name: "家庭檔案", exact: true }).locator("..");
+  await expect(family.getByText("家庭型態", { exact: true })).toBeVisible();
+  await expect(family.getByText("分工狀態", { exact: true })).toBeVisible();
+  const details = family.getByText("家庭詳細資料", { exact: true });
+  await details.focus();
+  await details.press("Enter");
+  await expect(family.getByText("你將以「照顧者」的稱呼，開始安排與孩子一起生活的日常。", { exact: true })).toBeVisible();
+  await expect(family.locator(".condition")).toHaveCount(3);
+  await details.press("Enter");
+  await page.evaluate(() => { document.documentElement.style.fontSize = "32px"; });
+  if (isMobile) {
+    await page.getByRole("tab", { name: "生活", exact: true }).click();
+    await page.setViewportSize({ width: 320, height: 844 });
+  }
+  for (const radio of await group.getByRole("radio").all()) await expect(radio).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: `test-results/ux-v2-t1-large-text-${isMobile ? "mobile" : "desktop"}.png`, fullPage: true });
+  expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(before);
+});
+
 test("browse original previews, reroll, choose, read reactions, restore and preserve tabs", async ({
   page,
   isMobile,

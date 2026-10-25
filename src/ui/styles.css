@@ -979,16 +979,23 @@ dialog h2 {
   }
 }
 .direction-panel fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
-.direction-panel legend { font-size: 1.25rem; font-weight: 700; }
-.direction-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
-.direction-option { display: flex; align-items: flex-start; gap: .6rem; padding: .75rem;
-  border: 1px solid #9cae9e; border-radius: .3rem; cursor: pointer; min-height: 44px; }
-.direction-option:has(input:checked) { border: 2px solid #4b6352; background: #edf2e8; padding: calc(.75rem - 1px); }
-.direction-option input { margin-top: .3rem; accent-color: #4b6352; flex-shrink: 0; }
-.direction-option small { display: block; line-height: 1.6; }
-.direction-current { color: #3c5443; font-weight: 700; }
+.direction-panel legend { font-size: 1.125rem; font-weight: 700; margin-bottom: .5rem; }
+.direction-options { display: flex; flex-wrap: wrap; gap: .5rem; }
+.direction-option { display: flex; align-items: center; gap: .4rem; padding: .35rem .5rem;
+  border: 1px solid #9cae9e; border-radius: 1rem; cursor: pointer; min-height: 44px; max-width: 100%; }
+.direction-option:has(input:checked) { border: 2px solid #4b6352; background: #edf2e8;
+  padding: calc(.35rem - 1px) calc(.5rem - 1px); font-weight: 700; }
+.direction-option input { margin: 0; accent-color: #4b6352; flex-shrink: 0; }
 .direction-option:has(input:focus-visible) { outline: 2px solid #4b6352; outline-offset: 3px; }
-@media (max-width: 480px) { .direction-options { grid-template-columns: 1fr; } }
+.direction-details summary { font-size: 1rem; }
+.direction-details dl { margin: 0; }
+.direction-details dt { font-weight: 600; }
+.direction-details dd { margin: 0 0 .75rem; color: var(--muted); }
+.family-summary { margin: 0 0 .75rem; }
+.family-summary > div { display: flex; flex-wrap: wrap; gap: .25rem .75rem; }
+.family-summary dt { color: var(--muted); }
+.family-summary dd { margin: 0; font-weight: 600; }
+.family-background { margin-bottom: .5rem; }
 .review-shell { max-width: 900px; margin: 0 auto; padding: 24px 16px 80px; display: grid; gap: 20px; }
 .review-shell .panel { padding: clamp(16px, 4vw, 32px); min-width: 0; overflow-wrap: anywhere; }
 .review-shell textarea { display: block; width: 100%; box-sizing: border-box; margin: 12px 0; font: inherit; }

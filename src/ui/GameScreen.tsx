@@ -11,16 +11,23 @@ export function FamilyDetails({
   family: FamilySummary;
   compact?: boolean;
 }) {
-  if (compact)
+  if (compact) {
+    const household = family.conditions.find((condition) => condition.dimension === "householdComposition");
+    const care = family.conditions.find((condition) => condition.dimension === "careParticipation");
     return (
       <>
-        <p>{family.text}</p>
+        <dl className="family-summary">
+          {household && <div><dt>家庭型態</dt><dd>{household.title}</dd></div>}
+          {care && <div><dt>分工狀態</dt><dd>{care.title}</dd></div>}
+        </dl>
+        {household && <p className="family-background">{household.neutralSummary}</p>}
         <details>
-          <summary>查看家庭組成與照顧安排</summary>
+          <summary>家庭詳細資料</summary>
           <FamilyDetails family={family} />
         </details>
       </>
     );
+  }
   return (
     <>
       <p>{family.text}</p>
@@ -326,20 +333,29 @@ export function GameScreen({
         >
           <fieldset disabled={blocked || game.completed} aria-describedby="direction-help">
             <legend id="direction-title">家庭生活方向</legend>
-            <p id="direction-help" className="muted">隨時可更換，影響接下來尚未抽選的故事。</p>
+            <p id="direction-help" className="sr-only">一次選一個方向，可隨時更換並自動保存，只影響尚未抽選的故事。</p>
             <div className="direction-options">
               {game.familyLifeDirections.map((direction) => (
                 <label key={direction.id} className="direction-option">
                   <input type="radio" name="family-life-direction" value={direction.id}
                     checked={game.activeFamilyLifeDirectionId === direction.id}
                     onChange={() => onDirection?.(direction.id)} />
-                  <span><strong>{direction.name}</strong><small>{direction.description}</small>
-                    {game.activeFamilyLifeDirectionId === direction.id && <small className="direction-current">✓ 目前方向</small>}
-                  </span>
+                  <span>{direction.name}</span>
                 </label>
               ))}
             </div>
           </fieldset>
+          <details className="direction-details">
+            <summary>方向說明</summary>
+            <p className="muted">隨時可更換，影響接下來尚未抽選的故事。切換後自動保存。</p>
+            <dl>
+              {game.familyLifeDirections.map((direction) => (
+                <div key={direction.id}>
+                  <dt>{direction.name}</dt><dd>{direction.description}</dd>
+                </div>
+              ))}
+            </dl>
+          </details>
         </section>
         <section
           className="event-panel panel"
