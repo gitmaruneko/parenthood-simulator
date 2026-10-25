@@ -1,4 +1,4 @@
-# Alpha Gameplay UX Redesign v2：影響分析與 Ticket 草案
+# Alpha Gameplay UX Redesign v2：影響分析與 Ticket 計畫
 
 日期：2026-10-25（Asia/Taipei）。狀態：使用者已確認，授權建票並先實作 T1。目標行為的單一來源為 [UI/UX §11](../UI_UX_SPEC.md#11-alpha-gameplay-ux-redesign-v2)。本計畫採專案 to-spec／to-tickets 的可驗收垂直切片方式；每票獨立驗收、Review、PR 與合併，不一次實作全案。
 
@@ -128,7 +128,7 @@
 
 ### T1 — 精簡主畫面輔助資訊，保留玩法
 
-**Blocked by:** 無（本提案確認後可開始）。
+**Blocked by:** 無（已核准，先執行本票）。
 
 **交付：** 玩家在主畫面看見完整但精簡的六方向、簡短家庭檔案及容易到達的詳細資訊；暫不動尚待契約的 Journal／人物生成。
 
