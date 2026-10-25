@@ -114,6 +114,20 @@ it("binds authored text to existing actors and leaves neutral fallback for absen
   expect(validateContentPack(content).success).toBe(false);
 });
 
+it("uses neutral elder-advice text when no elder belongs to the family", () => {
+  const run = createFamilyRun({ seed: 42 });
+  const content = createMvpContent(run.actors);
+  const event = content.events.find(event => event.id === "grandparent-boundary-choice")!;
+  const pending = resolveEventIdentity(event, run.state);
+  expect(pending.title + pending.text).not.toMatch(/長輩|同住或來探望/);
+  const withElder = createFamilyRun({ seed: 0 });
+  expect(withElder.state.family.persistentActorIds).toContain("support-1");
+  const elderContent = createMvpContent(withElder.actors);
+  const elderEvent = elderContent.events.find(event => event.id === "grandparent-boundary-choice")!;
+  expect(resolveEventIdentity(elderEvent, withElder.state).text)
+    .toContain(resolveFamilyMembers(withElder.state, withElder.actors).find(member => member.id === "support-1")!.displayName);
+});
+
 it("keeps event order, reactions, effects and RNG identical with identities across a whole game", () => {
   const run = createFamilyRun({ seed: 42 });
   const content = createMvpContent(run.actors);

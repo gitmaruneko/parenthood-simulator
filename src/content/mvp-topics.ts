@@ -7,6 +7,7 @@ interface MvpTopic {
   location: string;
   directionWeights: Partial<Record<FamilyLifeDirectionId, number>>;
   text: string;
+  actorText?: { actorId: string; prefix: string; suffix: string };
   plan: string;
   carry: string;
   reflection: string;
@@ -48,9 +49,10 @@ export const MVP_TOPICS: readonly MvpTopic[] = [
     tip: "留下已同意的聯絡方式，並討論對方臨時無法支援時的替代安排。",
   },
   {
-    slug: "grandparent-boundary", title: "長輩帶來的作息建議", location: "home",
+    slug: "grandparent-boundary", title: "作息安排的不同想法", location: "home",
     directionWeights: { "family-relationships": 1.25 },
-    text: "長輩分享過去照顧的習慣，你也想保留眼前試出的節奏。同住或來探望都可能需要談界線，今天的對話要從哪一小段開始？",
+    text: "你回想曾經聽過的作息建議，也想保留眼前試出的節奏。有些想法仍需要整理，今天先從哪一小段開始？",
+    actorText: { actorId: "support-1", prefix: "", suffix: "分享過去的照顧經驗，你也想保留眼前試出的節奏。這次要從哪一小段開始談？" },
     plan: "先說明這次希望被尊重的作息安排", carry: "今天先沿用熟悉的安排，另找時間談",
     reflection: "對話告一段落，彼此仍保有不同經驗。你記住哪些提醒讓你感到被支持，哪些界線需要下次再說清楚。",
     topic: "跨世代照顧界線", summary: "照顧經驗可能不同；感謝協助與表達界線可以同時存在，也需要逐次協調。",

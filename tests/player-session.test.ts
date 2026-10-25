@@ -35,6 +35,23 @@ it("keeps revealed identities through pending events, reload, review and replay"
   expect(restored.getSnapshot().reveal!.members).toEqual(members);
 });
 
+it("routes a no-origin save with unknown family actors to recovery before resume", async () => {
+  const run = createFamilyRun({ seed: 42 });
+  delete run.state.replayOrigin;
+  run.state.family.persistentActorIds = ["ghost"];
+  run.state.actorProfiles = { "child-1": { profileVersion: 1, source: "legacy-unknown", relationshipToPlayer: "child" },
+    ghost: { profileVersion: 1, source: "legacy-unknown", relationshipToPlayer: "unknownFamily" } };
+  const storage = memory();
+  const raw = serializeGame(run.state);
+  storage.setItem(LOCAL_SAVE_KEY, raw);
+  const session = createPlayerSession(createLocalSaveStore(storage));
+  await session.check();
+  expect(session.getSnapshot().home.kind).toBe("incompatible");
+  await session.resume();
+  expect(session.getSnapshot().page).toBe("home");
+  expect(storage.getItem(LOCAL_SAVE_KEY)).toBe(raw);
+});
+
 it("restores the review, saves selected moments and confirms a seed replay before replacing", async () => {
   const { state } = completedStory();
   const storage = memory();

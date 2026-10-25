@@ -348,7 +348,7 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
 }) => {
   await start(page);
   const names = await page.locator(".reveal .member h3").allTextContents();
-  const habits = await page.locator(".reveal .member p:last-child").allTextContents();
+  const habits = await page.locator(".reveal .member > p").allTextContents();
   await expect(page.getByRole("heading", { name: "此刻的照顧傾向" })).toHaveCount(0);
   await startFamily(page);
   await expect(page.locator(".event-panel")).toContainText(names[0]!);

@@ -33,7 +33,7 @@ export const createMvpContent = (familyActors: readonly Actor[] = defaultFamilyA
     events.push({
       id: id("choice"), ageStageId, kind: "choice", mode: "PLAYER_INPUT_REQUIRED",
       title: scene.title, text: scene.text, locationId: scene.location,
-      actorText: { actorId: "child-1", prefix: "與", suffix: `一起生活的日常。${scene.text}` },
+      actorText: scene.actorText ?? { actorId: "child-1", prefix: "與", suffix: `一起生活的日常。${scene.text}` },
       contextTags: [scene.slug, "everyday-care"], weight: 2,
       familyLifeDirectionWeights: scene.directionWeights,
       actorIds: familyActors.map((person) => person.id).concat(

@@ -35,6 +35,14 @@ export const inspectPlayerSave = (
   let load = store.load();
   if (load.status === "restored") {
     try {
+      // The save schema cannot know which actor IDs the installed content supports.
+      const { family } = load.state;
+      const ids = [family.childId, ...family.persistentActorIds];
+      if (new Set(ids).size !== ids.length || ids.some(id => {
+        const actor = content.actors.find(actor => actor.id === id);
+        return !actor || (id === family.childId ? actor.role !== "child"
+          : !["partner", "grandparent"].includes(actor.role));
+      })) throw new Error("family actor content is unavailable");
       getPlayerView(load.state, content);
     } catch {
       load = {

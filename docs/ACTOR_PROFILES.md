@@ -27,6 +27,12 @@ unknown actor references; membership and existing choice requirements prevent
 absent relatives from becoming participants. Resolved event text becomes a saved
 history snapshot. Existing history strings are never replaced.
 
+The elder-advice scene has an authored neutral title and fallback about recalling
+advice. Its present-relative variant binds to `support-1`; families without that
+member do not acquire a fictional visiting elder. Eligibility and weights stay
+unchanged. Save inspection also verifies family IDs against installed content
+before offering continuation, including legacy saves without an origin snapshot.
+
 Save v4 requires profiles and validates membership, unique opening actor
 references, child/role relationships, partner-parent chains, template
 compatibility and supported versions. `replayOrigin` snapshots opening profiles

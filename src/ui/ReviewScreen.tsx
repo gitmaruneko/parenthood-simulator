@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { REVIEW_THEMES, getReviewMomentEntries } from "../engine/index.js";
 import type { GamePresentation } from "./player-session.js";
+import { FamilyMemberCard } from "./FamilyMemberCard.js";
 
 export function ReviewScreen({ game, blocked, onSelect, onReplay, onNew }: {
   game: GamePresentation; blocked: boolean; onSelect: (ids: string[]) => void;
@@ -35,10 +36,7 @@ export function ReviewScreen({ game, blocked, onSelect, onReplay, onNew }: {
       <p className="preserve-lines">{review.familySummary}</p>
       <p>{review.narrativeOverview}</p>
       <h2>一起走過這段生活的家人</h2>
-      {game.members.map(member => <article className="member" key={member.id} aria-label={member.displayName}>
-        <h3>{member.displayName}</h3><p>{member.relationship}{member.ageLabel && ` · ${member.ageLabel}`}</p>
-        {member.lifeDetail && <p>{member.lifeDetail}</p>}
-      </article>)}
+      {game.members.map(member => <FamilyMemberCard key={member.id} member={member} />)}
       <p>故事中的柔性主題：{review.themes.map((theme) => REVIEW_THEMES[theme]).join("、")}</p>
       <p className="muted">主題可以交疊，只描述這次經歷，並非固定路線或對照顧者的評語。</p>
     </section>
