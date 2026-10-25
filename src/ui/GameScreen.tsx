@@ -212,6 +212,7 @@ function FamilyMembers({ game }: { game: GamePresentation }) {
             {member.relationship}{member.ageLabel && ` · ${member.ageLabel}`}
           </p>}
         </header>
+        {member.lifeDetail && <p>{member.lifeDetail}</p>}
         {member.recent && <p className="member-recent">
           {member.recentTimeLabel && <small>{member.recentTimeLabel}</small>}
           最近：{member.recent}

@@ -1,0 +1,185 @@
+[
+  {
+    "seed": 0,
+    "family": {
+      "householdComposition": "singleCaregiver",
+      "careParticipation": "shared",
+      "workArrangement": "dualIncome",
+      "preferredAddress": "照顧者",
+      "childId": "child-1",
+      "persistentActorIds": [
+        "support-1"
+      ]
+    },
+    "resources": {
+      "finances": 44,
+      "energy": 63,
+      "support": 60,
+      "timeFlexibility": 69,
+      "connection": 58
+    },
+    "rngState": 2903413562,
+    "actors": [
+      {
+        "id": "child-1",
+        "role": "child",
+        "displayName": "孩子",
+        "availability": 0.1462021479383111,
+        "initiative": 0.46732782293111086,
+        "workflowOwnership": 0.5450490827206522,
+        "reliability": 0.6152513844426721,
+        "boundaryRespect": 0.6489853798411787
+      },
+      {
+        "id": "support-1",
+        "role": "grandparent",
+        "displayName": "支持家人（不同住）",
+        "availability": 0.7280036063166335,
+        "initiative": 0.790609483839944,
+        "workflowOwnership": 0.6231287650298327,
+        "reliability": 0.09785169479437172,
+        "boundaryRespect": 0.9034309543203562
+      }
+    ]
+  },
+  {
+    "seed": 42,
+    "family": {
+      "householdComposition": "twoCaregivers",
+      "careParticipation": "uneven",
+      "workArrangement": "unstable",
+      "preferredAddress": "照顧者",
+      "childId": "child-1",
+      "persistentActorIds": [
+        "caregiver-2"
+      ]
+    },
+    "resources": {
+      "finances": 38,
+      "energy": 32,
+      "support": 50,
+      "timeFlexibility": 61,
+      "connection": 57
+    },
+    "rngState": 2903413604,
+    "actors": [
+      {
+        "id": "child-1",
+        "role": "child",
+        "displayName": "孩子",
+        "availability": 0.6697340414393693,
+        "initiative": 0.17481389874592423,
+        "workflowOwnership": 0.5265925421845168,
+        "reliability": 0.2732279943302274,
+        "boundaryRespect": 0.6247446539346129
+      },
+      {
+        "id": "caregiver-2",
+        "role": "partner",
+        "displayName": "共同照顧者",
+        "availability": 0.43273732415400445,
+        "initiative": 0.23615852755028754,
+        "workflowOwnership": 0.12496186711359769,
+        "reliability": 0.8820588334929198,
+        "boundaryRespect": 0.7457375649828464
+      }
+    ]
+  },
+  {
+    "seed": 123456789,
+    "family": {
+      "householdComposition": "singleCaregiver",
+      "careParticipation": "primaryAndBackup",
+      "workArrangement": "unstable",
+      "preferredAddress": "照顧者",
+      "childId": "child-1",
+      "persistentActorIds": [
+        "support-1"
+      ]
+    },
+    "resources": {
+      "finances": 30,
+      "energy": 50,
+      "support": 69,
+      "timeFlexibility": 56,
+      "connection": 45
+    },
+    "rngState": 3026870351,
+    "actors": [
+      {
+        "id": "child-1",
+        "role": "child",
+        "displayName": "孩子",
+        "availability": 0.20616457983851433,
+        "initiative": 0.30307188746519387,
+        "workflowOwnership": 0.7470660470426083,
+        "reliability": 0.7787336520850658,
+        "boundaryRespect": 0.2845096290111542
+      },
+      {
+        "id": "support-1",
+        "role": "grandparent",
+        "displayName": "支持家人（不同住）",
+        "availability": 0.008268467499874532,
+        "initiative": 0.0807323461631313,
+        "workflowOwnership": 0.18295045790728182,
+        "reliability": 0.43085755431093276,
+        "boundaryRespect": 0.567488876869902
+      }
+    ]
+  },
+  {
+    "seed": 4294967295,
+    "family": {
+      "householdComposition": "multigenerational",
+      "careParticipation": "shared",
+      "workArrangement": "flexible",
+      "preferredAddress": "照顧者",
+      "childId": "child-1",
+      "persistentActorIds": [
+        "caregiver-2",
+        "support-1"
+      ]
+    },
+    "resources": {
+      "finances": 28,
+      "energy": 43,
+      "support": 76,
+      "timeFlexibility": 76,
+      "connection": 68
+    },
+    "rngState": 3471308034,
+    "actors": [
+      {
+        "id": "child-1",
+        "role": "child",
+        "displayName": "孩子",
+        "availability": 0.9440599093213677,
+        "initiative": 0.8452364315744489,
+        "workflowOwnership": 0.5391399988438934,
+        "reliability": 0.6804977387655526,
+        "boundaryRespect": 0.4755720964167267
+      },
+      {
+        "id": "caregiver-2",
+        "role": "partner",
+        "displayName": "共同照顧者",
+        "availability": 0.5679288696264848,
+        "initiative": 0.9942222988465801,
+        "workflowOwnership": 0.9357337258988991,
+        "reliability": 0.18934845877811313,
+        "boundaryRespect": 0.3436866346746683
+      },
+      {
+        "id": "support-1",
+        "role": "grandparent",
+        "displayName": "同住長輩",
+        "availability": 0.8693424366647378,
+        "initiative": 0.7379959948593751,
+        "workflowOwnership": 0.8783558402210474,
+        "reliability": 0.9159235202241689,
+        "boundaryRespect": 0.10207696096040308
+      }
+    ]
+  }
+]

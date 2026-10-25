@@ -7,6 +7,33 @@ import {
 import { createFamilyRun } from "../src/engine/index.js";
 import { serializeGame } from "../src/persistence/index.js";
 import { completedStory } from "./helpers/completed-story.js";
+import { resolveFamilyMembers } from "../src/engine/actor-profiles.js";
+
+it("keeps revealed identities through pending events, reload, review and replay", async () => {
+  const storage = memory();
+  const store = createLocalSaveStore(storage);
+  const session = createPlayerSession(store, () => 42);
+  await session.check(); await session.newStory(); session.reveal();
+  const members = session.getSnapshot().reveal!.members;
+  expect(members.every(member => member.lifeDetail)).toBe(true);
+  await session.startFamily();
+  const child = members[0]!;
+  expect(session.getSnapshot().game!.pendingEvent!.text).toContain(child.displayName);
+  const restored = createPlayerSession(store);
+  await restored.check(); await restored.resume();
+  expect(restored.getSnapshot().game!.members.map(({ id, displayName, relationship, lifeDetail }) =>
+    ({ id, displayName, relationship, lifeDetail }))).toEqual(members);
+  for (let step = 0; step < 250 && !restored.getSnapshot().game!.review; step++) {
+    const game = restored.getSnapshot().game!;
+    if (game.pendingEvent) await restored.choose(game.pendingEvent.choices[0]!.id);
+    else await restored.advance();
+  }
+  expect(restored.getSnapshot().game!.review).not.toBeNull();
+  expect(restored.getSnapshot().game!.members[0]!.displayName).toBe(child.displayName);
+  expect(restored.getSnapshot().game!.history.some(entry => entry.text.includes(child.displayName))).toBe(true);
+  await restored.replay(); await restored.confirmNew();
+  expect(restored.getSnapshot().reveal!.members).toEqual(members);
+});
 
 it("restores the review, saves selected moments and confirms a seed replay before replacing", async () => {
   const { state } = completedStory();
@@ -131,7 +158,9 @@ it("presents only generated family members with relationships and the child's cu
     await session.check(); await session.newStory(); session.reveal(); await session.startFamily();
     const game = session.getSnapshot().game!;
     expect(game.members.map((member) => member.id)).toEqual(run.actors.map((actor) => actor.id));
-    expect(game.members[0]).toMatchObject({ displayName: "孩子", relationship: "你的孩子", ageLabel: "2 個月" });
+    expect(game.members.map(({ id, displayName, relationship, lifeDetail }) => ({ id, displayName, relationship, lifeDetail })))
+      .toEqual(resolveFamilyMembers(run.state, run.actors));
+    expect(game.members[0]).toMatchObject({ relationship: "你的孩子", ageLabel: "2 個月" });
     for (const member of game.members.slice(1)) {
       expect(member.ageLabel).toBeNull();
       expect(member.context.join("")).toContain("家庭照顧安排");
@@ -139,15 +168,15 @@ it("presents only generated family members with relationships and the child's cu
     }
     if (run.state.family.householdComposition === "singleCaregiver") {
       expect(game.members).toHaveLength(2);
-      expect(game.members[1]!.relationship).toBe("不同住的支持家人");
+      expect(game.members[1]!.relationship).toContain("不同住");
       expect(game.pendingEvent!.choices.map((choice) => choice.id)).not.toContain("handoff");
     } else if (run.state.family.householdComposition === "twoCaregivers") {
       expect(game.members).toHaveLength(2);
-      expect(game.members[1]!.relationship).toBe("共同照顧者");
+      expect(game.members[1]!.relationship).toMatch(/伴侶|先生|妻子/);
       expect(game.pendingEvent!.choices.map((choice) => choice.id)).not.toContain("ask-family");
     } else {
       expect(game.members).toHaveLength(3);
-      expect(game.members[2]!.relationship).toBe("同住長輩");
+      expect(game.members[2]!.relationship).toMatch(/你的父母|伴侶的父母/);
     }
     const before = game.members.map((member) => ({ ...member }));
     await session.choose("coordinate");

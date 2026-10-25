@@ -347,7 +347,18 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
   isMobile,
 }) => {
   await start(page);
+  const names = await page.locator(".reveal .member h3").allTextContents();
+  const habits = await page.locator(".reveal .member p:last-child").allTextContents();
+  await expect(page.getByRole("heading", { name: "此刻的照顧傾向" })).toHaveCount(0);
   await startFamily(page);
+  await expect(page.locator(".event-panel")).toContainText(names[0]!);
+  await page.reload();
+  await page.getByRole("button", { name: "繼續上次生活", exact: true }).click();
+  if (isMobile) await page.getByRole("tab", { name: "家庭", exact: true }).click();
+  const members = page.locator(isMobile ? ".mobile-members" : ".desktop-members");
+  expect(await members.locator(".member h3").allTextContents()).toEqual(names);
+  for (const habit of habits) await expect(members).toContainText(habit);
+  if (isMobile) await page.getByRole("tab", { name: "生活", exact: true }).click();
   const life = page.getByRole("tabpanel", { name: "生活", exact: true });
   for (let step = 0; step < 120; step++) {
     if (await page.getByRole("heading", { name: "我們的家庭生活回顧" }).count())
@@ -379,6 +390,8 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
     saved,
   );
   await expect(page.locator(".review-timeline > li")).toHaveCount(12);
+  expect(await page.locator(".review-shell .member h3").allTextContents()).toEqual(names);
+  for (const habit of habits) await expect(page.locator(".review-shell")).toContainText(habit);
   await page.getByText("調整三個關鍵時刻", { exact: true }).click();
   await page.getByRole("checkbox", { checked: true }).first().uncheck();
   await page.getByRole("checkbox", { checked: false }).last().check();
@@ -396,6 +409,7 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
   await page.getByRole("button", { name: "相同種子，再走一次" }).click();
   await page.getByRole("button", { name: "確認開始新故事" }).click();
   await expect(page.getByRole("button", { name: "開始這個家庭" })).toBeVisible();
+  expect(await page.locator(".reveal .member h3").allTextContents()).toEqual(names);
   expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(reviewed);
   await startFamily(page);
   const replayed = JSON.parse((await page.evaluate((key) => localStorage.getItem(key), key))!);

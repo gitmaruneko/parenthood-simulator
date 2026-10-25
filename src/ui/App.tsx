@@ -174,10 +174,11 @@ export function App({ session: provided }: { session?: PlayerSession }) {
                 <Illustration scene={3} />
                 <p className="seed-label">家庭種子：{snapshot.reveal.seed}</p>
                 <FamilyDetails family={snapshot.reveal.summary} />
-                <h2>此刻的照顧傾向</h2>
-                {snapshot.reveal.descriptions.map((text) => (
-                  <p key={text}>{text}</p>
-                ))}
+                <h2>家庭成員</h2>
+                {snapshot.reveal.members.map(member => <article className="member" key={member.id} aria-label={member.displayName}>
+                  <h3>{member.displayName}</h3><p>{member.relationship}</p>
+                  {member.lifeDetail && <p>{member.lifeDetail}</p>}
+                </article>)}
                 <div className="opening-actions">
                   <button disabled={snapshot.busy} onClick={session.reroll}>
                     重新抽選家庭

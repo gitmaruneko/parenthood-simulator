@@ -9,7 +9,7 @@ import type { HomeSaveView } from "../src/persistence/index.js";
 import { eventNodeSchema } from "../src/domain/schemas.js";
 import { SaveNotice } from "../src/ui/SaveNotice.js";
 import { FAMILY_LIFE_DIRECTIONS } from "../src/domain/family-life-direction.js";
-import { Assessment } from "../src/ui/App.js";
+import { App, Assessment } from "../src/ui/App.js";
 import { createPlayerSession } from "../src/ui/player-session.js";
 import { createLocalSaveStore } from "../src/persistence/index.js";
 import { createFamilyRun, describeFamily } from "../src/engine/index.js";
@@ -25,6 +25,18 @@ beforeAll(() => {
 });
 
 afterEach(cleanup);
+it("introduces the saved family without displaying assessment tendencies", async () => {
+  const session = createPlayerSession(createLocalSaveStore({ getItem: () => null, setItem: () => {} }), () => 42);
+  await session.newStory(); session.reveal();
+  render(<App session={session} />);
+  for (const member of session.getSnapshot().reveal!.members) {
+    const card = within(screen.getByRole("article", { name: member.displayName }));
+    expect(card.getByText(member.relationship)).toBeTruthy();
+    expect(card.getByText(member.lifeDetail!)).toBeTruthy();
+  }
+  expect(screen.queryByRole("heading", { name: "此刻的照顧傾向" })).toBeNull();
+  expect(screen.getByRole("button", { name: "重新抽選家庭" })).toBeTruthy();
+});
 it("expands opening candidates without answering and resets expansion for the next situation", async () => {
   const session = createPlayerSession(createLocalSaveStore({
     getItem: () => null, setItem: () => {},

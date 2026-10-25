@@ -1,7 +1,7 @@
 # Save and restore (issue #9)
 
 Family Life Direction update (#28–#30): every change is saved immediately through
-the existing boundary. Save v3 requires a known direction ID; legacy saves migrate
+the existing boundary. Save v4 requires a known direction ID and actor profiles; legacy saves migrate
 to `flexible` when absent, preserving committed data and RNG. Failures retain the
 in-memory choice for retry; conflicts never overwrite newer data.
 
@@ -14,13 +14,14 @@ boundary rather than implement storage or migration rules.
 
 | Save version | Shape | Restore behavior |
 | --- | --- | --- |
-| 1 | Unwrapped `GameState` with `schemaVersion: 1` | Explicitly migrate in memory to version 3; report `migratedFrom: 1` |
-| 2 | `{ schemaVersion: 2, state: GameState }` | Explicitly migrate in memory to version 3; report `migratedFrom: 2` |
-| 3 | `{ schemaVersion: 3, state: GameState }` with required direction | Validate and restore; report `migratedFrom: null` |
+| 1 | Unwrapped `GameState` with `schemaVersion: 1` | Explicitly migrate in memory to version 4; report `migratedFrom: 1` |
+| 2 | `{ schemaVersion: 2, state: GameState }` | Explicitly migrate in memory to version 4; report `migratedFrom: 2` |
+| 3 | `{ schemaVersion: 3, state: GameState }` with required direction | Explicitly migrate in memory to version 4; report `migratedFrom: 3` |
+| 4 | `{ schemaVersion: 4, state: GameState }` with direction and actor profiles | Validate and restore; report `migratedFrom: null` |
 | Other | Unknown save or nested state version | Return `incompatible-version`, preserving the original bytes |
 
 The save version is independent of the domain's `GameState.schemaVersion`,
-which remains 1. Migration wraps the original state and adds the confirmed default direction; it does not regenerate the
+which remains 1. Migration wraps the original state, adds the confirmed default direction for v1/v2 when absent, and records unknown identities for existing family IDs; it does not regenerate the
 family, reset the PRNG, reconstruct progress, or invent missing required data.
 Unknown fields and invalid data are rejected instead of silently stripped.
 
@@ -34,7 +35,7 @@ pending-input consistency. Required PRNG state cannot be substituted with seed.
 
 ## Public operations
 
-- `serializeGame(state)` returns a version-3 JSON string. Invalid state throws a
+- `serializeGame(state)` returns a version-4 JSON string. Invalid state throws a
   validation error; store operations convert that into a readable result.
 - `restoreGame(rawData)` returns `restored` with state and migration information,
   or `error` with a stable code, Traditional Chinese message, and exact raw data.

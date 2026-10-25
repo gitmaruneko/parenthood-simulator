@@ -1,5 +1,11 @@
 # Family generation and optional opening assessment
 
+UX v2 T2 (#36): [Family identities](ACTOR_PROFILES.md) adds stable saved names,
+explicit relationships and generated habits, shared across reveal, play and
+review. Reveal no longer displays assessment tendencies; questions, skipping,
+expanded candidates and internal vectors remain. New identities consume no
+game PRNG draws; legacy saves keep neutral introductions.
+
 Issue #4 adds pure opening APIs to `src/engine/index.ts`. The player is the
 caregiver addressed in the second person, not an additional actor with a
 gendered role. A run includes one child and at most two persistent support

@@ -1,6 +1,7 @@
 import type { ContentPack, GameState } from "../domain/schemas.js";
 import type { FamilyLifeDirectionId } from "../domain/family-life-direction.js";
 import { createMvpContent } from "../content/mvp.js";
+import { resolveFamilyMembers, resolveEventIdentity } from "../engine/actor-profiles.js";
 import {
   createFamilyRun,
   rerollFamilyRun,
@@ -34,6 +35,7 @@ export interface GamePresentation extends ReturnType<typeof getPlayerView> {
     id: string;
     displayName: string;
     relationship: string;
+    lifeDetail?: string | null;
     ageLabel: string | null;
     context: readonly string[];
     recent: string | null;
@@ -61,6 +63,7 @@ export interface PlayerSnapshot {
     seed: number;
     summary: FamilyRun["summary"];
     descriptions: readonly string[];
+    members: ReturnType<typeof resolveFamilyMembers>;
   } | null;
   readonly game: GamePresentation | null;
   readonly gameTab: "life" | "records";
@@ -159,23 +162,13 @@ export const createPlayerSession = (
       history: state!.history,
       choices: state!.choiceHistory,
       reactions: state!.reactionHistory ?? [],
-      members: content.actors
-        .filter(
-          (actor) =>
-            actor.id === state!.family.childId ||
-            state!.family.persistentActorIds.includes(actor.id),
-        )
-        .map((actor) => {
+      members: resolveFamilyMembers(state!, content.actors)
+        .map((member) => {
+          const actor = content.actors.find(actor => actor.id === member.id)!;
           const recent = [...(state!.reactionHistory ?? [])].reverse()
             .find((reaction) => reaction.actorId === actor.id);
           return {
-            id: actor.id,
-            displayName: actor.displayName,
-            relationship: actor.role === "child" ? "你的孩子"
-              : actor.role === "partner" ? "共同照顧者"
-              : actor.role === "grandparent"
-                ? state!.family.householdComposition === "multigenerational" ? "同住長輩" : "不同住的支持家人"
-                : actor.displayName,
+            ...member,
             ageLabel: actor.id === state!.family.childId ? view.ageLabel : null,
             // These describe household arrangements, never an individual's job or personality.
             context: actor.role === "child" ? [] : family.conditions
@@ -197,7 +190,7 @@ export const createPlayerSession = (
       ),
       choiceTexts: Object.fromEntries(
         content.events.flatMap((event) =>
-          event.choices.map((choice) => [
+          resolveEventIdentity(event, state!).choices.map((choice) => [
             `${event.id}/${choice.id}`,
             choice.text,
           ]),
@@ -276,6 +269,7 @@ export const createPlayerSession = (
         seed: state.seed,
         summary: describeFamily(state.family),
         descriptions: describeTendencies(state.tendencies),
+        members: resolveFamilyMembers(state, content.actors),
       },
       dialog: null,
       status: "已儲存",
@@ -376,7 +370,8 @@ export const createPlayerSession = (
           run = pendingReplay;
           pendingReplay = null;
           publish({ page: "reveal", dialog: null, game: null,
-            reveal: { seed: run.state.seed, summary: run.summary, descriptions: describeTendencies(run.state.tendencies) } });
+            reveal: { seed: run.state.seed, summary: run.summary, descriptions: describeTendencies(run.state.tendencies),
+              members: resolveFamilyMembers(run.state, run.actors) } });
           return;
         }
         enterOpening();
@@ -422,6 +417,7 @@ export const createPlayerSession = (
           seed: run.state.seed,
           summary: run.summary,
           descriptions: run.assessment.descriptions,
+          members: resolveFamilyMembers(run.state, run.actors),
         },
       });
     },
@@ -436,6 +432,7 @@ export const createPlayerSession = (
           seed: run.state.seed,
           summary: run.summary,
           descriptions: run.assessment.descriptions,
+          members: resolveFamilyMembers(run.state, run.actors),
         },
       });
     },

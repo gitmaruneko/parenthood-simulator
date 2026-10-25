@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { gameStateSchema, type GameState } from "../domain/schemas.js";
 import { familyLifeDirectionIdSchema } from "../domain/family-life-direction.js";
+import { actorProfilesSchema, unknownActorProfiles, validateActorProfiles } from "../domain/actor-profiles.js";
 
-export const SAVE_SCHEMA_VERSION = 3;
+export const SAVE_SCHEMA_VERSION = 4;
 
 export type SaveErrorCode = "invalid-data" | "incompatible-version" | "storage-unavailable"
   | "storage-full" | "save-changed" | "recovery-required";
@@ -14,13 +15,15 @@ export interface SaveError {
 
 export type RestoreResult =
   | { readonly status: "restored"; readonly state: GameState; readonly rawData: string;
-      readonly migratedFrom: 1 | 2 | null }
+      readonly migratedFrom: 1 | 2 | 3 | null }
   | { readonly status: "error"; readonly error: SaveError; readonly rawData: string };
 
 const stateContract = gameStateSchema.extend({ schemaVersion: z.literal(1) });
 const savedStateSchema = stateContract.extend({
+  actorProfiles: actorProfilesSchema,
   activeFamilyLifeDirectionId: familyLifeDirectionIdSchema,
 }).superRefine((state, ctx) => {
+  validateActorProfiles(state, ctx);
   if (state.currentTurnId !== (state.turn?.id ?? null) ||
       (state.turn && state.turn.ageStageId !== state.currentAgeStageId) ||
       (state.ageStageProgress && state.ageStageProgress.ageStageId !== state.currentAgeStageId) ||
@@ -51,10 +54,18 @@ const saveSchema = z.object({
 const legacyStateSchema = stateContract.extend({
   activeFamilyLifeDirectionId: familyLifeDirectionIdSchema.optional(),
 });
-const migrateLegacy = (data: unknown): unknown => {
-  const legacy = legacyStateSchema.safeParse(data);
-  return legacy.success ? { schemaVersion: SAVE_SCHEMA_VERSION,
-    state: { ...legacy.data, activeFamilyLifeDirectionId: legacy.data.activeFamilyLifeDirectionId ?? "flexible" } } : data;
+const migrateLegacy = (data: unknown, requireDirection = false): unknown => {
+  const legacy = (requireDirection ? stateContract.extend({ activeFamilyLifeDirectionId: familyLifeDirectionIdSchema }) : legacyStateSchema).safeParse(data);
+  if (!legacy.success) return data;
+  const state = legacy.data;
+  // Only membership is known. Never re-sample a name, kinship or habit for an old story.
+  const profiles = state.actorProfiles ?? unknownActorProfiles(state.family);
+  return { schemaVersion: SAVE_SCHEMA_VERSION, state: {
+    ...state, actorProfiles: profiles,
+    ...(state.replayOrigin ? { replayOrigin: { ...state.replayOrigin,
+      actorProfiles: state.replayOrigin.actorProfiles ?? profiles } } : {}),
+    activeFamilyLifeDirectionId: state.activeFamilyLifeDirectionId ?? "flexible",
+  } };
 };
 
 export const serializeGame = (state: GameState): string =>
@@ -70,17 +81,18 @@ export const restoreGame = (rawData: string): RestoreResult => {
   }
   const version = z.object({ schemaVersion: z.number().int().positive() }).safeParse(data);
   const nestedVersion = z.object({ state: z.object({ schemaVersion: z.number().int().positive() }) }).safeParse(data);
-  if ((version.success && ![1, 2, SAVE_SCHEMA_VERSION].includes(version.data.schemaVersion)) ||
-      (version.success && [2, SAVE_SCHEMA_VERSION].includes(version.data.schemaVersion) && nestedVersion.success &&
+  if ((version.success && ![1, 2, 3, SAVE_SCHEMA_VERSION].includes(version.data.schemaVersion)) ||
+      (version.success && [2, 3, SAVE_SCHEMA_VERSION].includes(version.data.schemaVersion) && nestedVersion.success &&
         nestedVersion.data.state.schemaVersion !== 1)) {
     return { status: "error", rawData, error: { code: "incompatible-version",
       message: "這份故事的版本目前無法開啟，原始資料仍保留。請使用支援此版本的程式，或確認保留原檔後開始新故事。" } };
   }
-  const migratedFrom = version.success && (version.data.schemaVersion === 1 || version.data.schemaVersion === 2)
-    ? version.data.schemaVersion : null;
-  const legacyEnvelope = z.object({ schemaVersion: z.literal(2), state: z.unknown() }).strict().safeParse(data);
+  const migratedFrom = version.success && [1, 2, 3].includes(version.data.schemaVersion)
+    ? version.data.schemaVersion as 1 | 2 | 3 : null;
+  const legacyEnvelope = z.object({ schemaVersion: z.union([z.literal(2), z.literal(3)]), state: z.unknown() }).strict().safeParse(data);
   const migrated = migratedFrom === 1 ? migrateLegacy(data)
-    : migratedFrom === 2 && legacyEnvelope.success ? migrateLegacy(legacyEnvelope.data.state) : data;
+    : (migratedFrom === 2 || migratedFrom === 3) && legacyEnvelope.success
+      ? migrateLegacy(legacyEnvelope.data.state, migratedFrom === 3) : data;
   const parsed = saveSchema.safeParse(migrated);
   if (!parsed.success) {
     return { status: "error", rawData, error: { code: "invalid-data",
