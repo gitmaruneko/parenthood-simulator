@@ -1,5 +1,9 @@
 # 玩家流程 UI（Issue #11）
 
+> 2026-10-25 使用者已確認 [Alpha Gameplay UX v2 規格](UI_UX_SPEC.md#11-alpha-gameplay-ux-redesign-v2)與[影響分析／Tickets](implementation/ALPHA-GAMEPLAY-UX-V2.md)。改版逐票交付；下文的每事件一筆摘要、常駐故事閱讀面板與開場可見傾向，維持到對應 Ticket 驗收。T1 僅精簡方向及家庭摘要，不改存檔格式。
+
+T1（#35）：六方向改為短標籤 radio Chips，完整說明由「方向說明」展開；主畫面家庭檔案僅顯示型態、分工與一句既有背景，完整家庭／工作條件由「家庭詳細資料」取得。兩個揭示入口都是本地閱讀操作；方向仍使用原有命令與立即保存，不變動引擎或資源。人物區塊、故事與 Journal 待各自後續 Ticket 交付。
+
 實作補充（#28–#30）：[家庭生活方向](FAMILY_LIFE_DIRECTION_IMPLEMENTATION.md) 已接上 Schema／引擎／Session，主故事畫面常駐六項單選，隨時免費切換並立即保存；與生活紀錄分開。保存失敗可重試，排隊方向按提交順序處理，重新讀取後不重放舊指令。
 
 ## 本機使用

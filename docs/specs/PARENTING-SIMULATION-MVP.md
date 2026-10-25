@@ -1,5 +1,7 @@
 # Formal Spec: 《今天也在養小孩》MVP 事件引擎與家庭生活回顧
 
+已確認補充（2026-10-25）：使用者已核准 [Alpha Gameplay UX Redesign v2](../UI_UX_SPEC.md#11-alpha-gameplay-ux-redesign-v2) 的 Journal 主敘事、重大抉擇 Dialog、最小人物檔案及 T1–T7 逐票交付。與本 Spec 的呈現、seed 使用及純敘事紀錄定義差異見[契約差異與實作計畫](../implementation/ALPHA-GAMEPLAY-UX-V2.md)。新增呈現契約依改版規格；既有引擎預算、資源、Scheduler、方向與回顧責任保留。
+
 設計補充（2026-10-23）：[家庭生活方向](../FAMILY_LIFE_DIRECTION.md) 定義主畫面隨時單選切換、只影響尚未抽選事件，以及 PRNG／AgeStage／Persistence／Gameplay UI 的邊界。本次使用者已確認將首版納入實作，補充 Spec #28 與 Tickets #29、#30 的範圍及驗收見 [實作決議](../FAMILY_LIFE_DIRECTION_IMPLEMENTATION.md)；不改變以下既有 MVP 核心規則。
 
 ## Problem Statement

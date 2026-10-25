@@ -2,7 +2,7 @@
 import { afterEach, beforeAll, expect, it, vi } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { FamilyLog, GameScreen } from "../src/ui/GameScreen.js";
+import { FamilyDetails, FamilyLog, GameScreen } from "../src/ui/GameScreen.js";
 import type { GamePresentation } from "../src/ui/player-session.js";
 import { HomePage } from "../src/ui/HomePage.js";
 import type { HomeSaveView } from "../src/persistence/index.js";
@@ -81,7 +81,7 @@ it("shows household summaries, dates recorded reactions and reveals only stored 
   }] }} busy={false} blocked={false} onChoose={vi.fn()} onAdvance={vi.fn()} />);
   const family = within(screen.getByRole("tabpanel", { name: "家庭" }));
   expect(family.getByText("照顧安排").tagName).toBe("DT");
-  expect(family.getAllByRole("definition").map((item) => item.textContent))
+  expect(within(family.getByText("照顧安排").closest("dl")!).getAllByRole("definition").map((item) => item.textContent))
     .toEqual(["共同分擔照顧", "彈性工作安排"]);
   const child = within(family.getByRole("article", { name: "孩子" }));
   expect(child.getByText("2 個月 1 天")).toBeTruthy();
@@ -105,6 +105,44 @@ it("renders all directions as one accessible group and retains focus when the se
   expect((radio as HTMLInputElement).checked).toBe(true);
   expect(document.activeElement).toBe(radio);
   expect(within(group).getAllByRole("radio").filter((item) => (item as HTMLInputElement).checked)).toHaveLength(1);
+  view.rerender(<GameScreen {...props} blocked />);
+  expect((group as HTMLFieldSetElement).disabled).toBe(true);
+  view.rerender(<GameScreen {...props} game={{ ...game, completed: true }} />);
+  expect((group as HTMLFieldSetElement).disabled).toBe(true);
+});
+it("keeps direction explanations in an optional disclosure without advancing", async () => {
+  const choose = vi.fn();
+  const advance = vi.fn();
+  const direction = vi.fn();
+  render(<GameScreen game={game} busy={false} blocked={false}
+    onChoose={choose} onAdvance={advance} onDirection={direction} />);
+  const disclosure = screen.getByText("方向說明");
+  const details = disclosure.closest("details")!;
+  expect(details.open).toBe(false);
+  await userEvent.click(disclosure);
+  expect(details.open).toBe(true);
+  for (const item of FAMILY_LIFE_DIRECTIONS) {
+    expect(within(details).getByText(item.description)).toBeTruthy();
+  }
+  expect(choose).not.toHaveBeenCalled();
+  expect(advance).not.toHaveBeenCalled();
+  expect(direction).not.toHaveBeenCalled();
+});
+it("shows only family type, care status and one background before opening complete family details", async () => {
+  const run = createFamilyRun({ seed: 42 });
+  const family = describeFamily({ ...run.state.family, householdComposition: "singleCaregiver",
+    careParticipation: "uneven", workArrangement: "flexible" });
+  render(<FamilyDetails family={family} compact />);
+  expect(screen.getAllByRole("definition").map((item) => item.textContent))
+    .toEqual(["單一照顧者家庭", "分工尚待協調"]);
+  const detail = screen.getByText("家庭詳細資料").closest("details")!;
+  expect(detail.open).toBe(false);
+  expect(within(detail).getByText("彈性工作安排")).toBeTruthy();
+  expect(within(detail).getByText(family.text)).toBeTruthy();
+  expect(screen.getAllByText(family.text)).toHaveLength(1);
+  expect(screen.queryByText("單親家庭")).toBeNull();
+  await userEvent.click(screen.getByText("家庭詳細資料"));
+  expect(detail.open).toBe(true);
 });
 const game: GamePresentation = {
   review: null,
