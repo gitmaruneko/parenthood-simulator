@@ -24,11 +24,12 @@ v1–v5 → strict old contracts → preserve bytes → legacy projection
 
 - **Before:** 首個公開引擎邊界案例因沒有 Journal 投影失敗；泛用 planning 結果沒有具體用品或安排，新增斷言先失敗。
   **After:** Journal 在每個原 checkpoint 保存前產生，內容與選項原文快照化；十二個一般入口各有具體情境與兩套結果，條件式交接／詢問使用已確認親屬稱謂。
-- 243 項單元測試、Typecheck 與 Build 通過；Windows 沙箱沿用 runner config loader。完整 E2E、兩軸 Review 與遠端 CI／Preview 的最後結果以本票 PR 紀錄為準。
+- 本機 32 項桌面／手機 E2E 通過，已檢視選項粗體、結果一般字重及長文換行。Windows 沙箱沿用 runner config loader。遠端 CI／Preview 的最後結果以本票 PR 紀錄為準。
 - 八條完整改版前 trace（四 seed × coordinate／carry）機械摘要完全一致，保留原 history IDs／kind、事件／反應、資源、PRNG、記憶、排程與節點數；只排除敘事文字及 Journal 呈現資料。正式包仍是 32 節點＋1 fallback。
 - 真實 v5 開場／pending／已選／完成含回顧存檔驗證原 bytes、身份、舊正文及自選 keyMomentIds 保留。v1–v5 舊契約拒絕 Journal 欄位；來源、choice／reaction 索引、角色、空白與序號損壞被安全拒絕。保存失敗重試不重送選擇。
 - seed 42 的 handoff 範例實際沒有角色回應；Journal 只有已詢問、已列工作及已發生的天亮片段，不宣稱太太接手，也不把 pending support 當結果。[完整範例](../examples/ISSUE-37-PLAYTHROUGH.md) 包含倒序三筆、穩定 ID 與讀檔前後相同摘要。
 - [Journal 契約](../JOURNAL.md) 與[逐項內容稽核](UX-V2-T3-CONTENT.md) 同步記錄本票邊界及舊檔降級。
+- Standards Review 0 項發現。Spec Review 原 1 項 P2（同 Turn 的結果可錯掛先前事件）已以兩項失敗回歸修正，限定真正 occurrence 及索引序位；兩軸複審均 0 項未處理發現。最終 245 項單元測試、Typecheck、Build 全數通過。
 
 ## Merge Danger
 

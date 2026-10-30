@@ -197,3 +197,44 @@ it("links only actual observed reactions and keeps snapshots independent of late
   }
   expect(found).toBe(true);
 });
+
+it("rejects a standalone result rebound to an earlier event in the same Turn", () => {
+  const run = createFamilyRun({ seed: 42 });
+  const content = createMvpContent(run.actors);
+  const waiting = transitionGame(run.state, content, { type: "ADVANCE" }).state;
+  const chosen = transitionGame(waiting, content, { type: "CHOOSE", choiceId: "coordinate" }).state;
+  const next = transitionGame(chosen, content, { type: "ADVANCE" }).state;
+  const raw = JSON.parse(serializeGame(next));
+  const reflection = raw.state.history.find((entry: any) => entry.resolvedEventId === "night-handoff-reflection");
+  reflection.journal[0].eventHistoryId = raw.state.history[0].id;
+  reflection.journal[0].eventId = "night-handoff-choice";
+  const bytes = JSON.stringify(raw);
+  expect(restoreGame(bytes)).toMatchObject({ status: "error", rawData: bytes });
+});
+
+it("rejects swapped choice and reaction indices for repeated occurrences in one Turn", () => {
+  const run = createFamilyRun({ seed: 42 });
+  const content = createMvpContent(run.actors);
+  const event = content.events[0]!;
+  event.repeatable = true; event.terminationGuard = { kind: "maxVisits", count: 4 };
+  event.immediateFollowUpEventIds = []; event.actorIds = [run.state.family.childId];
+  content.actors.find(actor => actor.id === run.state.family.childId)!.availability = 1;
+  content.reactionPools[0]!.entries = content.reactionPools[0]!.entries.filter(entry => entry.id === "child-response");
+  let state = run.state;
+  for (let index = 0; index < 2; index++) {
+    state = transitionGame(state, content, { type: "ADVANCE" }).state;
+    state = transitionGame(state, content, { type: "CHOOSE", choiceId: "coordinate" }).state;
+  }
+  expect(state.choiceHistory).toHaveLength(2);
+  expect(state.reactionHistory).toHaveLength(2);
+  for (const kind of ["choice", "reaction"] as const) {
+    const raw = JSON.parse(serializeGame(state));
+    const entries = raw.state.history.flatMap((entry: any) => entry.journal)
+      .filter((item: any) => kind === "choice" ? item.kind === "choice" : item.reactionHistoryIndex !== undefined);
+    expect(entries).toHaveLength(2);
+    const key = kind === "choice" ? "choiceHistoryIndex" : "reactionHistoryIndex";
+    [entries[0][key], entries[1][key]] = [entries[1][key], entries[0][key]];
+    const bytes = JSON.stringify(raw);
+    expect(restoreGame(bytes)).toMatchObject({ status: "error", rawData: bytes });
+  }
+});

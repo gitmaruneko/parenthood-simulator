@@ -15,6 +15,7 @@ choiceHistoryIndex，實際反應另有 reactionHistoryIndex。id 由父 history
 來源內序號決定。父 history 提供 AgeStage／Turn，不使用實際時鐘排序。
 
 - eventHistoryId 是原事件錨點；effect／reaction 的來源各自保留原 history id。
+- 來源只能指向自身或最近前置的 resolved-event occurrence；choice／reaction 索引須符合可確定的 occurrence 序位與新快照遞增順序，不能把同 Turn 的另一事件結果誤掛或交換索引。
 - choiceText 是當下引擎接受的選項原文，已解析當時姓名／稱謂。text 保存必要情境與動作，畫面只將選項部分粗體，情境及結果為一般字重。
 - 已執行 storyEntries 形成具體結果；人物反應只能取實際 resolver 結果及 actorId。none、未選出回應者不新增可見反應；原始 reactionHistory／history 仍完整保留，避免改動機械 trace。
 - fallback 不為湊筆數新增「留白」紀錄；真正執行的節點／effects 依實際來源呈現。不從排程推論支援已落實，也不把詢問改寫成已完成交接。
