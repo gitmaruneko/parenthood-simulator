@@ -652,7 +652,7 @@ MVP 的介面方向是「溫暖的家庭生活手帳 × 現代敘事模擬遊戲
 
 - T2 原建立 save envelope v4；2026-10-30 核准的親屬稱謂修訂升至 v5，GameState 內層維持 1。v1／v2／v3／v4 各先按舊契約嚴格驗證，再做顯式遷移；v4 保留原人物檔案，不補猜父母性別或姻親。未知欄位／版本仍安全拒絕。
 - 遷移保留原始 bytes 後才替換，保留 seed、rngState、資源、方向、tendencies、角色參數、所有 history／choice／reaction、pending、schedule、completedAgeStages、review IDs 與 replayOrigin；備份或寫入失敗即停止。讀取本身不寫入、不生成日常、不重新抽家庭。
-- 後續 T3 若再擴充格式，須協調目前 v5 契約與明確逐版遷移，不將不同含義的 schema 重用同一格式版本。
+- T3（#37）新增 Journal 後使用 envelope v6，GameState 內層仍為 1；v5 先依舊 history 契約嚴格驗證再原樣遷移，不回填過往 Journal。後續格式變更仍須新版本及明確逐版遷移，不將不同 schema 重用同一版本。
 - 新增 Journal 不移除／重編 story ID，不破壞 review.timeline.storyEntryIds、keyMomentIds、supportMomentIds、repairMomentIds；回顧顯示同一 Journal 的文字投影並保留原始歷史詳情。
 - 日常片段可進回顧時間線，但不能冒充重大選擇、支持／修復或改變主題證據。既有三個關鍵時刻選取與安全分享 allowlist 保留；人物姓名與完整紀錄不自動加入分享文字。
 - 相同家庭重玩恢復起點人物檔案／既有 replayOrigin，再清空歷史及日常去重狀態；新家庭按既有新 seed 流程。缺 replayOrigin 的舊檔仍沿用既有 seed 預設重玩降級，不能宣稱找回遺失的開場答案。

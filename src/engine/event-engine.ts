@@ -9,6 +9,7 @@ import type {
 } from "../domain/schemas.js";
 import { conditionMatches } from "./conditions.js";
 import { resolveEventIdentity } from "./actor-profiles.js";
+import { snapshotJournal } from "./journal.js";
 import { nextPrng } from "./prng.js";
 import { resolveReactions } from "./reactions.js";
 import { ensureStageProgress, finishStage, nextStage, startTurn } from "./lifecycle.js";
@@ -383,6 +384,7 @@ const completeEventNode = (
         kind: "reaction" as const, text: reaction.text,
       }))] };
   }
+  nextState = snapshotJournal(state, nextState, event, content, choice);
   if (resultKind === "SAFE_FALLBACK") {
     const waitingForLaterTurn = nextState.scheduledFollowUps.some((item) => item.status === "pending" &&
       item.targetAgeStageId === nextState.currentAgeStageId && item.immediateTurnId === undefined);

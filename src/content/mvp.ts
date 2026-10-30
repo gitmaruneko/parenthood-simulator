@@ -2,6 +2,7 @@ import type { z } from "zod";
 import { AGE_STAGE_MONTHS, type ContentPack, type eventNodeSchema } from "../domain/schemas.js";
 import { parseContentPack } from "../domain/content-validation.js";
 import { MVP_TOPICS } from "./mvp-topics.js";
+import { MVP_JOURNAL } from "./mvp-journal.js";
 
 type Actor = ContentPack["actors"][number];
 
@@ -29,10 +30,12 @@ export const createMvpContent = (familyActors: readonly Actor[] = defaultFamilyA
     const resultCard = { knowledgeCardIds: [cardId] };
     const scheduled = (suffix: string) => chain
       ? [{ eventId: id(suffix), delayTurns: 1, priority: 10 }] : [];
-    const planningText = `你記住、安排並追蹤了「${scene.title}」的後續工作。`;
+    const journal = MVP_JOURNAL[scene.slug];
+    if (!journal) throw new Error(`Missing journal copy: ${scene.slug}`);
     events.push({
       id: id("choice"), ageStageId, kind: "choice", mode: "PLAYER_INPUT_REQUIRED",
       title: scene.title, text: scene.text, locationId: scene.location,
+      journalContext: { text: journal.context },
       actorText: scene.actorText ?? { actorId: "child-1", prefix: "與", suffix: `一起生活的日常。${scene.text}` },
       contextTags: [scene.slug, "everyday-care"], weight: 2,
       familyLifeDirectionWeights: scene.directionWeights,
@@ -46,13 +49,13 @@ export const createMvpContent = (familyActors: readonly Actor[] = defaultFamilyA
           id: "coordinate", text: scene.plan, ...resultCard,
           planningLoadDelta: 1, resourceDeltas: { timeFlexibility: -2, energy: -1 },
           tendencyDeltas: { sharedCare: 1 }, scheduledFollowUps: scheduled("support"),
-          storyEntries: [{ kind: "planning", text: `你為「${scene.title}」整理了可協調的工作，支持是否可用仍需確認。` }],
+          storyEntries: [{ kind: "planning", text: journal.coordinate }],
         },
         {
           id: "carry", text: scene.carry, ...resultCard,
           planningLoadDelta: 3, resourceDeltas: { energy: -4, timeFlexibility: 1 },
           tendencyDeltas: { responsibility: 1 }, scheduledFollowUps: scheduled("strain"),
-          storyEntries: [{ kind: "planning", text: planningText }],
+          storyEntries: [{ kind: "planning", text: journal.carry }],
         },
         {
           id: "handoff", text: "詢問另一位照顧者能否完整接手這一段", ...resultCard,
@@ -60,7 +63,8 @@ export const createMvpContent = (familyActors: readonly Actor[] = defaultFamilyA
           requirements: { kind: "actorAvailable", actorId: "caregiver-2" },
           planningLoadDelta: 1, resourceDeltas: { timeFlexibility: -1 },
           scheduledFollowUps: scheduled("support"),
-          storyEntries: [{ kind: "planning", text: "你提出完整交接的需求，包含提醒、追蹤與收尾，等待一起確認。" }],
+          storyEntries: [{ kind: "planning", text: "你向另一位照顧者提出完整交接的詢問，把開始時間、提醒與收尾列在一起，還沒有把交接當成已完成。",
+            actorText: { actorId: "caregiver-2", prefix: "你向", suffix: "提出完整交接的詢問，把開始時間、提醒與收尾列在一起，還沒有把交接當成已完成。" } }],
         },
         {
           id: "ask-family", text: "與支持家人確認這次可支援的範圍", ...resultCard,
@@ -68,7 +72,8 @@ export const createMvpContent = (familyActors: readonly Actor[] = defaultFamilyA
           requirements: { kind: "actorAvailable", actorId: "support-1" },
           planningLoadDelta: 1, resourceDeltas: { timeFlexibility: -1 },
           scheduledFollowUps: scheduled("support"),
-          storyEntries: [{ kind: "planning", text: "你與支持家人討論可用的時段，也留下對方無法接手時的調整空間。" }],
+          storyEntries: [{ kind: "planning", text: "你向支持家人詢問可用時段，把這次需要的工作寫清楚；對方能接哪一段仍待回覆。",
+            actorText: { actorId: "support-1", prefix: "你向", suffix: "詢問可用時段，把這次需要的工作寫清楚；對方能接哪一段仍待回覆。" } }],
         },
       ],
     });

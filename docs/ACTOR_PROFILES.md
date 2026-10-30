@@ -53,9 +53,9 @@ replaced, including names recorded by an earlier build. Review reads those same
 historical strings while its member cards use current title presentation. Safe
 sharing keeps its existing allowlist and excludes names and private details.
 
-## Save v5 and compatibility
+## Save v6 and compatibility
 
-Save v5 requires profiles and validates membership, profile/template versions,
+Save v6 retains the v5 profile contract and validates membership, profile/template versions,
 child/role relationships, matching in-law chains, unique opening actor references,
 and equality with opening identity snapshots. `replayOrigin` preserves profiles
 beside actors, resources and PRNG; same-family replay restores them. Reroll uses
@@ -63,14 +63,19 @@ a new seed and v2 profiles, without changing family-generation mechanics.
 
 v4 is validated against its frozen v1-profile contract before migration. Its
 names, coarse relationships, habits, history and RNG are preserved exactly;
-only the envelope becomes v5. v1/v2/v3 strictly reject identity fields and migrate
+only the envelope changes. v1/v2/v3 strictly reject identity fields and migrate
 to `legacy-unknown` profiles. Six real v4 fixtures were captured from `a40aa18`
 before editing, covering all three family structures, both coarse parent branches,
 pending input and resolved history.
 
 Migration preserves original bytes before the active write. Failure stops
 continuation and retains the active original for retry. Old bundles cannot read
-v5; rollback requires a compatible repair bundle or explicit recovery, never
+v6; rollback requires a compatible repair bundle or explicit recovery, never
 deleting saves. Missing replay origins retain the existing seed-default replay
 downgrade with unknown identities; missing introductions or answers are not
 reconstructed.
+
+T3 (#37) adds optional Journal snapshots to history and migrates v5 without
+rewriting identities or old prose. New choice/consequence text uses the same
+identity resolver at the committed checkpoint; reading old snapshots does not
+re-resolve a person's past name or title. See [Journal](JOURNAL.md).

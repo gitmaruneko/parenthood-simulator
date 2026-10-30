@@ -92,6 +92,10 @@ const validateMemoryActors = (
     if (memory.actorId) checkReference(memory.actorId, actorIds,
       `${path}.relationshipMemories[${index}].actorId`, "memory actor", issues);
   });
+  effects.storyEntries?.forEach((entry, index) => {
+    if (entry.actorText) checkReference(entry.actorText.actorId, actorIds,
+      `${path}.storyEntries[${index}].actorText.actorId`, "story actor", issues);
+  });
 };
 
 const visitCondition = (
@@ -304,6 +308,8 @@ const validateCrossReferences = (content: ContentPack): ContentValidationIssue[]
   );
 
   content.events.forEach((event, eventIndex) => {
+    if (event.journalContext?.actorText) checkReference(event.journalContext.actorText.actorId, actorIds,
+      `events[${eventIndex}].journalContext.actorText.actorId`, "journal context actor", issues);
     for (const [index, item] of [event, ...event.choices].entries()) {
       if (item.actorText) checkReference(item.actorText.actorId, actorIds,
         `events[${eventIndex}].identity[${index}]`, "text actor", issues);
@@ -407,6 +413,10 @@ const validateCrossReferences = (content: ContentPack): ContentValidationIssue[]
     }
     pool.entries.forEach((entry, entryIndex) => {
       const entryPath = `reactionPools[${poolIndex}].entries[${entryIndex}]`;
+      entry.storyEntries?.forEach((story, index) => {
+        if (story.actorText) checkReference(story.actorText.actorId, actorIds,
+          `${entryPath}.storyEntries[${index}].actorText.actorId`, "reaction story actor", issues);
+      });
       entry.weightModifiers?.forEach((modifier, index) =>
         visitCondition(modifier.condition, `${entryPath}.weightModifiers[${index}].condition`, eventIds, actorIds, issues));
       entry.scheduledFollowUps?.forEach((followUp, index) => {

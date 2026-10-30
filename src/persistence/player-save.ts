@@ -46,6 +46,9 @@ export const inspectPlayerSave = (
           : !["partner", "grandparent"].includes(actor.role)) ||
           (profile !== undefined && !profileMatchesActorRole(profile, actor.role));
       })) throw new Error("family actor content is unavailable");
+      const journalActors = load.state.history.flatMap(entry => entry.journal?.flatMap(item => item.actorIds) ?? []);
+      if (journalActors.some(id => !content.actors.some(actor => actor.id === id)))
+        throw new Error("journal actor content is unavailable");
       getPlayerView(load.state, content);
     } catch {
       load = {

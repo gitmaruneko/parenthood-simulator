@@ -1,0 +1,42 @@
+[
+  {
+    "seed": 0,
+    "decision": "coordinate",
+    "hash": "f4e464cd640627f7dda1d9d207b3d9def0ef7142251d49a48a06861b1c2dab17"
+  },
+  {
+    "seed": 0,
+    "decision": "carry",
+    "hash": "f044b93d9d09f506abb53472f413dc6121aef3047fd8f5cb89208c06deefe484"
+  },
+  {
+    "seed": 42,
+    "decision": "coordinate",
+    "hash": "db5a8f3747de5d54888293b7149c2962792163c7baf732f14f015d3f83e9a306"
+  },
+  {
+    "seed": 42,
+    "decision": "carry",
+    "hash": "6efc1dd6dccf23b35dd997590caf5ac53e4df86f621f2cf47b37fbb9e74fedda"
+  },
+  {
+    "seed": 123456789,
+    "decision": "coordinate",
+    "hash": "74868d5b3baec5e3b5b083c37855bd70e8357f0fd1f9809c4586f2a5c19ce4e3"
+  },
+  {
+    "seed": 123456789,
+    "decision": "carry",
+    "hash": "16d14e41d8287da71d9457e9ab4f39424b9b683d07c17ec666733b666fa41ee0"
+  },
+  {
+    "seed": 4294967295,
+    "decision": "coordinate",
+    "hash": "5b5c7d5c0d3fc9c684a5774f41bbc7519b8a212e2b5ec4fca50bb8c49dc24cf0"
+  },
+  {
+    "seed": 4294967295,
+    "decision": "carry",
+    "hash": "c78a10881d53cbca03b793c562ac4d84ac13f94b859f55f0f31dd9a79a4199c2"
+  }
+]

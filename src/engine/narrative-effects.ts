@@ -1,4 +1,5 @@
 import { resourceKeySchema, type GameState, type NarrativeEffects } from "../domain/schemas.js";
+import { resolveNarrativeText } from "./actor-profiles.js";
 
 const addFinite = (left: number, right: number): number =>
   Math.max(-Number.MAX_VALUE, Math.min(Number.MAX_VALUE, left + right));
@@ -28,7 +29,7 @@ export const applyNarrativeEffects = (state: GameState, effects: NarrativeEffect
     ...memory, createdAtAgeStageId: state.currentAgeStageId, createdAtTurn: state.turnNumber ?? 1,
   }))],
   history: [...state.history, ...(effects.storyEntries ?? []).map((entry, index) => ({
-    ...entry, id: `${source}-${state.currentTurnId}-${state.turn!.nodeCount}-${index}`,
+    kind: entry.kind, text: resolveNarrativeText(entry, state), id: `${source}-${state.currentTurnId}-${state.turn!.nodeCount}-${index}`,
     ageStageId: state.currentAgeStageId, turnId: state.currentTurnId!,
   }))],
 });

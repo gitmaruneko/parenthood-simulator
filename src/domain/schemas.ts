@@ -130,6 +130,9 @@ export const relationshipMemorySchema = z
   })
   .strict();
 
+const actorTextSchema = z.object({ actorId: identifierSchema, prefix: z.string(), suffix: z.string() }).strict();
+export const narrativeTextSchema = z.object({ text: z.string().trim().min(1), actorText: actorTextSchema.optional() }).strict();
+
 export const narrativeEffectsSchema = z.object({
   resourceDeltas: resourceDeltaSchema.optional(),
   setFlags: z.array(identifierSchema).optional(),
@@ -142,6 +145,7 @@ export const narrativeEffectsSchema = z.object({
   storyEntries: z.array(z.object({
     kind: z.enum(["planning", "support", "repair"]),
     text: z.string().min(1),
+    actorText: actorTextSchema.optional(),
   }).strict()).optional(),
 }).strict();
 
@@ -220,8 +224,6 @@ export const knowledgeCardSchema = z
     }
   });
 
-const actorTextSchema = z.object({ actorId: identifierSchema, prefix: z.string(), suffix: z.string() }).strict();
-
 export const eventChoiceSchema = z
   .object({
     ...narrativeEffectsSchema.shape,
@@ -250,6 +252,7 @@ export const eventNodeSchema = z
     text: z.string().min(1),
     actorText: actorTextSchema.optional(),
     weight: z.number().finite().positive(),
+    journalContext: narrativeTextSchema.optional(),
     familyLifeDirectionWeights: z.record(familyLifeDirectionIdSchema, z.number().finite().min(1).max(1.25)).optional(),
     locationId: identifierSchema.optional(),
     contextTags: z.array(identifierSchema).optional(),
@@ -388,6 +391,19 @@ export const choiceHistoryEntrySchema = z
   })
   .strict();
 
+const journalSourceFields = {
+  id: identifierSchema, sourceHistoryId: identifierSchema, eventHistoryId: identifierSchema,
+  eventId: identifierSchema, sequence: z.number().int().min(0),
+  text: z.string().min(1).refine(text => text.trim().length > 0), actorIds: z.array(identifierSchema),
+};
+export const journalEntrySchema = z.discriminatedUnion("kind", [
+  z.object({ ...journalSourceFields, kind: z.literal("choice"),
+    choiceHistoryIndex: z.number().int().min(0), choiceText: z.string().min(1).refine(text => text.trim().length > 0),
+  }).strict(),
+  z.object({ ...journalSourceFields, kind: z.literal("result"),
+    reactionHistoryIndex: z.number().int().min(0).optional(),
+  }).strict(),
+]);
 export const storyEntrySchema = z
   .object({
     id: identifierSchema,
@@ -396,6 +412,7 @@ export const storyEntrySchema = z
     turnId: identifierSchema,
     kind: z.enum(["event", "reaction", "support", "repair", "planning"]),
     text: z.string().min(1),
+    journal: z.array(journalEntrySchema).optional(),
   })
   .strict();
 
@@ -501,3 +518,4 @@ export type ScheduledFollowUp = z.infer<typeof scheduledFollowUpSchema>;
 export type Turn = z.infer<typeof turnSchema>;
 export type ObservedReaction = z.infer<typeof observedReactionSchema>;
 export type NarrativeEffects = z.infer<typeof narrativeEffectsSchema>;
+export type JournalEntry = z.infer<typeof journalEntrySchema>;

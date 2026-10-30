@@ -115,7 +115,7 @@ it("migrates frozen v4 saves without inventing kinship, rewriting history or los
     fail = false;
     expect(store.migrate(raw).status).toBe("saved");
     const saved = JSON.parse(values.get(LOCAL_SAVE_KEY)!);
-    expect(saved).toEqual({ ...fixture, schemaVersion: 5 });
+    expect(saved).toEqual({ ...fixture, schemaVersion: 6 });
     expect(store.load()).toMatchObject({ status: "restored", migratedFrom: null, state: fixture.state });
     const elder = resolveFamilyMembers(loaded.state, fixture.state.replayOrigin.actors).find(member => member.id === "support-1");
     if (elder) expect(elder.displayName).not.toMatch(/^(媽媽|爸爸|婆婆|公公|岳母|岳父)/);

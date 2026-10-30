@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { REVIEW_THEMES, getReviewMomentEntries } from "../engine/index.js";
 import type { GamePresentation } from "./player-session.js";
 import { FamilyMemberCard } from "./FamilyMemberCard.js";
+import { projectJournal } from "../engine/index.js";
+import { JournalText } from "./JournalText.js";
 
 export function ReviewScreen({ game, blocked, onSelect, onReplay, onNew }: {
   game: GamePresentation; blocked: boolean; onSelect: (ids: string[]) => void;
@@ -13,18 +15,15 @@ export function ReviewScreen({ game, blocked, onSelect, onReplay, onNew }: {
   const title = useRef<HTMLHeadingElement>(null);
   useEffect(() => { title.current?.focus(); }, []);
   useEffect(() => { setSelection(review.keyMomentIds); }, [review.keyMomentIds.join("|")]);
-  const moment = (id: string) => {
+  const journal = projectJournal({ history: game.history, choiceHistory: game.choices, reactionHistory: game.reactions });
+  const moment = (id: string, includeResults = false) => {
     const entry = game.history.find((entry) => entry.id === id);
     if (!entry) return null;
-    const choice = game.choices.find((choice) => choice.eventId === entry.resolvedEventId && choice.turnId === entry.turnId);
-    const reaction = entry.kind === "reaction" ? game.reactions.find((reaction) =>
-      reaction.turnId === entry.turnId && reaction.text === entry.text) : null;
+    const records = journal.filter(record => includeResults ? record.eventHistoryId === id : record.sourceHistoryId === id).reverse();
+    if (!records.length) return null;
     return <article key={id} className="review-moment">
       <small>{game.storyTimeLabels[entry.turnId]}</small>
-      {entry.resolvedEventId && <h3>{game.eventTitles[entry.resolvedEventId]}</h3>}
-      {reaction && <p>人物反應 · {game.members.find((member) => member.id === reaction.actorId)?.displayName ?? "身邊的人"}</p>}
-      <p>{entry.text}</p>
-      {choice && <p>你曾選擇：{game.choiceTexts[`${choice.eventId}/${choice.choiceId}`]}</p>}
+      {records.map(record => <div key={record.id} data-journal-id={record.id}><JournalText entry={record} /></div>)}
     </article>;
   };
   const choices = getReviewMomentEntries(game.history, game.choices);
@@ -42,7 +41,7 @@ export function ReviewScreen({ game, blocked, onSelect, onReplay, onNew }: {
     </section>
     <section className="panel">
       <h2>三個關鍵時刻</h2>
-      {review.keyMomentIds.map(moment)}
+      {review.keyMomentIds.map(id => moment(id, true))}
       <details><summary>調整三個關鍵時刻</summary>
         <fieldset disabled={blocked}>
           <legend>選擇三段你想留下的經歷（已選 {selection.length} / 3）</legend>
@@ -60,15 +59,15 @@ export function ReviewScreen({ game, blocked, onSelect, onReplay, onNew }: {
       <h2>十二個成長階段</h2>
       <ol className="review-timeline">{review.timeline.map((stage) => <li key={stage.ageStageId}>
         <h3>{stage.title}</h3>
-        <details><summary>閱讀這個階段的生活（{stage.storyEntryIds.length} 段）</summary>
-          {stage.storyEntryIds.length ? stage.storyEntryIds.map(moment) : <p>這個階段沒有留下故事片段。</p>}
+        <details><summary>閱讀這個階段的生活（{journal.filter(record => stage.storyEntryIds.includes(record.sourceHistoryId)).length} 段）</summary>
+          {journal.some(record => stage.storyEntryIds.includes(record.sourceHistoryId)) ? [...stage.storyEntryIds].reverse().map(id => moment(id)) : <p>這個階段沒有留下故事片段。</p>}
         </details>
       </li>)}</ol>
     </section>
     <section className="panel">
       <h2>支持與重新靠近</h2>
-      <h3>支持的片刻</h3>{review.supportMomentIds.length ? review.supportMomentIds.map(moment) : <p>這次沒有記錄到支持片段。</p>}
-      <h3>修復的片刻</h3>{review.repairMomentIds.length ? review.repairMomentIds.map(moment) : <p>有些事仍留待以後再談。</p>}
+      <h3>支持的片刻</h3>{review.supportMomentIds.length ? review.supportMomentIds.map(id => moment(id)) : <p>這次沒有記錄到支持片段。</p>}
+      <h3>修復的片刻</h3>{review.repairMomentIds.length ? review.repairMomentIds.map(id => moment(id)) : <p>有些事仍留待以後再談。</p>}
       <h2>記掛、安排與資源脈絡</h2>
       <p>最後仍承接的安排負擔：{game.planningLoad}。這是當時的負荷，不是家庭分數。</p>
       {game.history.filter((entry) => entry.kind === "planning").map((entry) => moment(entry.id))}
