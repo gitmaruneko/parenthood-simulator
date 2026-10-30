@@ -38,6 +38,22 @@ it("introduces the saved family without displaying assessment tendencies", async
   expect(screen.getByText("你的孩子 · 2 個月")).toBeTruthy();
   expect(screen.getByRole("button", { name: "重新抽選家庭" })).toBeTruthy();
 });
+it("introduces a multigenerational family by kinship titles and keeps elder names out of the visible card", async () => {
+  const run = createFamilyRun({ seed: 4294967295 });
+  const elder = run.state.actorProfiles!["support-1"]!;
+  const partner = run.state.actorProfiles!["caregiver-2"]!;
+  if (elder.source === "legacy-unknown" || partner.source === "legacy-unknown") throw new Error("expected generated family");
+  const session = createPlayerSession(createLocalSaveStore({ getItem: () => null, setItem: () => {} }), () => 4294967295);
+  await session.newStory(); session.reveal();
+  render(<App session={session} />);
+  expect(screen.getByRole("heading", { level: 3, name: "婆婆" })).toBeTruthy();
+  expect(screen.getByRole("heading", { level: 3, name: "先生" })).toBeTruthy();
+  expect(screen.getByRole("heading", { level: 3, name: "孩子（小樹）" })).toBeTruthy();
+  const card = within(screen.getByRole("article", { name: "婆婆" }));
+  expect(card.getByText("習慣出門前把鑰匙和購物袋放在門邊。")).toBeTruthy();
+  expect(screen.queryByText(elder.name, { exact: true })).toBeNull();
+  expect(screen.queryByText(partner.name, { exact: true })).toBeNull();
+});
 it("expands opening candidates without answering and resets expansion for the next situation", async () => {
   const session = createPlayerSession(createLocalSaveStore({
     getItem: () => null, setItem: () => {},

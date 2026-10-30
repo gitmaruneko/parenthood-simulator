@@ -1,56 +1,76 @@
-# Family identities (UX v2 T2, issue #36)
+# Family identities (#36, #45–#46)
 
-New families store one `actorProfiles` entry for each `childId` and
-`persistentActorIds` member: version 1, a generated source, a fictional name,
-a controlled relationship and a versioned habit template. Mechanical actor roles
-and participation remain separate. Adult ages are omitted; child age follows
-the current stage.
+Every child and persistent family actor has a saved profile. Actor roles and
+mechanical participation remain separate from presentation identity. New runs
+use `profileVersion: 2`, `source: generated-v2`; existing `generated-v1` and
+`legacy-unknown` profiles remain readable and are never regenerated on load.
 
-`family-identities/v1` hashes seed, actor ID and all three generated family
-dimensions with FNV-1a over UTF-16 code units (`Math.imul`, unsigned 32-bit).
-Catalogue order, hash inputs, bit offsets and collision resolution in
-`src/engine/actor-profiles.ts` are frozen for this version. This pure function
-never consumes the game PRNG. Assessment answers do not affect identity.
-The pre-T2 mechanics fixture was captured from `d5148d3` before edits.
+## Player-view kinship
 
-Partners explicitly generate neutral partner, husband or wife. Elders explicitly
-generate the player's parents or a partner's parents; the latter references a
-confirmed partner profile. No parent gender or specific in-law title is inferred
-from role or name. Nonresident supporters are labelled. Habits are generated
-preferences, not observed care work or character judgments; adults share one
-catalogue across roles.
+Member cards, opening reveal, pending actor-bound events and review share one
+resolver. Cards show `孩子（姓名）` for known children, and kinship titles for
+adults. Adult names remain in the model; elder names are not displayed. A
+nonresident elder's card explicitly adds `（不同住）`.
 
-`resolveFamilyMembers` supplies reveal, members and review. `resolveEventIdentity`
-binds authored `actorText` to actual actor IDs in pending events and choices.
-Missing identities use authored neutral fallback text. Content validation rejects
-unknown actor references; membership and existing choice requirements prevent
-absent relatives from becoming participants. Resolved event text becomes a saved
-history snapshot. Existing history strings are never replaced.
+| Saved relationship | Title | Required related profile |
+| --- | --- | --- |
+| husband / wife / partner | 先生 / 太太 / 伴侶 | None |
+| mother / father | 媽媽 / 爸爸 | None |
+| husbandMother / husbandFather | 婆婆 / 公公 | husband |
+| wifeMother / wifeFather | 岳母 / 岳父 | wife |
+| partnerMother / partnerFather | 伴侶的媽媽 / 伴侶的爸爸 | neutral partner |
+| v1 playerParent / partnerParent | 你的家中長輩 / 伴侶的家中長輩 | v1 partnerParent retains its confirmed partner chain |
+| legacy-unknown | Existing neutral child / caregiver / elder labels | No guessed kinship |
 
-The elder-advice scene has an authored neutral title and fallback about recalling
-advice. Its present-relative variant binds to `support-1`; families without that
-member do not acquire a fictional visiting elder. Eligibility and weights stay
-unchanged. Save inspection also verifies family IDs against installed content
-before offering continuation, including legacy saves without an origin snapshot.
-Generated relationships are also checked against installed actor roles when an
-origin snapshot is absent; contradictory partner/elder identities enter recovery.
+Names, household composition and actor role never supply missing gender or
+kinship. Precise relationships are explicit fictional facts generated only for
+new families. No player gender or real personal data is added. All in-law
+references must identify a matching existing partner. Profiles must agree with
+installed actor roles and their opening snapshots.
 
-Save v4 requires profiles and validates membership, unique opening actor
-references, child/role relationships, partner-parent chains, template
-compatibility and supported versions. `replayOrigin` snapshots opening profiles
-beside actors, resources and PRNG. Replay restores those profiles; reroll uses a
-new seed and new profiles. Legacy files without an origin retain the existing
-seed-default mechanical replay downgrade with unknown identities, without
-claiming to recover missing introductions or answers.
+## Versioned generation and habits
 
-v1/v2/v3 saves explicitly migrate with `legacy-unknown` profiles for existing
-members: no invented names, kinship or habits. Existing neutral actor names
-remain available. Migration preserves original bytes before writing v4; failure
-stops continuation and keeps the active original. Old bundles cannot read v4:
-rollback needs a compatible repair build or explicit recovery, never deletion.
-Legacy contracts reject both top-level and opening-snapshot identity fields
-before migration; relabelling v4 data as an older version does not bypass this.
+`family-identities/v2` hashes seed, actor ID and all three family dimensions
+with FNV-1a over UTF-16 code units (`Math.imul`, unsigned 32-bit). Partners are
+established first, then other actors in stable ID order. Namespace, catalogue
+order, bit offsets and collision resolution are frozen for v2. Identity generation
+never consumes the game PRNG; assessment answers do not change identities.
 
-Verification covers generation, engine, save/restore, Session, React, and
-desktop/mobile reveal → play → reload → review → replay. Sharing retains the
-static allowlist and excludes names and habits.
+The curated fictional catalogues separate child nicknames, adult names, and
+mother/father elder names. Names are selected after the explicit relationship;
+they are not evidence used to infer it. Existing names are kept unchanged.
+New v2 habits use concrete everyday templates (a fridge calendar, tea, bags at
+the door); the same adult catalogue applies across roles. Habits describe a
+generated preference, never evidence that a specific care task already happened.
+Version-1 templates keep their original wording.
+
+## Events and saved history
+
+Authored `actorText` binds to actual actor IDs; missing actors use validated
+neutral fallback. Current and future events use the shared kinship labels.
+Resolved text is saved as a history snapshot: existing strings are never globally
+replaced, including names recorded by an earlier build. Review reads those same
+historical strings while its member cards use current title presentation. Safe
+sharing keeps its existing allowlist and excludes names and private details.
+
+## Save v5 and compatibility
+
+Save v5 requires profiles and validates membership, profile/template versions,
+child/role relationships, matching in-law chains, unique opening actor references,
+and equality with opening identity snapshots. `replayOrigin` preserves profiles
+beside actors, resources and PRNG; same-family replay restores them. Reroll uses
+a new seed and v2 profiles, without changing family-generation mechanics.
+
+v4 is validated against its frozen v1-profile contract before migration. Its
+names, coarse relationships, habits, history and RNG are preserved exactly;
+only the envelope becomes v5. v1/v2/v3 strictly reject identity fields and migrate
+to `legacy-unknown` profiles. Six real v4 fixtures were captured from `a40aa18`
+before editing, covering all three family structures, both coarse parent branches,
+pending input and resolved history.
+
+Migration preserves original bytes before the active write. Failure stops
+continuation and retains the active original for retry. Old bundles cannot read
+v5; rollback requires a compatible repair bundle or explicit recovery, never
+deleting saves. Missing replay origins retain the existing seed-default replay
+downgrade with unknown identities; missing introductions or answers are not
+reconstructed.

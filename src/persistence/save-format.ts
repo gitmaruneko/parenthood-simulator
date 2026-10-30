@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { gameStateSchema, type GameState } from "../domain/schemas.js";
 import { familyLifeDirectionIdSchema } from "../domain/family-life-direction.js";
-import { actorProfilesSchema, unknownActorProfiles, validateActorProfiles } from "../domain/actor-profiles.js";
+import { actorProfilesSchema, legacyActorProfilesSchema, unknownActorProfiles, validateActorProfiles } from "../domain/actor-profiles.js";
 
-export const SAVE_SCHEMA_VERSION = 4;
+export const SAVE_SCHEMA_VERSION = 5;
 
 export type SaveErrorCode = "invalid-data" | "incompatible-version" | "storage-unavailable"
   | "storage-full" | "save-changed" | "recovery-required";
@@ -15,14 +15,11 @@ export interface SaveError {
 
 export type RestoreResult =
   | { readonly status: "restored"; readonly state: GameState; readonly rawData: string;
-      readonly migratedFrom: 1 | 2 | 3 | null }
+      readonly migratedFrom: 1 | 2 | 3 | 4 | null }
   | { readonly status: "error"; readonly error: SaveError; readonly rawData: string };
 
 const stateContract = gameStateSchema.extend({ schemaVersion: z.literal(1) });
-const savedStateSchema = stateContract.extend({
-  actorProfiles: actorProfilesSchema,
-  activeFamilyLifeDirectionId: familyLifeDirectionIdSchema,
-}).superRefine((state, ctx) => {
+const validateSavedState = (state: GameState, ctx: z.RefinementCtx) => {
   validateActorProfiles(state, ctx);
   if (state.currentTurnId !== (state.turn?.id ?? null) ||
       (state.turn && state.turn.ageStageId !== state.currentAgeStageId) ||
@@ -42,7 +39,18 @@ const savedStateSchema = stateContract.extend({
       state.eventProgress.nodeIndex !== state.turn.nodeCount)) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: "inconsistent pending player input" });
   }
-});
+};
+const savedStateSchema = stateContract.extend({
+  actorProfiles: actorProfilesSchema,
+  activeFamilyLifeDirectionId: familyLifeDirectionIdSchema,
+}).superRefine(validateSavedState);
+const v4StateSchema = stateContract.extend({
+  actorProfiles: legacyActorProfilesSchema,
+  replayOrigin: stateContract.shape.replayOrigin.unwrap().extend({
+    actorProfiles: legacyActorProfilesSchema.optional(),
+  }).optional(),
+  activeFamilyLifeDirectionId: familyLifeDirectionIdSchema,
+}).superRefine(validateSavedState);
 
 const saveSchema = z.object({
   schemaVersion: z.literal(SAVE_SCHEMA_VERSION),
@@ -82,16 +90,18 @@ export const restoreGame = (rawData: string): RestoreResult => {
   }
   const version = z.object({ schemaVersion: z.number().int().positive() }).safeParse(data);
   const nestedVersion = z.object({ state: z.object({ schemaVersion: z.number().int().positive() }) }).safeParse(data);
-  if ((version.success && ![1, 2, 3, SAVE_SCHEMA_VERSION].includes(version.data.schemaVersion)) ||
-      (version.success && [2, 3, SAVE_SCHEMA_VERSION].includes(version.data.schemaVersion) && nestedVersion.success &&
+  if ((version.success && ![1, 2, 3, 4, SAVE_SCHEMA_VERSION].includes(version.data.schemaVersion)) ||
+      (version.success && [2, 3, 4, SAVE_SCHEMA_VERSION].includes(version.data.schemaVersion) && nestedVersion.success &&
         nestedVersion.data.state.schemaVersion !== 1)) {
     return { status: "error", rawData, error: { code: "incompatible-version",
       message: "這份故事的版本目前無法開啟，原始資料仍保留。請使用支援此版本的程式，或確認保留原檔後開始新故事。" } };
   }
-  const migratedFrom = version.success && [1, 2, 3].includes(version.data.schemaVersion)
-    ? version.data.schemaVersion as 1 | 2 | 3 : null;
-  const legacyEnvelope = z.object({ schemaVersion: z.union([z.literal(2), z.literal(3)]), state: z.unknown() }).strict().safeParse(data);
+  const migratedFrom = version.success && [1, 2, 3, 4].includes(version.data.schemaVersion)
+    ? version.data.schemaVersion as 1 | 2 | 3 | 4 : null;
+  const legacyEnvelope = z.object({ schemaVersion: z.union([z.literal(2), z.literal(3), z.literal(4)]), state: z.unknown() }).strict().safeParse(data);
+  const v4 = migratedFrom === 4 && legacyEnvelope.success ? v4StateSchema.safeParse(legacyEnvelope.data.state) : null;
   const migrated = migratedFrom === 1 ? migrateLegacy(data)
+    : v4?.success ? { schemaVersion: SAVE_SCHEMA_VERSION, state: v4.data }
     : (migratedFrom === 2 || migratedFrom === 3) && legacyEnvelope.success
       ? migrateLegacy(legacyEnvelope.data.state, migratedFrom === 3) : data;
   const parsed = saveSchema.safeParse(migrated);

@@ -54,13 +54,13 @@ it("routes a no-origin save with unknown family actors to recovery before resume
 });
 
 it.each([
-  { seed: 42, actorId: "caregiver-2", relationship: "playerParent" as const },
+  { seed: 42, actorId: "caregiver-2", relationship: "mother" as const },
   { seed: 0, actorId: "support-1", relationship: "partner" as const },
 ])("preserves a no-origin save with a relationship contradicting installed $actorId role", async ({ seed, actorId, relationship }) => {
   const run = createFamilyRun({ seed });
   delete run.state.replayOrigin;
   const profile = run.state.actorProfiles![actorId]!;
-  if (profile.source !== "generated-v1") throw new Error("expected generated profile");
+  if (profile.source !== "generated-v2") throw new Error("expected generated profile");
   profile.relationshipToPlayer = relationship;
   delete profile.relatedActorId;
   const storage = memory();
@@ -211,11 +211,11 @@ it("presents only generated family members with relationships and the child's cu
       expect(game.pendingEvent!.choices.map((choice) => choice.id)).not.toContain("handoff");
     } else if (run.state.family.householdComposition === "twoCaregivers") {
       expect(game.members).toHaveLength(2);
-      expect(game.members[1]!.relationship).toMatch(/伴侶|先生|妻子/);
+      expect(game.members[1]!.relationship).toMatch(/伴侶|先生|太太/);
       expect(game.pendingEvent!.choices.map((choice) => choice.id)).not.toContain("ask-family");
     } else {
       expect(game.members).toHaveLength(3);
-      expect(game.members[2]!.relationship).toMatch(/你的父母|伴侶的父母/);
+      expect(game.members[2]!.relationship).toMatch(/媽媽|爸爸|婆婆|公公|岳母|岳父/);
     }
     const before = game.members.map((member) => ({ ...member }));
     await session.choose("coordinate");

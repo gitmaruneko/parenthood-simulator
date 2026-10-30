@@ -2,7 +2,8 @@ import { z } from "zod";
 import type { GameState } from "./schemas.js";
 
 const actorId = z.string().regex(/^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$/i);
-export const actorProfileSchema = z.discriminatedUnion("source", [
+// Frozen v4 profile contract; older envelopes cannot accept generated-v2 data.
+export const legacyActorProfileSchema = z.discriminatedUnion("source", [
   z.object({
     profileVersion: z.literal(1), source: z.literal("generated-v1"),
     name: z.string().trim().min(1).max(30),
@@ -17,15 +18,39 @@ export const actorProfileSchema = z.discriminatedUnion("source", [
     relationshipToPlayer: z.enum(["child", "unknownFamily"]),
   }).strict(),
 ]);
+export const actorProfileSchema = z.discriminatedUnion("source", [
+  ...legacyActorProfileSchema.options,
+  z.object({
+    profileVersion: z.literal(2), source: z.literal("generated-v2"),
+    name: z.string().trim().min(1).max(30),
+    relationshipToPlayer: z.enum(["child", "partner", "husband", "wife", "mother", "father",
+      "husbandMother", "husbandFather", "wifeMother", "wifeFather", "partnerMother", "partnerFather"]),
+    relatedActorId: actorId.optional(),
+    lifeDetail: z.object({ templateVersion: z.literal(2),
+      templateId: z.enum(["toys", "pictures", "colours", "calendar", "tea", "bags"]),
+      source: z.literal("generated-v2"),
+    }).strict(),
+  }).strict(),
+]);
 export const actorProfilesSchema = z.record(actorId, actorProfileSchema);
+export const legacyActorProfilesSchema = z.record(actorId, legacyActorProfileSchema);
 export type ActorProfiles = z.infer<typeof actorProfilesSchema>;
+
+const elderRelationships = ["playerParent", "partnerParent", "mother", "father",
+  "husbandMother", "husbandFather", "wifeMother", "wifeFather", "partnerMother", "partnerFather"];
+const linkedPartnerRelationships: Record<string, readonly string[]> = {
+  partnerParent: ["partner", "husband", "wife"],
+  husbandMother: ["husband"], husbandFather: ["husband"],
+  wifeMother: ["wife"], wifeFather: ["wife"],
+  partnerMother: ["partner"], partnerFather: ["partner"],
+};
 
 export function profileMatchesActorRole(profile: ActorProfiles[string], role: string): boolean {
   if (profile.source === "legacy-unknown") return true;
   const relationship = profile.relationshipToPlayer;
   return role === "child" ? relationship === "child"
     : role === "partner" ? ["partner", "husband", "wife"].includes(relationship)
-    : role === "grandparent" && ["playerParent", "partnerParent"].includes(relationship);
+    : role === "grandparent" && elderRelationships.includes(relationship);
 }
 
 export function unknownActorProfiles(family: GameState["family"]): ActorProfiles {
@@ -54,13 +79,14 @@ export function validateActorProfiles(state: GameState, ctx: z.RefinementCtx) {
     for (const [id, profile] of Object.entries(profiles)) {
       if ((id === state.family.childId) !== (profile.relationshipToPlayer === "child"))
         invalid("child relationship does not match childId");
-      if (profile.source !== "generated-v1") continue;
+      if (profile.source === "legacy-unknown") continue;
       if ((profile.relationshipToPlayer === "child") !== ["toys", "pictures", "colours"].includes(profile.lifeDetail.templateId))
         invalid("life detail is incompatible with relationship");
       const relative = profile.relatedActorId ? profiles[profile.relatedActorId] : undefined;
-      if (profile.relationshipToPlayer === "partnerParent") {
-        if (!relative || !["partner", "husband", "wife"].includes(relative.relationshipToPlayer))
-          invalid("partner parent requires a confirmed partner relationship");
+      const allowedPartners = linkedPartnerRelationships[profile.relationshipToPlayer];
+      if (allowedPartners) {
+        if (!relative || !allowedPartners.includes(relative.relationshipToPlayer))
+          invalid("in-law relationship requires the matching confirmed partner");
       } else if (profile.relatedActorId) invalid("unexpected relationship chain");
       const actor = state.replayOrigin?.actors.find(actor => actor.id === id);
       if (actor && !profileMatchesActorRole(profile, actor.role))
@@ -71,4 +97,7 @@ export function validateActorProfiles(state: GameState, ctx: z.RefinementCtx) {
   check(state.replayOrigin?.actorProfiles);
   if (state.actorProfiles && state.replayOrigin && !state.replayOrigin.actorProfiles)
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: "missing opening profiles" });
+  if (state.actorProfiles && state.replayOrigin?.actorProfiles && ids.some(id =>
+    JSON.stringify(state.actorProfiles![id]) !== JSON.stringify(state.replayOrigin!.actorProfiles![id])))
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "opening profiles contradict saved identities" });
 }

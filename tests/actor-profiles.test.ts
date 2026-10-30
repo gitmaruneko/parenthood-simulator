@@ -8,27 +8,14 @@ import { createMvpContent } from "../src/content/mvp.js";
 import { validateContentPack } from "../src/domain/content-validation.js";
 import type { GameState } from "../src/domain/schemas.js";
 
-it("freezes v1 identity catalogue order and covers neutral partners and both parent relationship branches", () => {
-  expect(resolveFamilyMembers(createFamilyRun({ seed: 42 }).state, createFamilyRun({ seed: 42 }).actors)).toEqual([
-    { id: "child-1", displayName: "小樹", relationship: "你的孩子", lifeDetail: "常被鮮明的顏色吸引。" },
-    { id: "caregiver-2", displayName: "小悠", relationship: "妻子", lifeDetail: "喜歡在空檔泡一杯茶。" },
+it("reads frozen v1 names and habits while displaying adult kinship first", () => {
+  const fixtures = JSON.parse(readFileSync(new URL("./helpers/v4-family-saves.json", import.meta.url), "utf8"));
+  const saved = fixtures[1].state;
+  expect(resolveFamilyMembers(saved, saved.replayOrigin.actors)).toEqual([
+    { id: "child-1", displayName: "孩子（小樹）", relationship: "你的孩子", lifeDetail: "常被鮮明的顏色吸引。" },
+    { id: "caregiver-2", displayName: "太太", relationship: "太太", lifeDetail: "喜歡在空檔泡一杯茶。" },
   ]);
-  const relationships = new Set<string>();
-  const adultDetails = new Map<string, Set<string>>();
-  for (let seed = 0; seed < 128; seed++) {
-    const run = createFamilyRun({ seed });
-    expect(() => serializeGame(run.state)).not.toThrow();
-    for (const [id, profile] of Object.entries(run.state.actorProfiles!)) {
-      relationships.add(profile.relationshipToPlayer);
-      if (profile.source === "generated-v1" && id !== "child-1") {
-        const role = run.actors.find(actor => actor.id === id)!.role;
-        const seen = adultDetails.get(role) ?? new Set();
-        seen.add(profile.lifeDetail.templateId); adultDetails.set(role, seen);
-      }
-    }
-  }
-  expect([...relationships].sort()).toEqual(["child", "husband", "partner", "partnerParent", "playerParent", "wife"]);
-  for (const role of ["partner", "grandparent"]) expect([...adultDetails.get(role)!].sort()).toEqual(["check-in", "notes", "tea"]);
+  expect(saved.actorProfiles["caregiver-2"].name).toBe("小悠");
 });
 
 it("preserves the pre-T2 seeded mechanics while generating stable opening identities", () => {
@@ -118,7 +105,7 @@ it("binds authored text to existing actors and leaves neutral fallback for absen
   const run = createFamilyRun({ seed: 42 });
   const content = createMvpContent(run.actors);
   const event = content.events[0]!;
-  expect(resolveEventIdentity(event, run.state).text).toContain("小樹");
+  expect(resolveEventIdentity(event, run.state).text).toContain("小禾");
   const absent = { ...event, actorText: { actorId: "support-1", prefix: "與", suffix: "同行" } };
   expect(resolveEventIdentity(absent, run.state).text).toBe(event.text);
   content.events[0] = { ...event, actorText: { actorId: "ghost", prefix: "", suffix: "" } };
@@ -136,7 +123,7 @@ it("uses neutral elder-advice text when no elder belongs to the family", () => {
   const elderContent = createMvpContent(withElder.actors);
   const elderEvent = elderContent.events.find(event => event.id === "grandparent-boundary-choice")!;
   expect(resolveEventIdentity(elderEvent, withElder.state).text)
-    .toContain(resolveFamilyMembers(withElder.state, withElder.actors).find(member => member.id === "support-1")!.displayName);
+    .toContain("媽媽");
 });
 
 it("keeps event order, reactions, effects and RNG identical with identities across a whole game", () => {
