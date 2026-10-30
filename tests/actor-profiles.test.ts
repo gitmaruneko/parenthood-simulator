@@ -84,6 +84,17 @@ it("rejects invalid profile references, relationship chains and unsupported vers
   }
 });
 
+it.each([1, 2, 3])("rejects new identity fields in the strict v%s contract without changing the original bytes", version => {
+  for (const location of ["state", "origin"] as const) {
+    const state = structuredClone(createFamilyRun({ seed: 42 }).state);
+    if (location === "state") delete state.replayOrigin!.actorProfiles;
+    else delete state.actorProfiles;
+    const raw = JSON.stringify(version === 1 ? state : { schemaVersion: version, state });
+    expect(restoreGame(raw)).toMatchObject({ status: "error", rawData: raw,
+      error: { code: "invalid-data" } });
+  }
+});
+
 it.each([1, 2, 3])("preserves v%s bytes and stops when migration cannot write, then safely retries", version => {
   const state = structuredClone(createFamilyRun({ seed: 42 }).state);
   delete state.actorProfiles; delete state.replayOrigin!.actorProfiles;

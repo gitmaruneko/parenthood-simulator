@@ -36,6 +36,14 @@ v1 / v2 / v3 → preserve original bytes → v4 with unknown legacy identities
 
 ## Merge Danger
 
+### 2026-10-30 接續驗證
+
+- 建立 `feat/ux-v2-t2-family-profiles`，保留原四筆提交並無衝突合併最新主線 `c39712972d097e0eb6e2782c532ed43865a73fe4`（已合併 T1／PR #43）。
+- 新一輪 Spec Review 找出兩項 P2：舊版 parser 接受新版人物欄位，以及缺少 replayOrigin 時未驗證人物關係與安裝角色是否矛盾。新增回歸先重現四項失敗，修正後三版皆嚴格拒絕新版欄位、伴侶／長輩矛盾皆安全進恢復且保留原 bytes。
+- 舊版測試資料改用真實舊契約；不以含新欄位的目前 GameState 假裝舊存檔。共用關係驗證供起點與安裝內容檢查使用。
+- 最終 `npm.cmd test -- --configLoader runner --maxWorkers 1`：14 檔、219 項通過；typecheck、build（`--configLoader runner`）與桌面／手機 24 項 E2E（`--workers 1`）通過。一般設定載入器受本機沙箱父目錄讀取限制；E2E 使用同一 npm dev script 的 runner 載入器啟動伺服器，無產品設定變更。
+- 已檢視本輪桌面／手機家庭成員截圖。獨立 Standards 複審 0 項發現；Spec 原 2 項 P2 已修，0 項未處理發現。遠端 CI 與 Preview 待 PR 建立後記錄。
+
 **Door:** one-way
 
 v4 存檔不能由舊 bundle 讀取。原 bytes 保留，但回滾部署不等於存檔降版；需使用支援 v4 的修復版本或明確恢復流程，不可刪檔回滾。

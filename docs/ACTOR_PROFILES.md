@@ -32,6 +32,8 @@ advice. Its present-relative variant binds to `support-1`; families without that
 member do not acquire a fictional visiting elder. Eligibility and weights stay
 unchanged. Save inspection also verifies family IDs against installed content
 before offering continuation, including legacy saves without an origin snapshot.
+Generated relationships are also checked against installed actor roles when an
+origin snapshot is absent; contradictory partner/elder identities enter recovery.
 
 Save v4 requires profiles and validates membership, unique opening actor
 references, child/role relationships, partner-parent chains, template
@@ -46,6 +48,8 @@ members: no invented names, kinship or habits. Existing neutral actor names
 remain available. Migration preserves original bytes before writing v4; failure
 stops continuation and keeps the active original. Old bundles cannot read v4:
 rollback needs a compatible repair build or explicit recovery, never deletion.
+Legacy contracts reject both top-level and opening-snapshot identity fields
+before migration; relabelling v4 data as an older version does not bypass this.
 
 Verification covers generation, engine, save/restore, Session, React, and
 desktop/mobile reveal → play → reload → review → replay. Sharing retains the

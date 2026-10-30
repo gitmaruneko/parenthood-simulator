@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { createFamilyRun } from "../../src/engine/index.js";
+import { legacyState } from "../helpers/legacy-state.js";
 
 const key = "parenthood-simulator.save";
 test("opening candidates expand and family members show current relationships", async ({ page, isMobile }) => {
@@ -276,7 +277,7 @@ test(`preserves ${kind} saves through recovery and safely replaces only on confi
 test("explicit migration retains the original data before entering the story", async ({
   page,
 }) => {
-  const raw = JSON.stringify(createFamilyRun({ seed: 42 }).state);
+  const raw = JSON.stringify(legacyState(createFamilyRun({ seed: 42 }).state));
   await seedSave(page, raw);
   await page.goto("/");
   await page.getByRole("button", { name: "更新存檔並繼續" }).click();
@@ -421,7 +422,7 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
 test("migration write failures remain in recovery and keep the original story", async ({
   page,
 }) => {
-  const raw = JSON.stringify(createFamilyRun({ seed: 42 }).state);
+  const raw = JSON.stringify(legacyState(createFamilyRun({ seed: 42 }).state));
   await seedSave(page, raw);
   await page.addInitScript(() => {
     const write = Storage.prototype.setItem;

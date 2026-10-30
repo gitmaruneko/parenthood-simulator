@@ -51,19 +51,20 @@ const saveSchema = z.object({
 
 // Version 1 is the original, unwrapped GameState contract. No PRNG or
 // lifecycle defaults are reconstructed during migration.
-const legacyStateSchema = stateContract.extend({
+const legacyStateSchema = stateContract.omit({ actorProfiles: true }).extend({
+  replayOrigin: stateContract.shape.replayOrigin.unwrap().omit({ actorProfiles: true }).optional(),
   activeFamilyLifeDirectionId: familyLifeDirectionIdSchema.optional(),
 });
 const migrateLegacy = (data: unknown, requireDirection = false): unknown => {
-  const legacy = (requireDirection ? stateContract.extend({ activeFamilyLifeDirectionId: familyLifeDirectionIdSchema }) : legacyStateSchema).safeParse(data);
+  const legacy = (requireDirection ? legacyStateSchema.extend({ activeFamilyLifeDirectionId: familyLifeDirectionIdSchema }) : legacyStateSchema).safeParse(data);
   if (!legacy.success) return data;
   const state = legacy.data;
   // Only membership is known. Never re-sample a name, kinship or habit for an old story.
-  const profiles = state.actorProfiles ?? unknownActorProfiles(state.family);
+  const profiles = unknownActorProfiles(state.family);
   return { schemaVersion: SAVE_SCHEMA_VERSION, state: {
     ...state, actorProfiles: profiles,
     ...(state.replayOrigin ? { replayOrigin: { ...state.replayOrigin,
-      actorProfiles: state.replayOrigin.actorProfiles ?? profiles } } : {}),
+      actorProfiles: profiles } } : {}),
     activeFamilyLifeDirectionId: state.activeFamilyLifeDirectionId ?? "flexible",
   } };
 };

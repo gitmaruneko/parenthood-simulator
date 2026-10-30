@@ -20,6 +20,14 @@ export const actorProfileSchema = z.discriminatedUnion("source", [
 export const actorProfilesSchema = z.record(actorId, actorProfileSchema);
 export type ActorProfiles = z.infer<typeof actorProfilesSchema>;
 
+export function profileMatchesActorRole(profile: ActorProfiles[string], role: string): boolean {
+  if (profile.source === "legacy-unknown") return true;
+  const relationship = profile.relationshipToPlayer;
+  return role === "child" ? relationship === "child"
+    : role === "partner" ? ["partner", "husband", "wife"].includes(relationship)
+    : role === "grandparent" && ["playerParent", "partnerParent"].includes(relationship);
+}
+
 export function unknownActorProfiles(family: GameState["family"]): ActorProfiles {
   return Object.fromEntries([family.childId, ...family.persistentActorIds].map(id => [id, {
     profileVersion: 1, source: "legacy-unknown", relationshipToPlayer: id === family.childId ? "child" : "unknownFamily",
@@ -55,8 +63,7 @@ export function validateActorProfiles(state: GameState, ctx: z.RefinementCtx) {
           invalid("partner parent requires a confirmed partner relationship");
       } else if (profile.relatedActorId) invalid("unexpected relationship chain");
       const actor = state.replayOrigin?.actors.find(actor => actor.id === id);
-      if (actor && ((actor.role === "partner") !== ["partner", "husband", "wife"].includes(profile.relationshipToPlayer) ||
-          (actor.role === "grandparent") !== ["playerParent", "partnerParent"].includes(profile.relationshipToPlayer)))
+      if (actor && !profileMatchesActorRole(profile, actor.role))
         invalid("profile relationship contradicts actor role");
     }
   };

@@ -8,6 +8,7 @@ import { createFamilyRun } from "../src/engine/index.js";
 import { serializeGame } from "../src/persistence/index.js";
 import { completedStory } from "./helpers/completed-story.js";
 import { resolveFamilyMembers } from "../src/engine/actor-profiles.js";
+import { legacyState } from "./helpers/legacy-state.js";
 
 it("keeps revealed identities through pending events, reload, review and replay", async () => {
   const storage = memory();
@@ -41,6 +42,27 @@ it("routes a no-origin save with unknown family actors to recovery before resume
   run.state.family.persistentActorIds = ["ghost"];
   run.state.actorProfiles = { "child-1": { profileVersion: 1, source: "legacy-unknown", relationshipToPlayer: "child" },
     ghost: { profileVersion: 1, source: "legacy-unknown", relationshipToPlayer: "unknownFamily" } };
+  const storage = memory();
+  const raw = serializeGame(run.state);
+  storage.setItem(LOCAL_SAVE_KEY, raw);
+  const session = createPlayerSession(createLocalSaveStore(storage));
+  await session.check();
+  expect(session.getSnapshot().home.kind).toBe("incompatible");
+  await session.resume();
+  expect(session.getSnapshot().page).toBe("home");
+  expect(storage.getItem(LOCAL_SAVE_KEY)).toBe(raw);
+});
+
+it.each([
+  { seed: 42, actorId: "caregiver-2", relationship: "playerParent" as const },
+  { seed: 0, actorId: "support-1", relationship: "partner" as const },
+])("preserves a no-origin save with a relationship contradicting installed $actorId role", async ({ seed, actorId, relationship }) => {
+  const run = createFamilyRun({ seed });
+  delete run.state.replayOrigin;
+  const profile = run.state.actorProfiles![actorId]!;
+  if (profile.source !== "generated-v1") throw new Error("expected generated profile");
+  profile.relationshipToPlayer = relationship;
+  delete profile.relatedActorId;
   const storage = memory();
   const raw = serializeGame(run.state);
   storage.setItem(LOCAL_SAVE_KEY, raw);
@@ -384,7 +406,7 @@ it("deduplicates commands and allows quota errors to retry without replaying a c
 
 it("never navigates to the game when preserving an original during migration fails", async () => {
   const storage = memory();
-  const original = JSON.stringify(createFamilyRun({ seed: 42 }).state);
+  const original = JSON.stringify(legacyState(createFamilyRun({ seed: 42 }).state));
   storage.setItem(LOCAL_SAVE_KEY, original);
   const session = createPlayerSession(
     createLocalSaveStore({
