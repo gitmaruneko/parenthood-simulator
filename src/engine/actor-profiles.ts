@@ -4,7 +4,9 @@ import type { ActorProfiles } from "../domain/actor-profiles.js";
 // v2 namespace, catalogue order and hash are frozen; old names are read from saves.
 const names = {
   child: ["小禾", "小晴", "小安", "小樹", "小羽", "小澄", "小悠", "小光"],
-  adult: ["怡君", "志豪", "雅婷", "建宏", "佳蓉", "冠宇", "欣怡", "家銘"],
+  partner: ["庭安", "子寧", "以晨", "予希", "品言", "書禾", "宇安", "承恩"],
+  husband: ["志豪", "建宏", "冠宇", "家銘", "俊傑", "宗翰", "承恩", "柏翰"],
+  wife: ["怡君", "雅婷", "佳蓉", "欣怡", "詩涵", "婉婷", "郁雯", "佩珊"],
   elderMother: ["秀英", "美華", "淑芬", "麗華", "玉蘭", "美玲", "淑惠", "惠珍"],
   elderFather: ["文雄", "國榮", "志明", "建國", "明德", "清泉", "永成", "國華"],
 } as const;
@@ -37,7 +39,8 @@ export function generateActorProfiles(state: GameState, actors: ContentPack["act
       : actor.role === "partner" ? (["partner", "husband", "wife"] as const)[(hash >>> 8) % 3]!
       : partner && (hash >>> 8) % 2 ? `${partner.relationshipToPlayer}${parentSide}` as "husbandMother" | "husbandFather" | "wifeMother" | "wifeFather" | "partnerMother" | "partnerFather"
       : parentSide === "Mother" ? "mother" : "father";
-    const catalogue = actor.role === "child" ? names.child : actor.role === "partner" ? names.adult
+    const catalogue = actor.role === "child" ? names.child : actor.role === "partner"
+      ? names[relationshipToPlayer as "partner" | "husband" | "wife"]
       : parentSide === "Mother" ? names.elderMother : names.elderFather;
     let index = hash % catalogue.length;
     while (used.has(catalogue[index]!)) index = (index + 1) % catalogue.length;

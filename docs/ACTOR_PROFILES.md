@@ -36,8 +36,8 @@ established first, then other actors in stable ID order. Namespace, catalogue
 order, bit offsets and collision resolution are frozen for v2. Identity generation
 never consumes the game PRNG; assessment answers do not change identities.
 
-The curated fictional catalogues separate child nicknames, adult names, and
-mother/father elder names. Names are selected after the explicit relationship;
+The curated fictional catalogues separate child nicknames, adult names keyed by
+the confirmed partner relationship, and mother/father elder names. Names are selected after the explicit relationship;
 they are not evidence used to infer it. Existing names are kept unchanged.
 New v2 habits use concrete everyday templates (a fridge calendar, tea, bags at
 the door); the same adult catalogue applies across roles. Habits describe a

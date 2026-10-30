@@ -13,6 +13,12 @@ it("freezes the v2 generated introduction independently of game mechanics", () =
     { id: "child-1", displayName: "孩子（小禾）", relationship: "你的孩子", lifeDetail: "常伸手摸摸身邊的小玩具。" },
     { id: "caregiver-2", displayName: "太太", relationship: "太太", lifeDetail: "習慣出門前把鑰匙和購物袋放在門邊。" },
   ]);
+  expect(run.state.actorProfiles).toEqual({
+    "caregiver-2": { profileVersion: 2, source: "generated-v2", name: "雅婷", relationshipToPlayer: "wife",
+      lifeDetail: { templateVersion: 2, source: "generated-v2", templateId: "bags" } },
+    "child-1": { profileVersion: 2, source: "generated-v2", name: "小禾", relationshipToPlayer: "child",
+      lifeDetail: { templateVersion: 2, source: "generated-v2", templateId: "toys" } },
+  });
 });
 
 it("rejects a replay origin that would silently change a saved person's identity", () => {
@@ -25,6 +31,8 @@ it("rejects a replay origin that would silently change a saved person's identity
 it("generates explicit elder kinship and displays titles instead of stored names across family structures", () => {
   const titles = new Set<string>();
   const structures = new Set<string>();
+  const elderEvent = createMvpContent(createFamilyRun({ seed: 4294967295 }).actors)
+    .events.find(event => event.id === "grandparent-boundary-choice")!;
   for (let seed = 0; seed < 256; seed++) {
     const run = createFamilyRun({ seed });
     structures.add(run.state.family.householdComposition);
@@ -43,8 +51,7 @@ it("generates explicit elder kinship and displays titles instead of stored names
           expect(profile.name).not.toMatch(/^小/);
           expect(member.displayName).not.toContain(profile.name);
         }
-        const event = createMvpContent(run.actors).events.find(event => event.id === "grandparent-boundary-choice")!;
-        expect(resolveEventIdentity(event, run.state).text).toContain(title);
+        expect(resolveEventIdentity(elderEvent, run.state).text).toContain(title);
       } else expect(["先生", "太太", "伴侶"]).toContain(title);
     }
   }

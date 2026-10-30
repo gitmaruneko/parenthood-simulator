@@ -20,6 +20,8 @@
 - 234 項 Vitest（15 檔）、typecheck、build 通過；本機沙箱使用既有 runner 設定載入器。固定 256 seed 覆蓋所有家庭型態及稱謂；既有機械 golden 與完整遊戲確定性回歸通過。
 - 六份真實 v4 測資在改動前從 `a40aa18` 的建置輸出擷取，涵蓋三種家庭、兩種粗略父母分支、pending input 與已寫入歷史。測試涵蓋 v4 原身份／原 bytes／失敗停止及安全重試，及無起點、未知身份降級。
 - 新增 React 卡片與桌面／手機真實選項／保存重整／v4 遷移案例。完整 E2E、兩軸 Review、遠端 CI 與 Preview 的最終結果以 PR #44 驗收紀錄為準。
+- 本輪桌面／手機 28 項 E2E 通過，已檢視多代家庭開場與手機成員截圖。隨後補強依伴侶關係選姓名目錄及完整 profile 凍結斷言，最終 234 項 tests、typecheck、build 再次通過；最終遠端 CI／Preview 會驗證包含該補強的完整 28 項流程。
+- 獨立 Standards、Spec 審查及最後目錄／測試微調複審，兩軸均 0 項發現。
 
 ## Merge Danger
 
