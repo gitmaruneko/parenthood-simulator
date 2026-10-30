@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { AGE_STAGE_MONTHS, contentPackSchema, type GameState } from "../src/domain/schemas.js";
 import { createFamilyRun, transitionGame, type EngineInput } from "../src/engine/index.js";
 import { LOCAL_SAVE_KEY, createLocalSaveStore, restoreGame, serializeGame, transitionAndSave, type SaveStorage } from "../src/persistence/index.js";
+import { legacyState } from "./helpers/legacy-state.js";
+import { unknownActorProfiles } from "../src/domain/actor-profiles.js";
 
 class MemoryStorage implements SaveStorage {
   private readonly values = new Map<string, string>();
@@ -112,16 +114,19 @@ describe("Save / Restore Boundary", () => {
     const [waiting, chosen] = continueGame(run.state, [
       { type: "ADVANCE" }, { type: "CHOOSE", choiceId: "arrange" },
     ]);
-    const legacy = JSON.stringify(chosen!.state);
+    const legacy = JSON.stringify(legacyState(chosen!.state));
+    const profiles = unknownActorProfiles(chosen!.state.family);
+    const expected = { ...chosen!.state, actorProfiles: profiles,
+      replayOrigin: { ...chosen!.state.replayOrigin!, actorProfiles: profiles } };
     const restored = restoreGame(legacy);
     expect(restored).toMatchObject({ status: "restored", migratedFrom: 1, rawData: legacy,
-      state: chosen!.state });
-    expect(restoredState(serializeGame(restoredState(legacy)))).toEqual(chosen!.state);
+      state: expected });
+    expect(restoredState(serializeGame(restoredState(legacy)))).toEqual(expected);
     expect(waiting!.state.rngState).not.toBe(chosen!.state.rngState);
     const actions: EngineInput[] = [
       { type: "END_TURN" }, { type: "START_TURN" }, { type: "ADVANCE" },
     ];
-    expect(continueGame(restoredState(legacy), actions)).toEqual(continueGame(chosen!.state, actions));
+    expect(continueGame(restoredState(legacy), actions)).toEqual(continueGame(expected, actions));
   });
 
   it.each([
@@ -181,7 +186,7 @@ describe("Save / Restore Boundary", () => {
 
   it("retains the original version-1 bytes before explicitly committing a migration", () => {
     const storage = new MemoryStorage();
-    const legacy = JSON.stringify(transitionGame(run.state, content, { type: "ADVANCE" }).state);
+    const legacy = JSON.stringify(legacyState(transitionGame(run.state, content, { type: "ADVANCE" }).state));
     storage.setItem(LOCAL_SAVE_KEY, legacy);
     const store = createLocalSaveStore(storage);
     const loaded = store.load();
@@ -279,7 +284,7 @@ describe("Save / Restore Boundary", () => {
       if (damage === "missing-input") state.eventProgress = null;
       if (damage === "node-count") state.turn!.nodeCount = 1;
       if (damage === "turn-status") state.turn!.status = "active";
-      const rawData = JSON.stringify({ schemaVersion: 2, state });
+      const rawData = JSON.stringify({ schemaVersion: 2, state: legacyState(state) });
       expect(restoreGame(rawData)).toMatchObject({ status: "error", rawData,
         error: { code: "invalid-data" } });
     },

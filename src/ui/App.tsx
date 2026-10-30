@@ -6,6 +6,7 @@ import { FamilyDetails, GameScreen } from "./GameScreen.js";
 import { Illustration } from "./Illustration.js";
 import { SaveNotice } from "./SaveNotice.js";
 import { ReviewScreen } from "./ReviewScreen.js";
+import { FamilyMemberCard } from "./FamilyMemberCard.js";
 
 const questions = getAssessmentQuestions();
 export function Assessment({ session }: { session: PlayerSession }) {
@@ -174,10 +175,8 @@ export function App({ session: provided }: { session?: PlayerSession }) {
                 <Illustration scene={3} />
                 <p className="seed-label">家庭種子：{snapshot.reveal.seed}</p>
                 <FamilyDetails family={snapshot.reveal.summary} />
-                <h2>此刻的照顧傾向</h2>
-                {snapshot.reveal.descriptions.map((text) => (
-                  <p key={text}>{text}</p>
-                ))}
+                <h2>家庭成員</h2>
+                {snapshot.reveal.members.map(member => <FamilyMemberCard key={member.id} member={member} />)}
                 <div className="opening-actions">
                   <button disabled={snapshot.busy} onClick={session.reroll}>
                     重新抽選家庭

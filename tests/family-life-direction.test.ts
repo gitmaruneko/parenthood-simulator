@@ -4,6 +4,8 @@ import { createMvpContent } from "../src/content/mvp.js";
 import { contentPackSchema, eventNodeSchema } from "../src/domain/schemas.js";
 import { restoreGame, serializeGame } from "../src/persistence/index.js";
 import { FAMILY_LIFE_DIRECTIONS } from "../src/domain/family-life-direction.js";
+import { legacyState } from "./helpers/legacy-state.js";
+import { unknownActorProfiles } from "../src/domain/actor-profiles.js";
 
 it("switches a pending story's direction without changing any committed simulation data", () => {
   const run = createFamilyRun({ seed: 42 });
@@ -29,13 +31,16 @@ it("switches a pending story's direction without changing any committed simulati
 it("explicitly migrates v1/v2 saves without changing pending data or RNG and rejects damaged current directions", () => {
   const run = createFamilyRun({ seed: 42 });
   const waiting = transitionGame(run.state, createMvpContent(run.actors), { type: "ADVANCE" }).state;
-  const { activeFamilyLifeDirectionId: _, ...legacy } = waiting;
+  const { activeFamilyLifeDirectionId: _, ...legacy } = legacyState(waiting);
   for (const [version, data] of [[1, legacy], [2, { schemaVersion: 2, state: legacy }]] as const) {
     const restored = restoreGame(JSON.stringify(data));
-    expect(restored).toMatchObject({ status: "restored", migratedFrom: version, state: waiting });
+    const profiles = unknownActorProfiles(waiting.family);
+    expect(restored).toMatchObject({ status: "restored", migratedFrom: version,
+      state: { ...waiting, actorProfiles: profiles,
+        replayOrigin: { ...waiting.replayOrigin!, actorProfiles: profiles } } });
   }
   const current = JSON.parse(serializeGame(waiting));
-  expect(current.schemaVersion).toBe(3);
+  expect(current.schemaVersion).toBe(5);
   for (const id of [undefined, null, "unknown-direction"]) {
     current.state.activeFamilyLifeDirectionId = id;
     const raw = JSON.stringify(current);

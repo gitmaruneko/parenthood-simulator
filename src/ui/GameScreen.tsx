@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { FamilySummary } from "../engine/index.js";
 import type { GamePresentation } from "./player-session.js";
 import { Illustration } from "./Illustration.js";
+import { FamilyMemberCard } from "./FamilyMemberCard.js";
 import type { FamilyLifeDirectionId } from "../domain/family-life-direction.js";
 
 export function FamilyDetails({
@@ -205,13 +206,7 @@ function FamilyMembers({ game }: { game: GamePresentation }) {
       ))}
     </dl>
     {game.members.map((member) => (
-      <article className="member" key={member.id} aria-label={member.displayName}>
-        <header className="member-header">
-          <h3>{member.displayName}</h3>
-          {(member.relationship !== member.displayName || member.ageLabel) && <p className="member-relationship">
-            {member.relationship}{member.ageLabel && ` · ${member.ageLabel}`}
-          </p>}
-        </header>
+      <FamilyMemberCard key={member.id} member={member}>
         {member.recent && <p className="member-recent">
           {member.recentTimeLabel && <small>{member.recentTimeLabel}</small>}
           最近：{member.recent}
@@ -224,7 +219,7 @@ function FamilyMembers({ game }: { game: GamePresentation }) {
             <ul>{member.memories.map((text, index) => <li key={index}>{text}</li>)}</ul>
           </>}
         </details>}
-      </article>
+      </FamilyMemberCard>
     ))}
   </>;
 }

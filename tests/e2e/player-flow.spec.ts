@@ -1,7 +1,49 @@
 import { test, expect, type Page } from "@playwright/test";
 import { createFamilyRun } from "../../src/engine/index.js";
+import { legacyState } from "../helpers/legacy-state.js";
+import { serializeGame } from "../../src/persistence/index.js";
+import { readFileSync } from "node:fs";
 
 const key = "parenthood-simulator.save";
+test("explicit kinship titles stay consistent in reveal, real choices and restored member cards", async ({ page, isMobile }) => {
+  const run = createFamilyRun({ seed: 4294967295 });
+  await seedSave(page, serializeGame(run.state));
+  await page.goto("/");
+  await page.getByRole("button", { name: "繼續上次生活", exact: true }).click();
+  await expect(page.locator(".reveal .member h3")).toHaveText(["孩子（小樹）", "先生", "婆婆"]);
+  await page.screenshot({ path: `test-results/kinship-reveal-${isMobile ? "mobile" : "desktop"}.png`, fullPage: true });
+  await startFamily(page);
+  await expect(page.locator(".event-panel").getByRole("button", { name: /詢問先生/ })).toBeVisible();
+  const ask = page.locator(".event-panel").getByRole("button", { name: /與婆婆確認/ });
+  await expect(ask).toBeVisible();
+  await ask.click();
+  await waitForSaved(page);
+  const saved = await page.evaluate(key => localStorage.getItem(key), key);
+  expect(JSON.parse(saved!).state.actorProfiles).toEqual(run.state.actorProfiles);
+  await page.reload();
+  await page.getByRole("button", { name: "繼續上次生活", exact: true }).click();
+  if (isMobile) await page.getByRole("tab", { name: "家庭", exact: true }).click();
+  const members = page.locator(isMobile ? ".mobile-members" : ".desktop-members");
+  await expect(members.locator(".member h3")).toHaveText(["孩子（小樹）", "先生", "婆婆"]);
+  await expect(members).toContainText("習慣出門前把鑰匙和購物袋放在門邊。");
+  await page.screenshot({ path: `test-results/kinship-members-${isMobile ? "mobile" : "desktop"}.png`, fullPage: true });
+  expect(await page.evaluate(key => localStorage.getItem(key), key)).toBe(saved);
+});
+
+test("v4 migration keeps coarse elder kinship neutral and preserves original bytes", async ({ page }) => {
+  const fixture = JSON.parse(readFileSync(new URL("../helpers/v4-family-saves.json", import.meta.url), "utf8"))[0];
+  const raw = JSON.stringify(fixture);
+  await seedSave(page, raw);
+  await page.goto("/");
+  await page.getByRole("button", { name: "更新存檔並繼續", exact: true }).click();
+  await expect(page.locator(".reveal .member h3")).toHaveText(["孩子（小樹）", "你的家中長輩（不同住）"]);
+  expect(await page.evaluate(key => localStorage.getItem(`${key}.preserved.0`), key)).toBe(raw);
+  const saved = JSON.parse((await page.evaluate(key => localStorage.getItem(key), key))!);
+  expect(saved.schemaVersion).toBe(5);
+  expect(saved.state.actorProfiles).toEqual(fixture.state.actorProfiles);
+  expect(saved.state.history).toEqual(fixture.state.history);
+});
+
 test("opening candidates expand and family members show current relationships", async ({ page, isMobile }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "開始我們的故事", exact: true }).click();
@@ -276,7 +318,7 @@ test(`preserves ${kind} saves through recovery and safely replaces only on confi
 test("explicit migration retains the original data before entering the story", async ({
   page,
 }) => {
-  const raw = JSON.stringify(createFamilyRun({ seed: 42 }).state);
+  const raw = JSON.stringify(legacyState(createFamilyRun({ seed: 42 }).state));
   await seedSave(page, raw);
   await page.goto("/");
   await page.getByRole("button", { name: "更新存檔並繼續" }).click();
@@ -347,7 +389,19 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
   isMobile,
 }) => {
   await start(page);
+  const names = await page.locator(".reveal .member h3").allTextContents();
+  const habits = await page.locator(".reveal .member > p").allTextContents();
+  await expect(page.locator(".reveal")).toContainText("你的孩子 · 2 個月");
+  await expect(page.getByRole("heading", { name: "此刻的照顧傾向" })).toHaveCount(0);
   await startFamily(page);
+  await expect(page.locator(".event-panel")).toContainText(names[0]!);
+  await page.reload();
+  await page.getByRole("button", { name: "繼續上次生活", exact: true }).click();
+  if (isMobile) await page.getByRole("tab", { name: "家庭", exact: true }).click();
+  const members = page.locator(isMobile ? ".mobile-members" : ".desktop-members");
+  expect(await members.locator(".member h3").allTextContents()).toEqual(names);
+  for (const habit of habits) await expect(members).toContainText(habit);
+  if (isMobile) await page.getByRole("tab", { name: "生活", exact: true }).click();
   const life = page.getByRole("tabpanel", { name: "生活", exact: true });
   for (let step = 0; step < 120; step++) {
     if (await page.getByRole("heading", { name: "我們的家庭生活回顧" }).count())
@@ -379,6 +433,8 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
     saved,
   );
   await expect(page.locator(".review-timeline > li")).toHaveCount(12);
+  expect(await page.locator(".review-shell .member h3").allTextContents()).toEqual(names);
+  for (const habit of habits) await expect(page.locator(".review-shell")).toContainText(habit);
   await page.getByText("調整三個關鍵時刻", { exact: true }).click();
   await page.getByRole("checkbox", { checked: true }).first().uncheck();
   await page.getByRole("checkbox", { checked: false }).last().check();
@@ -396,6 +452,7 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
   await page.getByRole("button", { name: "相同種子，再走一次" }).click();
   await page.getByRole("button", { name: "確認開始新故事" }).click();
   await expect(page.getByRole("button", { name: "開始這個家庭" })).toBeVisible();
+  expect(await page.locator(".reveal .member h3").allTextContents()).toEqual(names);
   expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(reviewed);
   await startFamily(page);
   const replayed = JSON.parse((await page.evaluate((key) => localStorage.getItem(key), key))!);
@@ -406,7 +463,7 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
 test("migration write failures remain in recovery and keep the original story", async ({
   page,
 }) => {
-  const raw = JSON.stringify(createFamilyRun({ seed: 42 }).state);
+  const raw = JSON.stringify(legacyState(createFamilyRun({ seed: 42 }).state));
   await seedSave(page, raw);
   await page.addInitScript(() => {
     const write = Storage.prototype.setItem;

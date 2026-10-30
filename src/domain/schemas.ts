@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { familyLifeDirectionIdSchema } from "./family-life-direction.js";
+import { actorProfilesSchema } from "./actor-profiles.js";
 
 export const AGE_STAGE_MONTHS = [2, 6, 10, 15, 21, 27, 33, 39, 45, 52, 61, 71] as const;
 
@@ -219,11 +220,14 @@ export const knowledgeCardSchema = z
     }
   });
 
+const actorTextSchema = z.object({ actorId: identifierSchema, prefix: z.string(), suffix: z.string() }).strict();
+
 export const eventChoiceSchema = z
   .object({
     ...narrativeEffectsSchema.shape,
     id: identifierSchema,
     text: z.string().min(1),
+    actorText: actorTextSchema.optional(),
     anticipatedJudgment: z.string().min(1).optional(),
     requirements: conditionSchema.optional(),
     resourceDeltas: resourceDeltaSchema.default({}),
@@ -244,6 +248,7 @@ export const eventNodeSchema = z
     mode: eventResolutionModeSchema,
     title: z.string().min(1),
     text: z.string().min(1),
+    actorText: actorTextSchema.optional(),
     weight: z.number().finite().positive(),
     familyLifeDirectionWeights: z.record(familyLifeDirectionIdSchema, z.number().finite().min(1).max(1.25)).optional(),
     locationId: identifierSchema.optional(),
@@ -475,11 +480,13 @@ export const gameStateSchema = z
     reactionHistory: z.array(reactionHistoryEntrySchema).optional(),
     history: z.array(storyEntrySchema),
     review: reviewDataSchema.optional(),
+    actorProfiles: actorProfilesSchema.optional(),
     replayOrigin: z.object({
       resources: resourceStateSchema,
       tendencies: z.record(identifierSchema, z.number().finite()),
       rngState: z.number().int().min(0).max(0xffffffff),
       actors: z.array(actorDefinitionSchema),
+      actorProfiles: actorProfilesSchema.optional(),
     }).strict().optional(),
   })
   .strict();

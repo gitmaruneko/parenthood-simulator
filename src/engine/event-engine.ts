@@ -8,6 +8,7 @@ import type {
   NarrativeEffects,
 } from "../domain/schemas.js";
 import { conditionMatches } from "./conditions.js";
+import { resolveEventIdentity } from "./actor-profiles.js";
 import { nextPrng } from "./prng.js";
 import { resolveReactions } from "./reactions.js";
 import { ensureStageProgress, finishStage, nextStage, startTurn } from "./lifecycle.js";
@@ -114,10 +115,11 @@ const chooseWeightedEvent = (
   return { event: candidates[candidates.length - 1]!, rngState: random.state };
 };
 
-const executableEvent = (event: EventNode, state: GameState): EventNode => ({
-  ...event,
-  choices: event.choices.filter((choice) => !choice.requirements || conditionMatches(choice.requirements, state, { event })),
-});
+const executableEvent = (event: EventNode, state: GameState): EventNode => {
+  const resolved = resolveEventIdentity(event, state);
+  return { ...resolved, choices: resolved.choices.filter((choice) =>
+    !choice.requirements || conditionMatches(choice.requirements, state, { event })) };
+};
 
 const eventEligible = (event: EventNode, state: GameState): boolean =>
   event.ageStageId === state.currentAgeStageId &&
@@ -330,7 +332,7 @@ const completeEventNode = (
         ageStageId: state.currentAgeStageId,
         turnId: state.currentTurnId,
         kind: event.kind === "support" || event.kind === "repair" ? event.kind : "event",
-        text: event.text,
+        text: resolveEventIdentity(event, state).text,
       },
     ],
     turn: {

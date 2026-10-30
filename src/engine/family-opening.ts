@@ -5,6 +5,7 @@ import { FAMILY_CONDITIONS } from "../content/family-conditions.js";
 import { initializePrngState, nextPrng } from "./prng.js";
 import type { z } from "zod";
 import { describeTendencies, resolveOpeningAssessment, type OpeningAssessment } from "./opening-assessment.js";
+import { generateActorProfiles } from "./actor-profiles.js";
 
 export interface FamilyRunInput {
   readonly seed: number;
@@ -94,8 +95,9 @@ const buildFamilyRun = (input: FamilyRunInput, previousFamily?: FamilyProfile): 
     tendencies, flags: [], relationshipMemories: [], completedEventIds: [],
     scheduledFollowUps: [], choiceHistory: [], history: [],
   });
+  state.actorProfiles = generateActorProfiles(state, actors);
   state.replayOrigin = { resources: { ...state.resources }, tendencies: { ...state.tendencies },
-    rngState: state.rngState, actors: structuredClone(actors) };
+    rngState: state.rngState, actors: structuredClone(actors), actorProfiles: structuredClone(state.actorProfiles) };
   return { state, actors, summary: describeFamily(state.family), assessment };
 };
 

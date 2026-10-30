@@ -1,6 +1,7 @@
 import type { ContentPack, GameState } from "../domain/schemas.js";
 import type { FamilyLifeDirectionId } from "../domain/family-life-direction.js";
 import { createMvpContent } from "../content/mvp.js";
+import { resolveFamilyMembers, resolveEventIdentity } from "../engine/actor-profiles.js";
 import {
   createFamilyRun,
   rerollFamilyRun,
@@ -34,6 +35,7 @@ export interface GamePresentation extends ReturnType<typeof getPlayerView> {
     id: string;
     displayName: string;
     relationship: string;
+    lifeDetail?: string | null;
     ageLabel: string | null;
     context: readonly string[];
     recent: string | null;
@@ -61,6 +63,7 @@ export interface PlayerSnapshot {
     seed: number;
     summary: FamilyRun["summary"];
     descriptions: readonly string[];
+    members: readonly (ReturnType<typeof resolveFamilyMembers>[number] & { ageLabel: string | null })[];
   } | null;
   readonly game: GamePresentation | null;
   readonly gameTab: "life" | "records";
@@ -91,6 +94,14 @@ export const createPlayerSession = (
     listeners.forEach((listener) => listener());
   };
   let content = createMvpContent();
+  const presentReveal = (familyRun: FamilyRun): NonNullable<PlayerSnapshot["reveal"]> => {
+    const ageLabel = getPlayerView(familyRun.state, content).ageLabel;
+    return { seed: familyRun.state.seed, summary: familyRun.summary,
+      descriptions: familyRun.assessment.descriptions,
+      members: resolveFamilyMembers(familyRun.state, familyRun.actors).map(member => ({
+        ...member, ageLabel: member.id === familyRun.state.family.childId ? ageLabel : null,
+      })) };
+  };
   let run: FamilyRun | null = null;
   let state: GameState | null = null;
   let expectedRaw: string | null = null;
@@ -159,23 +170,13 @@ export const createPlayerSession = (
       history: state!.history,
       choices: state!.choiceHistory,
       reactions: state!.reactionHistory ?? [],
-      members: content.actors
-        .filter(
-          (actor) =>
-            actor.id === state!.family.childId ||
-            state!.family.persistentActorIds.includes(actor.id),
-        )
-        .map((actor) => {
+      members: resolveFamilyMembers(state!, content.actors)
+        .map((member) => {
+          const actor = content.actors.find(actor => actor.id === member.id)!;
           const recent = [...(state!.reactionHistory ?? [])].reverse()
             .find((reaction) => reaction.actorId === actor.id);
           return {
-            id: actor.id,
-            displayName: actor.displayName,
-            relationship: actor.role === "child" ? "你的孩子"
-              : actor.role === "partner" ? "共同照顧者"
-              : actor.role === "grandparent"
-                ? state!.family.householdComposition === "multigenerational" ? "同住長輩" : "不同住的支持家人"
-                : actor.displayName,
+            ...member,
             ageLabel: actor.id === state!.family.childId ? view.ageLabel : null,
             // These describe household arrangements, never an individual's job or personality.
             context: actor.role === "child" ? [] : family.conditions
@@ -197,7 +198,7 @@ export const createPlayerSession = (
       ),
       choiceTexts: Object.fromEntries(
         content.events.flatMap((event) =>
-          event.choices.map((choice) => [
+          resolveEventIdentity(event, state!).choices.map((choice) => [
             `${event.id}/${choice.id}`,
             choice.text,
           ]),
@@ -272,11 +273,7 @@ export const createPlayerSession = (
       page: state.turn || state.ageStageProgress ? "game" : "reveal",
       game: presentGame(),
       gameTab,
-      reveal: {
-        seed: state.seed,
-        summary: describeFamily(state.family),
-        descriptions: describeTendencies(state.tendencies),
-      },
+      reveal: presentReveal(run),
       dialog: null,
       status: "已儲存",
     });
@@ -376,7 +373,7 @@ export const createPlayerSession = (
           run = pendingReplay;
           pendingReplay = null;
           publish({ page: "reveal", dialog: null, game: null,
-            reveal: { seed: run.state.seed, summary: run.summary, descriptions: describeTendencies(run.state.tendencies) } });
+            reveal: presentReveal(run) });
           return;
         }
         enterOpening();
@@ -418,11 +415,7 @@ export const createPlayerSession = (
       });
       publish({
         page: "reveal",
-        reveal: {
-          seed: run.state.seed,
-          summary: run.summary,
-          descriptions: run.assessment.descriptions,
-        },
+        reveal: presentReveal(run),
       });
     },
     reroll: () => {
@@ -432,11 +425,7 @@ export const createPlayerSession = (
         seed: seed === run.state.seed ? (seed + 1) >>> 0 : seed,
       });
       publish({
-        reveal: {
-          seed: run.state.seed,
-          summary: run.summary,
-          descriptions: run.assessment.descriptions,
-        },
+        reveal: presentReveal(run),
       });
     },
     startFamily: () =>

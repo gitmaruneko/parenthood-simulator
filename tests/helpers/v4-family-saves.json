@@ -1,0 +1,953 @@
+[
+  {
+    "schemaVersion": 4,
+    "state": {
+      "activeFamilyLifeDirectionId": "flexible",
+      "schemaVersion": 1,
+      "seed": 0,
+      "rngState": 2903413562,
+      "currentAgeStageId": "age-stage-1",
+      "currentTurnId": null,
+      "turn": null,
+      "eventProgress": null,
+      "resources": {
+        "finances": 44,
+        "energy": 63,
+        "support": 60,
+        "timeFlexibility": 69,
+        "connection": 58
+      },
+      "planningLoad": 0,
+      "family": {
+        "householdComposition": "singleCaregiver",
+        "careParticipation": "shared",
+        "workArrangement": "dualIncome",
+        "preferredAddress": "照顧者",
+        "childId": "child-1",
+        "persistentActorIds": [
+          "support-1"
+        ]
+      },
+      "tendencies": {
+        "responsibility": 0,
+        "flexibility": 0,
+        "selfCare": 0,
+        "sharedCare": 0
+      },
+      "flags": [],
+      "relationshipMemories": [],
+      "completedEventIds": [],
+      "scheduledFollowUps": [],
+      "choiceHistory": [],
+      "history": [],
+      "actorProfiles": {
+        "child-1": {
+          "profileVersion": 1,
+          "source": "generated-v1",
+          "name": "小樹",
+          "relationshipToPlayer": "child",
+          "lifeDetail": {
+            "templateVersion": 1,
+            "templateId": "colours",
+            "source": "generated-v1"
+          }
+        },
+        "support-1": {
+          "profileVersion": 1,
+          "source": "generated-v1",
+          "name": "小安",
+          "relationshipToPlayer": "playerParent",
+          "lifeDetail": {
+            "templateVersion": 1,
+            "templateId": "check-in",
+            "source": "generated-v1"
+          }
+        }
+      },
+      "replayOrigin": {
+        "resources": {
+          "finances": 44,
+          "energy": 63,
+          "support": 60,
+          "timeFlexibility": 69,
+          "connection": 58
+        },
+        "tendencies": {
+          "responsibility": 0,
+          "flexibility": 0,
+          "selfCare": 0,
+          "sharedCare": 0
+        },
+        "rngState": 2903413562,
+        "actors": [
+          {
+            "id": "child-1",
+            "role": "child",
+            "displayName": "孩子",
+            "availability": 0.1462021479383111,
+            "initiative": 0.46732782293111086,
+            "workflowOwnership": 0.5450490827206522,
+            "reliability": 0.6152513844426721,
+            "boundaryRespect": 0.6489853798411787
+          },
+          {
+            "id": "support-1",
+            "role": "grandparent",
+            "displayName": "支持家人（不同住）",
+            "availability": 0.7280036063166335,
+            "initiative": 0.790609483839944,
+            "workflowOwnership": 0.6231287650298327,
+            "reliability": 0.09785169479437172,
+            "boundaryRespect": 0.9034309543203562
+          }
+        ],
+        "actorProfiles": {
+          "child-1": {
+            "profileVersion": 1,
+            "source": "generated-v1",
+            "name": "小樹",
+            "relationshipToPlayer": "child",
+            "lifeDetail": {
+              "templateVersion": 1,
+              "templateId": "colours",
+              "source": "generated-v1"
+            }
+          },
+          "support-1": {
+            "profileVersion": 1,
+            "source": "generated-v1",
+            "name": "小安",
+            "relationshipToPlayer": "playerParent",
+            "lifeDetail": {
+              "templateVersion": 1,
+              "templateId": "check-in",
+              "source": "generated-v1"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "schemaVersion": 4,
+    "state": {
+      "activeFamilyLifeDirectionId": "flexible",
+      "schemaVersion": 1,
+      "seed": 42,
+      "rngState": 2903413604,
+      "currentAgeStageId": "age-stage-1",
+      "currentTurnId": null,
+      "turn": null,
+      "eventProgress": null,
+      "resources": {
+        "finances": 38,
+        "energy": 32,
+        "support": 50,
+        "timeFlexibility": 61,
+        "connection": 57
+      },
+      "planningLoad": 0,
+      "family": {
+        "householdComposition": "twoCaregivers",
+        "careParticipation": "uneven",
+        "workArrangement": "unstable",
+        "preferredAddress": "照顧者",
+        "childId": "child-1",
+        "persistentActorIds": [
+          "caregiver-2"
+        ]
+      },
+      "tendencies": {
+        "responsibility": 0,
+        "flexibility": 0,
+        "selfCare": 0,
+        "sharedCare": 0
+      },
+      "flags": [],
+      "relationshipMemories": [],
+      "completedEventIds": [],
+      "scheduledFollowUps": [],
+      "choiceHistory": [],
+      "history": [],
+      "actorProfiles": {
+        "child-1": {
+          "profileVersion": 1,
+          "source": "generated-v1",
+          "name": "小樹",
+          "relationshipToPlayer": "child",
+          "lifeDetail": {
+            "templateVersion": 1,
+            "templateId": "colours",
+            "source": "generated-v1"
+          }
+        },
+        "caregiver-2": {
+          "profileVersion": 1,
+          "source": "generated-v1",
+          "name": "小悠",
+          "relationshipToPlayer": "wife",
+          "lifeDetail": {
+            "templateVersion": 1,
+            "templateId": "tea",
+            "source": "generated-v1"
+          }
+        }
+      },
+      "replayOrigin": {
+        "resources": {
+          "finances": 38,
+          "energy": 32,
+          "support": 50,
+          "timeFlexibility": 61,
+          "connection": 57
+        },
+        "tendencies": {
+          "responsibility": 0,
+          "flexibility": 0,
+          "selfCare": 0,
+          "sharedCare": 0
+        },
+        "rngState": 2903413604,
+        "actors": [
+          {
+            "id": "child-1",
+            "role": "child",
+            "displayName": "孩子",
+            "availability": 0.6697340414393693,
+            "initiative": 0.17481389874592423,
+            "workflowOwnership": 0.5265925421845168,
+            "reliability": 0.2732279943302274,
+            "boundaryRespect": 0.6247446539346129
+          },
+          {
+            "id": "caregiver-2",
+            "role": "partner",
+            "displayName": "共同照顧者",
+            "availability": 0.43273732415400445,
+            "initiative": 0.23615852755028754,
+            "workflowOwnership": 0.12496186711359769,
+            "reliability": 0.8820588334929198,
+            "boundaryRespect": 0.7457375649828464
+          }
+        ],
+        "actorProfiles": {
+          "child-1": {
+            "profileVersion": 1,
+            "source": "generated-v1",
+            "name": "小樹",
+            "relationshipToPlayer": "child",
+            "lifeDetail": {
+              "templateVersion": 1,
+              "templateId": "colours",
+              "source": "generated-v1"
+            }
+          },
+          "caregiver-2": {
+            "profileVersion": 1,
+            "source": "generated-v1",
+            "name": "小悠",
+            "relationshipToPlayer": "wife",
+            "lifeDetail": {
+              "templateVersion": 1,
+              "templateId": "tea",
+              "source": "generated-v1"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "schemaVersion": 4,
+    "state": {
+      "activeFamilyLifeDirectionId": "flexible",
+      "schemaVersion": 1,
+      "seed": 4294967295,
+      "rngState": 3471308034,
+      "currentAgeStageId": "age-stage-1",
+      "currentTurnId": null,
+      "turn": null,
+      "eventProgress": null,
+      "resources": {
+        "finances": 28,
+        "energy": 43,
+        "support": 76,
+        "timeFlexibility": 76,
+        "connection": 68
+      },
+      "planningLoad": 0,
+      "family": {
+        "householdComposition": "multigenerational",
+        "careParticipation": "shared",
+        "workArrangement": "flexible",
+        "preferredAddress": "照顧者",
+        "childId": "child-1",
+        "persistentActorIds": [
+          "caregiver-2",
+          "support-1"
+        ]
+      },
+      "tendencies": {
+        "responsibility": 0,
+        "flexibility": 0,
+        "selfCare": 0,
+        "sharedCare": 0
+      },
+      "flags": [],
+      "relationshipMemories": [],
+      "completedEventIds": [],
+      "scheduledFollowUps": [],
+      "choiceHistory": [],
+      "history": [],
+      "actorProfiles": {
+        "child-1": {
+          "profileVersion": 1,
+          "source": "generated-v1",
+          "name": "小羽",
+          "relationshipToPlayer": "child",
+          "lifeDetail": {
+            "templateVersion": 1,
+            "templateId": "pictures",
+            "source": "generated-v1"
+          }
+        },
+        "caregiver-2": {
+          "profileVersion": 1,
+          "source": "generated-v1",
+          "name": "小澄",
+          "relationshipToPlayer": "husband",
+          "lifeDetail": {
+            "templateVersion": 1,
+            "templateId": "check-in",
+            "source": "generated-v1"
+          }
+        },
+        "support-1": {
+          "profileVersion": 1,
+          "source": "generated-v1",
+          "name": "小晴",
+          "relationshipToPlayer": "playerParent",
+          "lifeDetail": {
+            "templateVersion": 1,
+            "templateId": "check-in",
+            "source": "generated-v1"
+          }
+        }
+      },
+      "replayOrigin": {
+        "resources": {
+          "finances": 28,
+          "energy": 43,
+          "support": 76,
+          "timeFlexibility": 76,
+          "connection": 68
+        },
+        "tendencies": {
+          "responsibility": 0,
+          "flexibility": 0,
+          "selfCare": 0,
+          "sharedCare": 0
+        },
+        "rngState": 3471308034,
+        "actors": [
+          {
+            "id": "child-1",
+            "role": "child",
+            "displayName": "孩子",
+            "availability": 0.9440599093213677,
+            "initiative": 0.8452364315744489,
+            "workflowOwnership": 0.5391399988438934,
+            "reliability": 0.6804977387655526,
+            "boundaryRespect": 0.4755720964167267
+          },
+          {
+            "id": "caregiver-2",
+            "role": "partner",
+            "displayName": "共同照顧者",
+            "availability": 0.5679288696264848,
+            "initiative": 0.9942222988465801,
+            "workflowOwnership": 0.9357337258988991,
+            "reliability": 0.18934845877811313,
+            "boundaryRespect": 0.3436866346746683
+          },
+          {
+            "id": "support-1",
+            "role": "grandparent",
+            "displayName": "同住長輩",
+            "availability": 0.8693424366647378,
+            "initiative": 0.7379959948593751,
+            "workflowOwnership": 0.8783558402210474,
+            "reliability": 0.9159235202241689,
+            "boundaryRespect": 0.10207696096040308
+          }
+        ],
+        "actorProfiles": {
+          "child-1": {
+            "profileVersion": 1,
+            "source": "generated-v1",
+            "name": "小羽",
+            "relationshipToPlayer": "child",
+            "lifeDetail": {
+              "templateVersion": 1,
+              "templateId": "pictures",
+              "source": "generated-v1"
+            }
+          },
+          "caregiver-2": {
+            "profileVersion": 1,
+            "source": "generated-v1",
+            "name": "小澄",
+            "relationshipToPlayer": "husband",
+            "lifeDetail": {
+              "templateVersion": 1,
+              "templateId": "check-in",
+              "source": "generated-v1"
+            }
+          },
+          "support-1": {
+            "profileVersion": 1,
+            "source": "generated-v1",
+            "name": "小晴",
+            "relationshipToPlayer": "playerParent",
+            "lifeDetail": {
+              "templateVersion": 1,
+              "templateId": "check-in",
+              "source": "generated-v1"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "schemaVersion": 4,
+    "state": {
+      "activeFamilyLifeDirectionId": "flexible",
+      "schemaVersion": 1,
+      "seed": 3,
+      "rngState": 3471308038,
+      "currentAgeStageId": "age-stage-1",
+      "currentTurnId": null,
+      "turn": null,
+      "eventProgress": null,
+      "resources": {
+        "finances": 37,
+        "energy": 61,
+        "support": 52,
+        "timeFlexibility": 70,
+        "connection": 52
+      },
+      "planningLoad": 0,
+      "family": {
+        "householdComposition": "multigenerational",
+        "careParticipation": "shared",
+        "workArrangement": "singleFullTimeCare",
+        "preferredAddress": "照顧者",
+        "childId": "child-1",
+        "persistentActorIds": [
+          "caregiver-2",
+          "support-1"
+        ]
+      },
+      "tendencies": {
+        "responsibility": 0,
+        "flexibility": 0,
+        "selfCare": 0,
+        "sharedCare": 0
+      },
+      "flags": [],
+      "relationshipMemories": [],
+      "completedEventIds": [],
+      "scheduledFollowUps": [],
+      "choiceHistory": [],
+      "history": [],
+      "actorProfiles": {
+        "child-1": {
+          "profileVersion": 1,
+          "source": "generated-v1",
+          "name": "小悠",
+          "relationshipToPlayer": "child",
+          "lifeDetail": {
+            "templateVersion": 1,
+            "templateId": "pictures",
+            "source": "generated-v1"
+          }
+        },
+        "caregiver-2": {
+          "profileVersion": 1,
+          "source": "generated-v1",
+          "name": "小樹",
+          "relationshipToPlayer": "partner",
+          "lifeDetail": {
+            "templateVersion": 1,
+            "templateId": "notes",
+            "source": "generated-v1"
+          }
+        },
+        "support-1": {
+          "profileVersion": 1,
+          "source": "generated-v1",
+          "name": "小光",
+          "relationshipToPlayer": "partnerParent",
+          "relatedActorId": "caregiver-2",
+          "lifeDetail": {
+            "templateVersion": 1,
+            "templateId": "tea",
+            "source": "generated-v1"
+          }
+        }
+      },
+      "replayOrigin": {
+        "resources": {
+          "finances": 37,
+          "energy": 61,
+          "support": 52,
+          "timeFlexibility": 70,
+          "connection": 52
+        },
+        "tendencies": {
+          "responsibility": 0,
+          "flexibility": 0,
+          "selfCare": 0,
+          "sharedCare": 0
+        },
+        "rngState": 3471308038,
+        "actors": [
+          {
+            "id": "child-1",
+            "role": "child",
+            "displayName": "孩子",
+            "availability": 0.07492800964973867,
+            "initiative": 0.7630053898319602,
+            "workflowOwnership": 0.481180417817086,
+            "reliability": 0.48672957462258637,
+            "boundaryRespect": 0.1618005665950477
+          },
+          {
+            "id": "caregiver-2",
+            "role": "partner",
+            "displayName": "共同照顧者",
+            "availability": 0.6316281341714785,
+            "initiative": 0.7763036122778431,
+            "workflowOwnership": 0.5974581259069964,
+            "reliability": 0.08359288168139756,
+            "boundaryRespect": 0.713787391083315
+          },
+          {
+            "id": "support-1",
+            "role": "grandparent",
+            "displayName": "同住長輩",
+            "availability": 0.7383640193147585,
+            "initiative": 0.896866029012017,
+            "workflowOwnership": 0.9398866634583101,
+            "reliability": 0.3236236663069576,
+            "boundaryRespect": 0.6905813945923001
+          }
+        ],
+        "actorProfiles": {
+          "child-1": {
+            "profileVersion": 1,
+            "source": "generated-v1",
+            "name": "小悠",
+            "relationshipToPlayer": "child",
+            "lifeDetail": {
+              "templateVersion": 1,
+              "templateId": "pictures",
+              "source": "generated-v1"
+            }
+          },
+          "caregiver-2": {
+            "profileVersion": 1,
+            "source": "generated-v1",
+            "name": "小樹",
+            "relationshipToPlayer": "partner",
+            "lifeDetail": {
+              "templateVersion": 1,
+              "templateId": "notes",
+              "source": "generated-v1"
+            }
+          },
+          "support-1": {
+            "profileVersion": 1,
+            "source": "generated-v1",
+            "name": "小光",
+            "relationshipToPlayer": "partnerParent",
+            "relatedActorId": "caregiver-2",
+            "lifeDetail": {
+              "templateVersion": 1,
+              "templateId": "tea",
+              "source": "generated-v1"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "schemaVersion": 4,
+    "state": {
+      "activeFamilyLifeDirectionId": "flexible",
+      "schemaVersion": 1,
+      "seed": 42,
+      "rngState": 440012121,
+      "currentAgeStageId": "age-stage-1",
+      "currentTurnId": "age-stage-1-turn-1",
+      "turn": {
+        "id": "age-stage-1-turn-1",
+        "ageStageId": "age-stage-1",
+        "status": "awaitingInput",
+        "nodeCount": 0,
+        "maxNodeCount": 4,
+        "activeEventId": "night-handoff-choice",
+        "processedEventIds": []
+      },
+      "eventProgress": {
+        "ageStageId": "age-stage-1",
+        "turnId": "age-stage-1-turn-1",
+        "eventId": "night-handoff-choice",
+        "nodeIndex": 0,
+        "status": "awaitingInput"
+      },
+      "ageStageProgress": {
+        "ageStageId": "age-stage-1",
+        "status": "active",
+        "nodeCount": 0,
+        "turnCount": 1
+      },
+      "turnNumber": 1,
+      "resources": {
+        "finances": 38,
+        "energy": 32,
+        "support": 50,
+        "timeFlexibility": 61,
+        "connection": 57
+      },
+      "planningLoad": 0,
+      "family": {
+        "householdComposition": "twoCaregivers",
+        "careParticipation": "uneven",
+        "workArrangement": "unstable",
+        "preferredAddress": "照顧者",
+        "childId": "child-1",
+        "persistentActorIds": [
+          "caregiver-2"
+        ]
+      },
+      "tendencies": {
+        "responsibility": 0,
+        "flexibility": 0,
+        "selfCare": 0,
+        "sharedCare": 0
+      },
+      "flags": [],
+      "relationshipMemories": [],
+      "completedEventIds": [],
+      "scheduledFollowUps": [],
+      "choiceHistory": [],
+      "history": [],
+      "actorProfiles": {
+        "child-1": {
+          "profileVersion": 1,
+          "source": "generated-v1",
+          "name": "小樹",
+          "relationshipToPlayer": "child",
+          "lifeDetail": {
+            "templateVersion": 1,
+            "templateId": "colours",
+            "source": "generated-v1"
+          }
+        },
+        "caregiver-2": {
+          "profileVersion": 1,
+          "source": "generated-v1",
+          "name": "小悠",
+          "relationshipToPlayer": "wife",
+          "lifeDetail": {
+            "templateVersion": 1,
+            "templateId": "tea",
+            "source": "generated-v1"
+          }
+        }
+      },
+      "replayOrigin": {
+        "resources": {
+          "finances": 38,
+          "energy": 32,
+          "support": 50,
+          "timeFlexibility": 61,
+          "connection": 57
+        },
+        "tendencies": {
+          "responsibility": 0,
+          "flexibility": 0,
+          "selfCare": 0,
+          "sharedCare": 0
+        },
+        "rngState": 2903413604,
+        "actors": [
+          {
+            "id": "child-1",
+            "role": "child",
+            "displayName": "孩子",
+            "availability": 0.6697340414393693,
+            "initiative": 0.17481389874592423,
+            "workflowOwnership": 0.5265925421845168,
+            "reliability": 0.2732279943302274,
+            "boundaryRespect": 0.6247446539346129
+          },
+          {
+            "id": "caregiver-2",
+            "role": "partner",
+            "displayName": "共同照顧者",
+            "availability": 0.43273732415400445,
+            "initiative": 0.23615852755028754,
+            "workflowOwnership": 0.12496186711359769,
+            "reliability": 0.8820588334929198,
+            "boundaryRespect": 0.7457375649828464
+          }
+        ],
+        "actorProfiles": {
+          "child-1": {
+            "profileVersion": 1,
+            "source": "generated-v1",
+            "name": "小樹",
+            "relationshipToPlayer": "child",
+            "lifeDetail": {
+              "templateVersion": 1,
+              "templateId": "colours",
+              "source": "generated-v1"
+            }
+          },
+          "caregiver-2": {
+            "profileVersion": 1,
+            "source": "generated-v1",
+            "name": "小悠",
+            "relationshipToPlayer": "wife",
+            "lifeDetail": {
+              "templateVersion": 1,
+              "templateId": "tea",
+              "source": "generated-v1"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "schemaVersion": 4,
+    "state": {
+      "activeFamilyLifeDirectionId": "flexible",
+      "schemaVersion": 1,
+      "seed": 42,
+      "rngState": 1639742264,
+      "currentAgeStageId": "age-stage-1",
+      "currentTurnId": "age-stage-1-turn-1",
+      "turn": {
+        "id": "age-stage-1-turn-1",
+        "ageStageId": "age-stage-1",
+        "status": "active",
+        "nodeCount": 1,
+        "maxNodeCount": 4,
+        "activeEventId": null,
+        "processedEventIds": [
+          "night-handoff-choice"
+        ]
+      },
+      "eventProgress": {
+        "ageStageId": "age-stage-1",
+        "turnId": "age-stage-1-turn-1",
+        "eventId": "night-handoff-choice",
+        "nodeIndex": 0,
+        "status": "completed"
+      },
+      "ageStageProgress": {
+        "ageStageId": "age-stage-1",
+        "status": "active",
+        "nodeCount": 1,
+        "turnCount": 1
+      },
+      "turnNumber": 1,
+      "eventLastResolvedTurn": {
+        "night-handoff-choice": 1
+      },
+      "resources": {
+        "finances": 38,
+        "energy": 31,
+        "support": 50,
+        "timeFlexibility": 59,
+        "connection": 57
+      },
+      "planningLoad": 1,
+      "family": {
+        "householdComposition": "twoCaregivers",
+        "careParticipation": "uneven",
+        "workArrangement": "unstable",
+        "preferredAddress": "照顧者",
+        "childId": "child-1",
+        "persistentActorIds": [
+          "caregiver-2"
+        ]
+      },
+      "tendencies": {
+        "responsibility": 0,
+        "flexibility": 0,
+        "selfCare": 0,
+        "sharedCare": 1
+      },
+      "flags": [],
+      "relationshipMemories": [],
+      "completedEventIds": [
+        "night-handoff-choice"
+      ],
+      "scheduledFollowUps": [
+        {
+          "id": "scheduled-age-stage-1-turn-1-1-0",
+          "eventId": "night-handoff-reflection",
+          "targetAgeStageId": "age-stage-1",
+          "dueAfterTurns": 0,
+          "priority": 0,
+          "immediateTurnId": "age-stage-1-turn-1",
+          "status": "pending"
+        },
+        {
+          "id": "scheduled-age-stage-1-turn-1-1-1",
+          "eventId": "night-handoff-support",
+          "targetAgeStageId": "age-stage-1",
+          "dueAfterTurns": 1,
+          "priority": 10,
+          "status": "pending"
+        }
+      ],
+      "choiceHistory": [
+        {
+          "eventId": "night-handoff-choice",
+          "choiceId": "coordinate",
+          "ageStageId": "age-stage-1",
+          "turnId": "age-stage-1-turn-1"
+        }
+      ],
+      "reactionHistory": [
+        {
+          "poolId": "everyday-responses",
+          "reactionId": "no-comment",
+          "actorId": null,
+          "kind": "none",
+          "text": "這一次沒有收到新的回應，安排先留待之後確認。",
+          "eventId": "night-handoff-choice",
+          "ageStageId": "age-stage-1",
+          "turnId": "age-stage-1-turn-1"
+        }
+      ],
+      "history": [
+        {
+          "id": "story-age-stage-1-turn-1-1",
+          "resolvedEventId": "night-handoff-choice",
+          "ageStageId": "age-stage-1",
+          "turnId": "age-stage-1-turn-1",
+          "kind": "event",
+          "text": "與小樹（你的孩子）一起生活的日常。孩子醒來，你一邊安撫，一邊想著還沒洗的用品和明天的安排。輪班表上還有空白，眼前的照顧和之後要記住的事疊在一起。"
+        },
+        {
+          "id": "choice-effect-age-stage-1-turn-1-1-0",
+          "ageStageId": "age-stage-1",
+          "turnId": "age-stage-1-turn-1",
+          "kind": "planning",
+          "text": "你為「凌晨的交接」整理了可協調的工作，支持是否可用仍需確認。"
+        },
+        {
+          "id": "reaction-age-stage-1-turn-1-1-0",
+          "ageStageId": "age-stage-1",
+          "turnId": "age-stage-1-turn-1",
+          "kind": "reaction",
+          "text": "這一次沒有收到新的回應，安排先留待之後確認。"
+        }
+      ],
+      "actorProfiles": {
+        "child-1": {
+          "profileVersion": 1,
+          "source": "generated-v1",
+          "name": "小樹",
+          "relationshipToPlayer": "child",
+          "lifeDetail": {
+            "templateVersion": 1,
+            "templateId": "colours",
+            "source": "generated-v1"
+          }
+        },
+        "caregiver-2": {
+          "profileVersion": 1,
+          "source": "generated-v1",
+          "name": "小悠",
+          "relationshipToPlayer": "wife",
+          "lifeDetail": {
+            "templateVersion": 1,
+            "templateId": "tea",
+            "source": "generated-v1"
+          }
+        }
+      },
+      "replayOrigin": {
+        "resources": {
+          "finances": 38,
+          "energy": 32,
+          "support": 50,
+          "timeFlexibility": 61,
+          "connection": 57
+        },
+        "tendencies": {
+          "responsibility": 0,
+          "flexibility": 0,
+          "selfCare": 0,
+          "sharedCare": 0
+        },
+        "rngState": 2903413604,
+        "actors": [
+          {
+            "id": "child-1",
+            "role": "child",
+            "displayName": "孩子",
+            "availability": 0.6697340414393693,
+            "initiative": 0.17481389874592423,
+            "workflowOwnership": 0.5265925421845168,
+            "reliability": 0.2732279943302274,
+            "boundaryRespect": 0.6247446539346129
+          },
+          {
+            "id": "caregiver-2",
+            "role": "partner",
+            "displayName": "共同照顧者",
+            "availability": 0.43273732415400445,
+            "initiative": 0.23615852755028754,
+            "workflowOwnership": 0.12496186711359769,
+            "reliability": 0.8820588334929198,
+            "boundaryRespect": 0.7457375649828464
+          }
+        ],
+        "actorProfiles": {
+          "child-1": {
+            "profileVersion": 1,
+            "source": "generated-v1",
+            "name": "小樹",
+            "relationshipToPlayer": "child",
+            "lifeDetail": {
+              "templateVersion": 1,
+              "templateId": "colours",
+              "source": "generated-v1"
+            }
+          },
+          "caregiver-2": {
+            "profileVersion": 1,
+            "source": "generated-v1",
+            "name": "小悠",
+            "relationshipToPlayer": "wife",
+            "lifeDetail": {
+              "templateVersion": 1,
+              "templateId": "tea",
+              "source": "generated-v1"
+            }
+          }
+        }
+      }
+    }
+  }
+]

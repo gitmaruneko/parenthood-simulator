@@ -33,6 +33,7 @@ export const createMvpContent = (familyActors: readonly Actor[] = defaultFamilyA
     events.push({
       id: id("choice"), ageStageId, kind: "choice", mode: "PLAYER_INPUT_REQUIRED",
       title: scene.title, text: scene.text, locationId: scene.location,
+      actorText: scene.actorText ?? { actorId: "child-1", prefix: "與", suffix: `一起生活的日常。${scene.text}` },
       contextTags: [scene.slug, "everyday-care"], weight: 2,
       familyLifeDirectionWeights: scene.directionWeights,
       actorIds: familyActors.map((person) => person.id).concat(
@@ -55,6 +56,7 @@ export const createMvpContent = (familyActors: readonly Actor[] = defaultFamilyA
         },
         {
           id: "handoff", text: "詢問另一位照顧者能否完整接手這一段", ...resultCard,
+          actorText: { actorId: "caregiver-2", prefix: "詢問", suffix: "能否完整接手這一段" },
           requirements: { kind: "actorAvailable", actorId: "caregiver-2" },
           planningLoadDelta: 1, resourceDeltas: { timeFlexibility: -1 },
           scheduledFollowUps: scheduled("support"),
@@ -62,6 +64,7 @@ export const createMvpContent = (familyActors: readonly Actor[] = defaultFamilyA
         },
         {
           id: "ask-family", text: "與支持家人確認這次可支援的範圍", ...resultCard,
+          actorText: { actorId: "support-1", prefix: "與", suffix: "確認這次可支援的範圍" },
           requirements: { kind: "actorAvailable", actorId: "support-1" },
           planningLoadDelta: 1, resourceDeltas: { timeFlexibility: -1 },
           scheduledFollowUps: scheduled("support"),

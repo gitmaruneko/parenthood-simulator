@@ -304,6 +304,10 @@ const validateCrossReferences = (content: ContentPack): ContentValidationIssue[]
   );
 
   content.events.forEach((event, eventIndex) => {
+    for (const [index, item] of [event, ...event.choices].entries()) {
+      if (item.actorText) checkReference(item.actorText.actorId, actorIds,
+        `events[${eventIndex}].identity[${index}]`, "text actor", issues);
+    }
     validateMemoryActors(event, `events[${eventIndex}]`, actorIds, issues);
     checkReference(event.ageStageId, ageStageIds, `events[${eventIndex}].ageStageId`, "age-stage reference", issues);
     event.actorIds.forEach((actorId, actorIndex) =>

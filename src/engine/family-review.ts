@@ -1,6 +1,7 @@
 import { reviewDataSchema, type ContentPack, type GameState } from "../domain/schemas.js";
 import { describeFamily, createFamilyRun, type FamilyRun } from "./family-opening.js";
 import { getPlayerView } from "./event-engine.js";
+import { unknownActorProfiles } from "../domain/actor-profiles.js";
 
 export const REVIEW_THEMES = {
   "growing-together": "一起慢慢長大",
@@ -78,9 +79,15 @@ export function replayFamilyRun(state: GameState): FamilyRun {
   const run = createFamilyRun({ seed: state.seed });
   const origin = state.replayOrigin;
   // Legacy saves replay the default seed opening because no opening snapshot exists.
-  if (!origin) return run;
+  if (!origin) {
+    const actorProfiles = unknownActorProfiles(run.state.family);
+    return { ...run, state: { ...run.state, actorProfiles,
+      replayOrigin: { ...run.state.replayOrigin!, actorProfiles: structuredClone(actorProfiles) } } };
+  }
   return { ...run, actors: structuredClone(origin.actors),
     state: { ...run.state, family: structuredClone(state.family), resources: { ...origin.resources },
-      tendencies: { ...origin.tendencies }, rngState: origin.rngState, replayOrigin: structuredClone(origin) },
+      actorProfiles: structuredClone(origin.actorProfiles ?? unknownActorProfiles(state.family)),
+      tendencies: { ...origin.tendencies }, rngState: origin.rngState,
+      replayOrigin: { ...structuredClone(origin), actorProfiles: structuredClone(origin.actorProfiles ?? unknownActorProfiles(state.family)) } },
     summary: describeFamily(state.family) };
 }
