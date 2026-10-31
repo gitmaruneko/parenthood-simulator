@@ -1,5 +1,11 @@
 # Save and restore (issue #9)
 
+UX v2 T5 (#39) keeps Save v7 unchanged. Session retains the accepted decision
+and its Journal records until persistence succeeds; retry saves the same state,
+without another CHOOSE or PRNG draw. Conflicts offer a warned return to the
+homepage and reload, never a forced overwrite. Unsaved in-memory results are
+not guaranteed across page closure. See [Decision Dialog](DECISION_DIALOG.md).
+
 Family Life Direction update (#28–#30): every change is saved immediately through
 the existing boundary. Save v7 requires a known direction ID and actor profiles; legacy saves migrate
 to `flexible` when absent, preserving committed data and RNG. Failures retain the

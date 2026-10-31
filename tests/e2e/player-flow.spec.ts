@@ -54,7 +54,7 @@ test("saved journal choices are bold, actual results sort newest first and reloa
   await page.goto("/");
   await page.getByRole("button", { name: "繼續上次生活", exact: true }).click();
   await startFamily(page);
-  await page.locator(".event-panel").getByRole("button", { name: /詢問太太能否完整接手這一段/ }).click();
+  await page.locator(".decision-dialog").getByRole("button", { name: /詢問太太能否完整接手這一段/ }).click();
   await waitForSaved(page);
   const raw = (await page.evaluate(key => localStorage.getItem(key), key))!;
   const state = JSON.parse(raw).state;
@@ -92,7 +92,7 @@ test("v5 stories retain their original text and mix safely with new journal snap
   const migrated = JSON.parse((await page.evaluate(key => localStorage.getItem(key), key))!);
   expect(migrated.state).toEqual(fixture.state);
   if (isMobile) await page.getByRole("tab", { name: "生活", exact: true }).click();
-  await page.locator(".event-panel").getByRole("button").first().click();
+  await page.getByRole("button", { name: "繼續生活", exact: true }).click();
   await waitForSaved(page);
   await page.getByRole("button", { name: "繼續生活", exact: true }).click();
   await waitForSaved(page);
@@ -115,8 +115,8 @@ test("explicit kinship titles stay consistent in reveal, real choices and restor
   await expect(page.locator(".reveal .member h3")).toHaveText(["孩子（小樹）", "先生", "婆婆"]);
   await page.screenshot({ path: `test-results/kinship-reveal-${isMobile ? "mobile" : "desktop"}.png`, fullPage: true });
   await startFamily(page);
-  await expect(page.locator(".event-panel").getByRole("button", { name: /詢問先生/ })).toBeVisible();
-  const ask = page.locator(".event-panel").getByRole("button", { name: /與婆婆確認/ });
+  await expect(page.locator(".decision-dialog").getByRole("button", { name: /詢問先生/ })).toBeVisible();
+  const ask = page.locator(".decision-dialog").getByRole("button", { name: /與婆婆確認/ });
   await expect(ask).toBeVisible();
   await ask.click();
   await waitForSaved(page);
@@ -162,6 +162,7 @@ test("opening candidates expand and family members show current relationships", 
   await main.getByRole("button", { name: /事先準備的安撫玩具/ }).click();
   await main.getByRole("button", { name: "跳過測驗，從當下開始" }).click();
   await startFamily(page);
+  await chooseFirstDecision(page);
   if (isMobile) await page.getByRole("tab", { name: "家庭", exact: true }).click();
   const family = page.getByRole("tabpanel", { name: isMobile ? "家庭" : "心事", exact: true });
   await expect(family.getByText("你的孩子 · 2 個月")).toBeVisible();
@@ -179,6 +180,11 @@ test("opening candidates expand and family members show current relationships", 
 // Click completion precedes the session's yielded save operation.
 async function waitForSaved(page: Page) {
   await expect(page.locator(".game-header").getByRole("status")).toHaveText("已儲存");
+}
+async function chooseFirstDecision(page: Page) {
+  await page.locator(".decision-dialog .decisions button").first().click();
+  await expect(page.locator(".decision-dialog")).toHaveCount(0);
+  await waitForSaved(page);
 }
 async function startFamily(page: Page) {
   await page.getByRole("button", { name: "開始這個家庭" }).click();
@@ -217,9 +223,10 @@ async function start(page: Page, assessment = false) {
   ).toBeVisible();
 }
 
-test("persistent direction selection saves immediately, preserves pending story and supports keyboard", async ({ page, isMobile }) => {
+test("persistent direction selection saves immediately, preserves committed story and supports keyboard", async ({ page, isMobile }) => {
   await start(page);
   await startFamily(page);
+  await chooseFirstDecision(page);
   const group = page.getByRole("group", { name: "家庭生活方向" });
   await expect(group.getByRole("radio")).toHaveCount(6);
   for (const radio of await group.getByRole("radio").all()) await expect(radio).toBeVisible();
@@ -246,6 +253,7 @@ test("persistent direction selection saves immediately, preserves pending story 
 test("compact directions and family details stay readable without changing the saved story", async ({ page, isMobile }) => {
   await start(page);
   await startFamily(page);
+  await chooseFirstDecision(page);
   const before = await page.evaluate((key) => localStorage.getItem(key), key);
   const group = page.getByRole("group", { name: "家庭生活方向" });
   const help = page.getByText("方向說明", { exact: true });
@@ -316,9 +324,9 @@ test("browse original previews, reroll, choose, read reactions, restore and pres
     page.getByText("AgeStage 1 / 12", { exact: true }),
   ).toBeVisible();
   await expect(page.getByText("Turn 1", { exact: true })).toBeVisible();
-  await expect(page.locator("#event-title")).toBeFocused();
+  await expect(page.locator("#decision-title")).toBeFocused();
   const life = page.getByRole("tabpanel", { name: "生活", exact: true });
-  await life.getByRole("button").first().click();
+  await chooseFirstDecision(page);
   await expect(life.getByText("故事正在發展", { exact: true })).toHaveCount(0);
   await expect(page.locator(".reaction-label")).toHaveCount(0);
   const saved = await page.evaluate((key) => localStorage.getItem(key), key);
@@ -358,6 +366,7 @@ test("completes all five assessment questions and cancels new-story confirmation
 }) => {
   await start(page, true);
   await startFamily(page);
+  await chooseFirstDecision(page);
   const saved = await page.evaluate((key) => localStorage.getItem(key), key);
   await page.getByRole("button", { name: "返回首頁", exact: true }).click();
   await page.getByRole("button", { name: "開始新的故事", exact: true }).click();
@@ -496,7 +505,8 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
   await expect(page.locator(".reveal")).toContainText("你的孩子 · 2 個月");
   await expect(page.getByRole("heading", { name: "此刻的照顧傾向" })).toHaveCount(0);
   await startFamily(page);
-  await expect(page.locator(".event-panel")).toContainText(names[0]!);
+  await expect(page.locator(".decision-dialog")).toContainText(names[0]!);
+  await chooseFirstDecision(page);
   await page.reload();
   await page.getByRole("button", { name: "繼續上次生活", exact: true }).click();
   if (isMobile) await page.getByRole("tab", { name: "家庭", exact: true }).click();
@@ -508,7 +518,8 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
   for (let step = 0; step < 120; step++) {
     if (await page.getByRole("heading", { name: "我們的家庭生活回顧" }).count())
       break;
-    const button = life.getByRole("button").first();
+    const button = await page.locator(".decision-dialog").isVisible()
+      ? page.locator(".decision-dialog .decisions button").first() : life.getByRole("button").first();
     await expect(button).toBeEnabled();
     await button.click();
     await waitForSaved(page);

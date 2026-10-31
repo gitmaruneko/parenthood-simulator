@@ -180,7 +180,6 @@ export interface GameScreenProps {
   game: GamePresentation;
   busy: boolean;
   blocked: boolean;
-  onChoose: (choice: string) => void;
   onAdvance: () => void;
   onDirection?: (id: FamilyLifeDirectionId) => void;
   initialTab?: "life" | "records";
@@ -189,7 +188,6 @@ export function GameScreen({
   game,
   busy,
   blocked,
-  onChoose,
   onAdvance,
   onDirection,
   initialTab = "life",
@@ -286,29 +284,10 @@ export function GameScreen({
                 {event ? `新的事件：${event.title}。等待你的選擇。` : game.nextLabel}
               </p>
               <h2 id="event-title" tabIndex={-1} ref={title}>
-                {event?.title ?? (game.completed ? game.nextLabel : "繼續生活")}
+                {game.completed ? game.nextLabel : "繼續生活"}
               </h2>
               {event ? (
-                <>
-                  <p>{event.text}</p>
-                  <div className="decisions">
-                    {event.choices.map((choice) => (
-                      <button
-                        disabled={busy || blocked}
-                        key={choice.id}
-                        onClick={() => onChoose(choice.id)}
-                      >
-                        {choice.text}
-                        {choice.anticipatedJudgment && (
-                          <span className="choice-hint">
-                            心裡預期：{choice.anticipatedJudgment}
-                          </span>
-                        )}
-                        <span aria-hidden="true">↗</span>
-                      </button>
-                    ))}
-                  </div>
-                </>
+                <p>請先完成目前的重大抉擇。</p>
               ) : game.completed ? (
                 <p>
                   十二個階段告一段落。這些紀錄留下眼前的生活，不預測未來。你可以查看家庭生活紀錄，或回首頁開始新的故事。

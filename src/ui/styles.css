@@ -734,6 +734,16 @@ dialog::backdrop {
 dialog h2 {
   font-size: 1.5rem;
 }
+.decision-dialog {
+  width: min(720px, calc(100% - 24px));
+  max-width: 720px;
+  max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  padding: clamp(16px, 4vw, 32px);
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+}
+.decision-dialog .decisions button { min-height: 44px; }
+.decision-dialog [role="status"] { scroll-margin-block: 16px; }
 @media (min-width: 768px) and (max-width: 1023px) {
   .game-shell {
     display: block;

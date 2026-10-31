@@ -7,6 +7,7 @@ import { Illustration } from "./Illustration.js";
 import { SaveNotice } from "./SaveNotice.js";
 import { ReviewScreen } from "./ReviewScreen.js";
 import { FamilyMemberCard } from "./FamilyMemberCard.js";
+import { DecisionDialog } from "./DecisionDialog.js";
 
 const questions = getAssessmentQuestions();
 export function Assessment({ session }: { session: PlayerSession }) {
@@ -57,6 +58,24 @@ export function App({ session: provided }: { session?: PlayerSession }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const cancel = useRef<HTMLButtonElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
+  const previousDecision = useRef<string | null>(null);
+  useEffect(() => {
+    if (!snapshot.hasUnsavedChanges) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [snapshot.hasUnsavedChanges]);
+  useEffect(() => {
+    const previous = previousDecision.current;
+    previousDecision.current = snapshot.decision?.key ?? null;
+    if (previous && !snapshot.decision && snapshot.page === "game") {
+      requestAnimationFrame(() => {
+        const current = session.getSnapshot();
+        if (current.decision || current.game !== snapshot.game || current.page !== "game") return;
+        (document.querySelector<HTMLElement>(".event-log > li") ?? document.getElementById("log-title"))?.focus();
+      });
+    }
+  }, [snapshot.decision, snapshot.page, snapshot.game, session]);
   useEffect(() => {
     void session.check();
     const recheck = () => {
@@ -117,6 +136,7 @@ export function App({ session: provided }: { session?: PlayerSession }) {
   };
   return (
     <>
+      <div className="game-background" inert={snapshot.decision !== null}>
       {snapshot.page === "home" ? (
         <HomePage
           save={snapshot.home}
@@ -208,14 +228,13 @@ export function App({ session: provided }: { session?: PlayerSession }) {
               busy={snapshot.busy}
               blocked={snapshot.error !== null}
               initialTab={snapshot.gameTab}
-              onChoose={(id) => void session.choose(id)}
               onAdvance={() => void session.advance()}
               onDirection={(id) => void session.setDirection(id)}
             />
           ))}
         </>
       )}
-      {snapshot.error && !snapshot.dialog && (
+      {snapshot.error && !snapshot.dialog && !snapshot.decision && (
         <SaveNotice
           message={snapshot.error}
           busy={snapshot.busy}
@@ -302,6 +321,11 @@ export function App({ session: provided }: { session?: PlayerSession }) {
           </button>
         </div>
       </dialog>
+      </div>
+      {snapshot.decision && <DecisionDialog decision={snapshot.decision} busy={snapshot.busy}
+        error={snapshot.error} hasUnsavedChanges={snapshot.hasUnsavedChanges} canRetry={snapshot.canRetrySave}
+        onChoose={(id, key) => void session.choose(id, key)}
+        onRetry={key => void session.retryDecisionSave(key)} onReload={session.reloadDecision} />}
     </>
   );
 }
