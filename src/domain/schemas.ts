@@ -396,7 +396,7 @@ const journalSourceFields = {
   eventId: identifierSchema, sequence: z.number().int().min(0),
   text: z.string().min(1).refine(text => text.trim().length > 0), actorIds: z.array(identifierSchema),
 };
-export const journalEntrySchema = z.discriminatedUnion("kind", [
+export const eventJournalEntrySchema = z.discriminatedUnion("kind", [
   z.object({ ...journalSourceFields, kind: z.literal("choice"),
     choiceHistoryIndex: z.number().int().min(0), choiceText: z.string().min(1).refine(text => text.trim().length > 0),
   }).strict(),
@@ -404,6 +404,12 @@ export const journalEntrySchema = z.discriminatedUnion("kind", [
     reactionHistoryIndex: z.number().int().min(0).optional(),
   }).strict(),
 ]);
+export const dailyJournalEntrySchema = z.object({
+  id: identifierSchema, sourceHistoryId: identifierSchema, sequence: z.literal(0),
+  kind: z.literal("daily"), templateId: identifierSchema,
+  text: z.string().min(1).refine(text => text.trim().length > 0), actorIds: z.array(identifierSchema).length(1),
+}).strict();
+export const journalEntrySchema = z.union([eventJournalEntrySchema, dailyJournalEntrySchema]);
 export const storyEntrySchema = z
   .object({
     id: identifierSchema,

@@ -30,15 +30,6 @@ html {
   clip-path: inset(50%);
   white-space: nowrap;
 }
-@media (min-width: 1024px) {
-  .family-column {
-    position: sticky;
-    top: 20px;
-    max-height: calc(100dvh - 40px);
-    overflow-y: auto;
-    scrollbar-gutter: stable;
-  }
-}
 summary {
   cursor: pointer;
   min-height: 44px;
@@ -483,8 +474,7 @@ button .muted,
   grid-row: 1/3;
 }
 .records-column {
-  grid-column: 2;
-  grid-row: 2;
+  min-width: 0;
 }
 .game-shell h2 {
   font-size: 1.3rem;
@@ -506,7 +496,7 @@ button .muted,
   color: var(--muted);
 }
 .event-panel h2 {
-  font-size: 1.6rem;
+  font-size: 1.15rem;
 }
 .event-panel .eyebrow {
   font-size: 1rem;
@@ -1014,3 +1004,13 @@ dialog h2 {
 .review-timeline { padding-left: 24px; }
 .review-timeline > li { padding: 10px 0; }
 .preserve-lines { white-space: pre-line; }
+
+/* One Journal DOM and one document scroll, shared by life and records views. */
+.records-column .event-panel { margin: 0 0 16px; }
+.event-panel .primary { width: 100%; }
+@media (max-width: 767px) {
+  .game-shell[data-tab="life"] .mobile-growth { display: none; }
+  .game-shell[data-tab="records"] > .story-column { display: block; }
+  .game-shell[data-tab="records"] .life-details,
+  .game-shell[data-tab="records"] .event-panel { display: none; }
+}

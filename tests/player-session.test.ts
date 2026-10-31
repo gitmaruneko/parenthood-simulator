@@ -9,6 +9,60 @@ import { serializeGame } from "../src/persistence/index.js";
 import { completedStory } from "./helpers/completed-story.js";
 import { resolveFamilyMembers } from "../src/engine/actor-profiles.js";
 import { legacyState } from "./helpers/legacy-state.js";
+import { getPlayerView, projectJournal, transitionGame } from "../src/engine/index.js";
+import { createMvpContent } from "../src/content/mvp.js";
+
+it("accepts a choice without issuing an implicit ADVANCE to fill the journal", async () => {
+  const run = createFamilyRun({ seed: 42 });
+  const content = createMvpContent(run.actors);
+  const pending = transitionGame(run.state, content, { type: "ADVANCE" }).state;
+  const storage = memory();
+  storage.setItem(LOCAL_SAVE_KEY, serializeGame(pending));
+  const session = createPlayerSession(createLocalSaveStore(storage));
+  await session.check(); await session.resume(); await session.choose("coordinate");
+  expect(JSON.parse(storage.getItem(LOCAL_SAVE_KEY)!).state)
+    .toEqual(transitionGame(pending, content, { type: "CHOOSE", choiceId: "coordinate" }).state);
+  expect(session.getSnapshot().game!.nextInput).toEqual({ type: "ADVANCE" });
+});
+
+it("continues with exactly the public nextInput and retries a failed daily save without replaying it", async () => {
+  const run = createFamilyRun({ seed: 42 });
+  const content = createMvpContent(run.actors);
+  const pending = transitionGame(run.state, content, { type: "ADVANCE" }).state;
+  const chosen = transitionGame(pending, content, { type: "CHOOSE", choiceId: "coordinate" }).state;
+  const storage = memory();
+  storage.setItem(LOCAL_SAVE_KEY, serializeGame(chosen));
+  let failDaily = true;
+  const store = createLocalSaveStore({ getItem: storage.getItem,
+    setItem: (key, value) => {
+      if (failDaily && key === LOCAL_SAVE_KEY && projectJournal(JSON.parse(value).state).some(row => row.kind === "daily"))
+        throw new Error("storage unavailable");
+      storage.setItem(key, value);
+    } });
+  const session = createPlayerSession(store);
+  await session.check(); await session.resume();
+  let previous = chosen;
+  for (let step = 0; step < 12 && !session.getSnapshot().canRetrySave; step++) {
+    const expected = transitionGame(previous, content, getPlayerView(previous, content).nextInput!);
+    const first = session.advance();
+    await session.advance(); // Busy duplicate must not enqueue a second command.
+    await first;
+    expect(session.getSnapshot().game!.history).toEqual(expected.state.history);
+    previous = expected.state;
+  }
+  expect(session.getSnapshot().canRetrySave).toBe(true);
+  const frozen = session.getSnapshot().game!;
+  expect(projectJournal({ history: frozen.history, choiceHistory: frozen.choices }).filter(row => row.kind === "daily")).toHaveLength(1);
+  await session.advance();
+  expect(session.getSnapshot().game!.history).toEqual(frozen.history);
+  failDaily = false;
+  await session.retrySave();
+  expect(session.getSnapshot().canRetrySave).toBe(false);
+  expect(JSON.parse(storage.getItem(LOCAL_SAVE_KEY)!).state.history).toEqual(frozen.history);
+  const restored = createPlayerSession(store);
+  await restored.check(); await restored.resume();
+  expect(restored.getSnapshot().game!.history).toEqual(frozen.history);
+});
 
 it("keeps revealed identities through pending events, reload, review and replay", async () => {
   const storage = memory();
@@ -458,6 +512,7 @@ it("retries the exact final state after a later automatic-node checkpoint fails"
   await session.startFamily();
   remaining = 2;
   await session.choose("coordinate");
+  await session.advance();
   const history = session.getSnapshot().game!.history;
   expect(session.getSnapshot().status).toBe("儲存失敗");
   remaining = Infinity;

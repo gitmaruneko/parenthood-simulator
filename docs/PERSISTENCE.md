@@ -1,7 +1,7 @@
 # Save and restore (issue #9)
 
 Family Life Direction update (#28–#30): every change is saved immediately through
-the existing boundary. Save v6 requires a known direction ID and actor profiles; legacy saves migrate
+the existing boundary. Save v7 requires a known direction ID and actor profiles; legacy saves migrate
 to `flexible` when absent, preserving committed data and RNG. Failures retain the
 in-memory choice for retry; conflicts never overwrite newer data.
 
@@ -14,12 +14,13 @@ boundary rather than implement storage or migration rules.
 
 | Save version | Shape | Restore behavior |
 | --- | --- | --- |
-| 1 | Unwrapped `GameState` with `schemaVersion: 1` | Explicitly migrate in memory to version 6; report `migratedFrom: 1` |
-| 2 | `{ schemaVersion: 2, state: GameState }` | Explicitly migrate in memory to version 6; report `migratedFrom: 2` |
-| 3 | `{ schemaVersion: 3, state: GameState }` with required direction | Explicitly migrate in memory to version 6; report `migratedFrom: 3` |
-| 4 | `{ schemaVersion: 4, state: GameState }` with v1 actor profiles | Strictly validate v4, preserve identities and migrate the envelope to v6; report `migratedFrom: 4` |
-| 5 | `{ schemaVersion: 5, state: GameState }` with direction and supported actor profiles | Strictly validate old history without journal fields, preserve data and migrate to v6; report `migratedFrom: 5` |
-| 6 | `{ schemaVersion: 6, state: GameState }` with optional history journal snapshots | Validate sources, ordering, choice/reaction indices and actor references; report `migratedFrom: null` |
+| 1 | Unwrapped `GameState` with `schemaVersion: 1` | Explicitly migrate in memory to version 7; report `migratedFrom: 1` |
+| 2 | `{ schemaVersion: 2, state: GameState }` | Explicitly migrate in memory to version 7; report `migratedFrom: 2` |
+| 3 | `{ schemaVersion: 3, state: GameState }` with required direction | Explicitly migrate in memory to version 7; report `migratedFrom: 3` |
+| 4 | `{ schemaVersion: 4, state: GameState }` with v1 actor profiles | Strictly validate v4, preserve identities and migrate the envelope to v7; report `migratedFrom: 4` |
+| 5 | `{ schemaVersion: 5, state: GameState }` with direction and supported actor profiles | Strictly validate old history without journal fields, preserve data and migrate to v7; report `migratedFrom: 5` |
+| 6 | `{ schemaVersion: 6, state: GameState }` with optional choice/result journal snapshots | Strictly validate the v6 contract, preserve all history and migrate to v7; report `migratedFrom: 6` |
+| 7 | `{ schemaVersion: 7, state: GameState }` with optional choice/result/daily snapshots | Validate sources, ordering, choice/reaction indices, daily completion keys and child binding; report `migratedFrom: null` |
 | Other | Unknown save or nested state version | Return `incompatible-version`, preserving the original bytes |
 
 The save version is independent of the domain's `GameState.schemaVersion`,
@@ -45,7 +46,7 @@ pending-input consistency. Required PRNG state cannot be substituted with seed.
 
 ## Public operations
 
-- `serializeGame(state)` returns a version-6 JSON string. Invalid state throws a
+- `serializeGame(state)` returns a version-7 JSON string. Invalid state throws a
   validation error; store operations convert that into a readable result.
 - `restoreGame(rawData)` returns `restored` with state and migration information,
   or `error` with a stable code, Traditional Chinese message, and exact raw data.
@@ -121,3 +122,8 @@ continuation/reaction traces, migrations, review data, damaged and unsupported
 saves, confirmed recovery, stale writes, blocked storage, quotas, and per-node
 checkpoint recovery. A recreated default store over the same localStorage
 simulates reload; browser UI and real-device reload checks remain issue #11 work.
+
+Save v7 (#38) adds zero-effect daily snapshots. Loading/migration never generates prose.
+The completion checkpoint already contains the daily history and stage index. Retrying
+a failed save writes that same state. v7 cannot be opened by the older v6 bundle;
+rollback requires a compatible reader, retaining saved bytes.

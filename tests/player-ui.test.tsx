@@ -25,6 +25,18 @@ beforeAll(() => {
 });
 
 afterEach(cleanup);
+it.each([
+  { busy: true, blocked: false }, { busy: false, blocked: true },
+  { busy: false, blocked: false, nextInput: null },
+])("disables continue when unavailable: %j", async flags => {
+  const advance = vi.fn();
+  render(<GameScreen game={{ ...game, ...(flags.nextInput === null ? { nextInput: null } : {}) }}
+    busy={flags.busy} blocked={flags.blocked} onChoose={vi.fn()} onAdvance={advance} />);
+  const button = screen.getByRole("button", { name: "繼續生活" }) as HTMLButtonElement;
+  expect(button.disabled).toBe(true);
+  await userEvent.click(button);
+  expect(advance).not.toHaveBeenCalled();
+});
 it("introduces the saved family without displaying assessment tendencies", async () => {
   const session = createPlayerSession(createLocalSaveStore({ getItem: () => null, setItem: () => {} }), () => 42);
   await session.newStory(); session.reveal();
@@ -222,6 +234,7 @@ it("bolds only the saved choice and shows each actual consequence once while kee
     setItem: (key, value) => { values.set(key, value); } }), () => 42);
   await session.check(); await session.newStory(); session.reveal(); await session.startFamily();
   await session.choose("coordinate");
+  await session.advance();
   const saved = session.getSnapshot().game!;
   render(<GameScreen game={saved} busy={false} blocked={false} onChoose={vi.fn()} onAdvance={vi.fn()} />);
   const log = screen.getByRole("list", { name: "已發生的事件" });
@@ -229,11 +242,11 @@ it("bolds only the saved choice and shows each actual consequence once while kee
     .toEqual(["把今晚需要的事列出來，協調一段可交接的時間"]);
   expect(screen.getAllByText(/你把待洗的用品、安撫和明早的準備寫成清單/)).toHaveLength(1);
   const records = within(log).getAllByRole("listitem");
-  expect(records[0]!.textContent).toContain("天亮後");
+  expect(records.some(record => record.textContent?.includes("天亮後"))).toBe(true);
   expect(records.at(-1)!.textContent).toContain("你的選擇");
-  expect(screen.getByRole("button", { name: "繼續故事" })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "繼續故事" })).toBeNull();
   expect(screen.queryByRole("dialog")).toBeNull();
-  expect(within(screen.getByRole("tabpanel", { name: "生活" })).queryByText(/你把待洗的用品/)).toBeNull();
+  expect(within(screen.getByRole("tabpanel", { name: "生活" })).getByText(/你把待洗的用品/)).toBeTruthy();
 });
 
 it("keeps legacy facts readable without presenting current option text as historical wording", () => {
@@ -359,10 +372,9 @@ it("shows the latest story first and offers continuation without a Turn-ended no
   const stories = within(screen.getByRole("list", { name: "已發生的事件" })).getAllByRole("listitem");
   expect(stories[0]!.textContent).toContain("最新發生的故事。");
   expect(stories[1]!.textContent).toContain("較早發生的故事。");
-  await userEvent.click(life.getByRole("button", { name: "繼續故事" }));
   expect(life.queryByText(/這個 Turn 已結束/)).toBeNull();
   expect(advance).not.toHaveBeenCalled();
-  await userEvent.click(life.getByRole("button", { name: "走進下一段生活" }));
+  await userEvent.click(life.getByRole("button", { name: "繼續生活" }));
   expect(advance).toHaveBeenCalledOnce();
   expect(history).toEqual(original);
 });
@@ -378,8 +390,7 @@ it("keeps AUTO_ADVANCE reading and mobile tabs separate from simulation commands
       onAdvance={advance}
     />,
   );
-  expect(screen.getByText("故事正在發展")).toBeTruthy();
-  await userEvent.click(screen.getByRole("button", { name: "繼續故事" }));
+  expect(screen.queryByText("故事正在發展")).toBeNull();
   await userEvent.click(screen.getByRole("tab", { name: "家庭" }));
   await userEvent.click(screen.getByRole("tab", { name: "生活" }));
   expect(advance).not.toHaveBeenCalled();
@@ -389,7 +400,7 @@ it("keeps AUTO_ADVANCE reading and mobile tabs separate from simulation commands
       "有人接下一段工作。",
     ),
   ).toBeTruthy();
-  await userEvent.click(screen.getByRole("button", { name: "走進下一段生活" }));
+  await userEvent.click(screen.getByRole("button", { name: "繼續生活" }));
   expect(advance).toHaveBeenCalledOnce();
 });
 

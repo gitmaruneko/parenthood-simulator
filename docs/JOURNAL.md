@@ -1,4 +1,35 @@
-# 可保存的生活紀錄（UX v2 T3，Issue #37）
+# 可保存的生活紀錄
+
+## UX v2 T4（Issue #38）：主畫面與零效果日常
+
+家庭生活紀錄是主畫面的唯一已發生敘事流；移除大型故事區與 readThrough。
+「繼續生活」交由 Session 送出目前公開的 nextInput，每次只送一個命令。
+忙碌、保存阻擋或 nextInput 不可用時停用。重大選擇暫留內嵌，Dialog 留給 #39。
+選擇只送 CHOOSE，不再由 Session 自動串接下一個 ADVANCE；當下已確認多少就顯示多少。
+手機「生活／紀錄」使用同一個 FamilyLog DOM 與同一份 Journal；紀錄頁隱藏生活
+操作，心事只提供定位索引。場景預設收合，長歷史沿文件捲動。
+
+`src/content/daily-journal.ts` 是獨立受驗證、無 effects 的 v1 目錄。四個模板只綁
+既有孩子與玩家，不要求伴侶、長輩、老師出席，也不宣稱支援或家務已完成。
+年齡範圍為 0–5、0–11、12–35、36–72 個月；符合年齡且存在 child actor 才候選。
+依固定 ID 升序取第一個尚未記錄的模板；整局不重複模板，用盡可為零筆。
+
+`finishTurn` 在 active／awaitingInput 首次進入 completed／safelyEnded／cycleProtected
+時提交 0–1 筆日常，涵蓋正常完成、fallback、Turn／階段預算及循環保護；在
+completedAgeStages.storyEntryIds 與 trace checkpoint 建立前寫入。已結束的舊 Turn
+不觸發。去重鍵為 Turn ID＋completion＋模板 ID，快照保存 text、actorIds、templateId
+與來源序號；不呼叫 PRNG、不建立 EventNode、不改資源、排程或節點預算。
+
+日常沿用原 history 的 event 容器但不帶 resolvedEventId；Journal 明確為 daily。
+因此能加入回顧時間線，同時不成為選擇、支持／修復或主題證據。
+新增 discriminant 使用 Save v7；v6 先按 choice／result 舊 schema 驗證，再原樣遷移。
+既有 v1–v5 遷移、原始 bytes 備份及失敗停止規則繼續保留，不補造過往日常。
+
+測試包含四組固定種子、全部完成路徑、逐 checkpoint Save/Restore、舊 Turn、
+保存失敗重試與同時命令；八條 pre-T3 機械 trace 只另外排除新日常及其時間線 ID，
+原有錨點及所有機械欄位仍逐筆比對。遊玩範例見 [Issue #38](examples/ISSUE-38-PLAYTHROUGH.md)。
+
+## UX v2 T3 歷史交付（Issue #37）
 
 本票只交付既有事件的選擇／結果快照、倒敘 Journal 與同源回顧。
 不新增日常 EventNode、不改主畫面欄位位置、不移除既有閱讀控制，也不加入 Dialog。

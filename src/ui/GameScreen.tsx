@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { FamilySummary } from "../engine/index.js";
 import type { GamePresentation } from "./player-session.js";
 import { Illustration } from "./Illustration.js";
@@ -105,13 +105,14 @@ const storyNames = {
   repair: "重新連結",
 };
 
-export function FamilyLog({ game }: { game: GamePresentation }) {
+export function FamilyLog({ game, children }: { game: GamePresentation; children?: ReactNode }) {
   const events = projectJournal({ history: game.history, choiceHistory: game.choices, reactionHistory: game.reactions }).reverse();
   return (
     <section aria-labelledby="log-title">
       <h2 id="log-title" tabIndex={-1}>
         家庭生活紀錄
       </h2>
+      {children}
       {!events.length && <p>接下來的日常，會一段一段留在這裡。</p>}
       <ol className="event-log" aria-label="已發生的事件" role="list">
         {events.map((entry) => {
@@ -195,19 +196,11 @@ export function GameScreen({
 }: GameScreenProps) {
   const [tab, setTab] = useState<string>(initialTab);
   const [drawer, setDrawer] = useState(false);
-  const [readThrough, setReadThrough] = useState(0);
   const title = useRef<HTMLHeadingElement>(null);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
-  const turnStories = game.history
-    .filter((entry) => entry.turnId === game.currentTurnId)
-    .reverse();
   const journal = projectJournal({ history: game.history, choiceHistory: game.choices, reactionHistory: game.reactions });
-  const turnRecordCount = journal.filter(entry => entry.turnId === game.currentTurnId).length;
-  const reading = game.history.length > readThrough && turnStories.length > 0;
   const event = game.pendingEvent;
-  const focusKey = reading
-    ? `story-${game.history.length}`
-    : (event?.id ?? game.nextLabel);
+  const focusKey = event?.id ?? `${game.currentTurnId}-${game.history.length}`;
   useEffect(() => {
     if (initialTab === "records") document.getElementById("log-title")?.focus();
     else title.current?.focus();
@@ -256,25 +249,8 @@ export function GameScreen({
         role="tabpanel"
         aria-label="生活"
       >
-        <section className="scene-panel">
-          <Illustration
-            scene={game.stages.findIndex((stage) => stage.current) % 4}
-          />
-          <p>
-            生活場景・
-            {event?.locationId
-              ? ({
-                  home: "家中",
-                  school: "學校",
-                  work: "工作場所",
-                  park: "公園",
-                }[event.locationId] ?? "日常交接")
-              : "家庭日常"}{" "}
-            · 這一段生活
-          </p>
-        </section>
         <section
-          className="direction-panel panel"
+          className="direction-panel panel life-details"
           aria-labelledby="direction-title"
         >
           <fieldset disabled={blocked || game.completed} aria-describedby="direction-help">
@@ -303,87 +279,59 @@ export function GameScreen({
             </dl>
           </details>
         </section>
+        <div className="records-column panel" id="panel-records" role="tabpanel" aria-label="紀錄">
+          <FamilyLog game={game}>
+            <section className="event-panel" aria-labelledby="event-title" aria-busy={busy}>
+              <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+                {event ? `新的事件：${event.title}。等待你的選擇。` : game.nextLabel}
+              </p>
+              <h2 id="event-title" tabIndex={-1} ref={title}>
+                {event?.title ?? (game.completed ? game.nextLabel : "繼續生活")}
+              </h2>
+              {event ? (
+                <>
+                  <p>{event.text}</p>
+                  <div className="decisions">
+                    {event.choices.map((choice) => (
+                      <button
+                        disabled={busy || blocked}
+                        key={choice.id}
+                        onClick={() => onChoose(choice.id)}
+                      >
+                        {choice.text}
+                        {choice.anticipatedJudgment && (
+                          <span className="choice-hint">
+                            心裡預期：{choice.anticipatedJudgment}
+                          </span>
+                        )}
+                        <span aria-hidden="true">↗</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : game.completed ? (
+                <p>
+                  十二個階段告一段落。這些紀錄留下眼前的生活，不預測未來。你可以查看家庭生活紀錄，或回首頁開始新的故事。
+                </p>
+              ) : (
+                <button
+                  className="primary"
+                  disabled={busy || blocked || !game.nextInput}
+                  onClick={onAdvance}
+                >
+                  繼續生活
+                </button>
+              )}
+            </section>
+          </FamilyLog>
+          <div className="mobile-growth"><Growth game={game} /></div>
+        </div>
+        <details className="scene-panel life-details">
+          <summary>看看生活場景</summary>
+          <Illustration scene={game.stages.findIndex(stage => stage.current) % 4} />
+        </details>
         <section
-          className="event-panel panel"
-          aria-labelledby="event-title"
-          aria-busy={busy}
-        >
-          <p
-            className="sr-only"
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            {reading
-              ? `故事更新，這個 Turn 已有 ${turnRecordCount} 段紀錄。`
-              : event
-                ? `新的事件：${event.title}。等待你的選擇。`
-                : game.nextLabel}
-          </p>
-          <p className="eyebrow">
-            {reading
-              ? "故事正在發展"
-              : game.completed
-                ? "我們一起走過的日子"
-                : event
-                  ? "今天的故事・等待你的選擇"
-                  : "留一點空間，再繼續"}
-          </p>
-          <h2 id="event-title" tabIndex={-1} ref={title}>
-            {reading
-              ? "剛才的選擇，留在生活裡"
-              : (event?.title ?? game.nextLabel)}
-          </h2>
-          <div className="story-stream">
-            {turnStories.length > 0 && <p>已確認的選擇與結果已收進家庭生活紀錄。</p>}
-          </div>
-          {reading ? (
-            <>
-              <p>以上是已發生的故事。你可以慢慢讀；閱讀節奏不會改變結果。</p>
-              <button
-                className="primary"
-                onClick={() => setReadThrough(game.history.length)}
-              >
-                繼續故事
-              </button>
-            </>
-          ) : event ? (
-            <>
-              <p>{event.text}</p>
-              <div className="decisions">
-                {event.choices.map((choice) => (
-                  <button
-                    disabled={busy || blocked}
-                    key={choice.id}
-                    onClick={() => onChoose(choice.id)}
-                  >
-                    {choice.text}
-                    {choice.anticipatedJudgment && (
-                      <span className="choice-hint">
-                        心裡預期：{choice.anticipatedJudgment}
-                      </span>
-                    )}
-                    <span aria-hidden="true">↗</span>
-                  </button>
-                ))}
-              </div>
-            </>
-          ) : game.completed ? (
-            <p>
-              十二個階段告一段落。這些紀錄留下眼前的生活，不預測未來。你可以查看家庭生活紀錄，或回首頁開始新的故事。
-            </p>
-          ) : (
-            <button
-              className="primary"
-              disabled={busy || blocked}
-              onClick={onAdvance}
-            >
-              {game.nextLabel}
-            </button>
-          )}
-        </section>
-        <section
-          className="mobile-resource-summary panel"
+          className="mobile-resource-summary panel life-details"
           aria-label="決策參考資源"
         >
           <Resources game={game} compact />
@@ -421,17 +369,6 @@ export function GameScreen({
           <Growth game={game} />
         </div>
       </aside>
-      <div
-        className="records-column panel"
-        id="panel-records"
-        role="tabpanel"
-        aria-label="紀錄"
-      >
-        <FamilyLog game={game} />
-        <div className="mobile-growth">
-          <Growth game={game} />
-        </div>
-      </div>
       <nav className="bottom-tabs" role="tablist" aria-label="遊玩資訊">
         {tabItems.map(([id, label], index) => (
           <button
