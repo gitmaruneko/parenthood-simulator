@@ -1,3 +1,4 @@
+import { finishTurn } from "./daily-journal.js";
 import type { ContentPack, GameState } from "../domain/schemas.js";
 
 export const ensureStageProgress = (state: GameState): GameState => {
@@ -32,9 +33,10 @@ export const startTurn = (state: GameState): GameState => {
   };
 };
 
-export const finishStage = (state: GameState, status: "completed" | "safelyEnded"): GameState => {
+export const finishStage = (state: GameState, status: "completed" | "safelyEnded", content: ContentPack): GameState => {
   const progress = state.ageStageProgress!;
   if (progress.status !== "active") return state;
+  state = finishTurn(state, status, content);
   return {
     ...state,
     turn: state.turn ? { ...state.turn, status: status === "completed" ? "completed" : "safelyEnded", activeEventId: null } : null,

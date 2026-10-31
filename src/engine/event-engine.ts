@@ -1,3 +1,4 @@
+import { finishTurn } from "./daily-journal.js";
 import type {
   ContentPack,
   EventNode,
@@ -389,8 +390,8 @@ const completeEventNode = (
     const waitingForLaterTurn = nextState.scheduledFollowUps.some((item) => item.status === "pending" &&
       item.targetAgeStageId === nextState.currentAgeStageId && item.immediateTurnId === undefined);
     nextState = waitingForLaterTurn
-      ? { ...nextState, turn: { ...nextState.turn!, status: "completed" } }
-      : finishStage(nextState, "completed");
+      ? finishTurn(nextState, "completed", content)
+      : finishStage(nextState, "completed", content);
   }
   const result: EngineEventResult = {
     kind: resultKind,
@@ -404,21 +405,14 @@ const completeEventNode = (
 };
 
 const stopAtTurnNodeLimit = (
-  state: GameState,
+  state: GameState, content: ContentPack,
   input: EngineInput,
 ): NodeResolution => {
   if (!state.turn) {
     throw new Error("an active Turn is required");
   }
 
-  const nextState: GameState = {
-    ...state,
-    turn: {
-      ...state.turn,
-      activeEventId: null,
-      status: "safelyEnded",
-    },
-  };
+  const nextState = finishTurn(state, "safelyEnded", content);
   const result: EngineEventResult = {
     kind: "TURN_NODE_LIMIT",
     eventId: null,
@@ -433,21 +427,13 @@ const stopAtCycle = (
   state: GameState,
   event: EventNode,
   input: Extract<EngineInput, { type: "ADVANCE" }>,
-  rngStateAfter: number,
+  rngStateAfter: number, content: ContentPack,
 ): NodeResolution => {
   if (!state.turn) {
     throw new Error("an active Turn is required");
   }
 
-  const nextState: GameState = {
-    ...state,
-    rngState: rngStateAfter,
-    turn: {
-      ...state.turn,
-      status: "cycleProtected",
-      activeEventId: null,
-    },
-  };
+  const nextState = finishTurn({ ...state, rngState: rngStateAfter }, "cycleProtected", content);
   const result: EngineEventResult = {
     kind: "CYCLE_PROTECTED",
     eventId: event.id,
@@ -461,14 +447,14 @@ const stopAtCycle = (
 const getMaximumVisits = (event: EventNode): number =>
   event.terminationGuard?.kind === "maxVisits" ? event.terminationGuard.count : 1;
 
-const stopAtNodeBudget = (state: GameState, input: EngineInput): EngineTransition | null => {
+const stopAtNodeBudget = (state: GameState, input: EngineInput, content: ContentPack): EngineTransition | null => {
   if (state.ageStageProgress?.status !== "active") return null;
   if (state.ageStageProgress.nodeCount >= 6) {
-    return lifecycleTransition(state, finishStage(state, "safelyEnded"), input, "AGE_STAGE_NODE_LIMIT");
+    return lifecycleTransition(state, finishStage(state, "safelyEnded", content), input, "AGE_STAGE_NODE_LIMIT");
   }
   if (state.turn && (state.turn.status === "active" || state.turn.status === "awaitingInput") &&
       state.turn.nodeCount >= Math.min(4, state.turn.maxNodeCount)) {
-    const stopped = stopAtTurnNodeLimit(state, input);
+    const stopped = stopAtTurnNodeLimit(state, content, input);
     return { state: stopped.state, mode: "AUTO_ADVANCE", stopReason: "TURN_NODE_LIMIT",
       pendingEvent: null, results: [stopped.result], trace: [stopped.trace] };
   }
@@ -554,7 +540,7 @@ const runTransition = (
     return lifecycleTransition(originalState, state, input, lastStage ? "GAME_COMPLETED" : "AGE_STAGE_COMPLETED");
   }
   if (input.type === "NEXT_AGE_STAGE") throw new Error("the current AgeStage must finish first");
-  const budgetBoundary = stopAtNodeBudget(state, input);
+  const budgetBoundary = stopAtNodeBudget(state, input, content);
   if (budgetBoundary) return budgetBoundary;
   if (input.type === "START_TURN") {
     return lifecycleTransition(originalState, startTurn(state), input, "TURN_STARTED");
@@ -563,8 +549,8 @@ const runTransition = (
     if (!state.turn || state.turn.status === "awaitingInput" || state.turn.nodeCount === 0) {
       throw new Error("a resolved EventNode and no pending choice are required");
     }
-    state = { ...state, turn: { ...state.turn, status: "completed", activeEventId: null } };
-    return lifecycleTransition(originalState, input.type === "COMPLETE_AGE_STAGE" ? finishStage(state, "completed") : state,
+    state = finishTurn(state, "completed", content);
+    return lifecycleTransition(originalState, input.type === "COMPLETE_AGE_STAGE" ? finishStage(state, "completed", content) : state,
       input, input.type === "COMPLETE_AGE_STAGE" ? "AGE_STAGE_COMPLETED" : "TURN_COMPLETED");
   }
   if (!state.turn && input.type === "ADVANCE") state = startTurn(state);
@@ -616,7 +602,7 @@ const runTransition = (
   const trace: EngineTraceEntry[] = [];
 
   while (true) {
-    const boundary = stopAtNodeBudget(currentState, input);
+    const boundary = stopAtNodeBudget(currentState, input, content);
     if (boundary) return { ...boundary, results: [...results, ...boundary.results],
       trace: [...trace, ...boundary.trace] };
 
@@ -658,7 +644,7 @@ const runTransition = (
       (eventId) => eventId === event.id,
     ).length;
     if (priorVisits >= getMaximumVisits(event)) {
-      const stopped = stopAtCycle(currentState, event, input, selected.rngState);
+      const stopped = stopAtCycle(currentState, event, input, selected.rngState, content);
       results.push(stopped.result);
       trace.push(makeTrace(selectionBefore, input, stopped.state, stopped.result));
       return {
@@ -712,7 +698,7 @@ export const transitionGame = (
   if (transition.state.ageStageProgress?.status === "active" &&
       (transition.stopReason === "EVENT_RESOLVED" || transition.stopReason === "AUTO_ADVANCE_LIMIT" ||
         transition.stopReason === "FALLBACK")) {
-    const boundary = stopAtNodeBudget(transition.state, input);
+    const boundary = stopAtNodeBudget(transition.state, input, content);
     if (boundary) transition = { ...boundary, results: [...transition.results, ...boundary.results],
       trace: [...transition.trace, ...boundary.trace] };
   }

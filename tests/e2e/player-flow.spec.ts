@@ -1,10 +1,54 @@
 import { test, expect, type Page } from "@playwright/test";
-import { createFamilyRun, projectJournal } from "../../src/engine/index.js";
+import { createFamilyRun, projectJournal, transitionGame, getPlayerView } from "../../src/engine/index.js";
+import { createMvpContent } from "../../src/content/mvp.js";
 import { legacyState } from "../helpers/legacy-state.js";
 import { serializeGame } from "../../src/persistence/index.js";
 import { readFileSync } from "node:fs";
 
 const key = "parenthood-simulator.save";
+test("daily stays in the main Journal through tabs and reload; continue sends one public command", async ({ page, isMobile }) => {
+  const run = createFamilyRun({ seed: 42 });
+  const content = createMvpContent(run.actors);
+  const pending = transitionGame(run.state, content, { type: "ADVANCE" }).state;
+  const chosen = transitionGame(pending, content, { type: "CHOOSE", choiceId: "coordinate" }).state;
+  let ended = chosen;
+  await seedSave(page, serializeGame(chosen));
+  await page.goto("/");
+  await page.getByRole("button", { name: "繼續上次生活", exact: true }).click();
+  const next = page.getByRole("button", { name: "繼續生活", exact: true });
+  for (let step = 0; step < 8 && !projectJournal(ended).some(row => row.kind === "daily"); step++) {
+    const expected = transitionGame(ended, content, getPlayerView(ended, content).nextInput!).state;
+    await next.click();
+    await waitForSaved(page);
+    ended = JSON.parse((await page.evaluate(key => localStorage.getItem(key), key))!).state;
+    expect(ended).toEqual(expected);
+  }
+  const log = page.getByRole("list", { name: "已發生的事件" });
+  await expect(page.getByRole("heading", { name: "家庭生活紀錄", exact: true })).toBeInViewport();
+  await expect(next).toBeInViewport();
+  await expect(log.locator("li > p")).toHaveText(projectJournal(ended).reverse().map(row => row.text));
+  await expect(log).toContainText("你把手指放在孩子的掌心");
+  await expect(log.locator("strong")).toHaveText(["把今晚需要的事列出來，協調一段可交接的時間"]);
+  await expect(page.getByRole("button", { name: "繼續故事" })).toHaveCount(0);
+  const raw = await page.evaluate(key => localStorage.getItem(key), key);
+  if (isMobile) {
+    await expect(page.getByRole("tab", { name: "家庭", exact: true })).toBeInViewport();
+    await page.getByRole("tab", { name: "紀錄", exact: true }).click();
+    await expect(next).toBeHidden();
+    await expect(log).toHaveCount(1);
+    await expect(log.locator("li > p")).toHaveText(projectJournal(ended).reverse().map(row => row.text));
+    await page.getByRole("tab", { name: "生活", exact: true }).click();
+  } else await expect(page.locator(".desktop-members").getByRole("heading", { name: "家庭成員", exact: true })).toBeInViewport();
+  await page.screenshot({ path: `test-results/daily-main-${isMobile ? "mobile" : "desktop"}.png`, fullPage: true });
+  await page.reload();
+  await page.getByRole("button", { name: "繼續上次生活", exact: true }).click();
+  expect(await page.evaluate(key => localStorage.getItem(key), key)).toBe(raw);
+  await next.click();
+  await waitForSaved(page);
+  const saved = JSON.parse((await page.evaluate(key => localStorage.getItem(key), key))!).state;
+  expect(saved).toEqual(transitionGame(ended, content, getPlayerView(ended, content).nextInput!).state);
+  expect(projectJournal(saved).filter(row => row.kind === "daily")).toHaveLength(1);
+});
 test("saved journal choices are bold, actual results sort newest first and reload preserves every record", async ({ page, isMobile }) => {
   await seedSave(page, serializeGame(createFamilyRun({ seed: 42 }).state));
   await page.goto("/");
@@ -40,7 +84,7 @@ test("v5 stories retain their original text and mix safely with new journal snap
   await page.goto("/");
   await page.getByRole("button", { name: "更新存檔並繼續", exact: true }).click();
   const read = page.getByRole("button", { name: "繼續故事", exact: true });
-  await expect(read).toBeVisible();
+  await expect(read).toHaveCount(0);
   if (isMobile) await page.getByRole("tab", { name: "紀錄", exact: true }).click();
   const log = page.getByRole("list", { name: "已發生的事件" });
   await expect(log).toContainText("你在這次事件做了選擇。");
@@ -48,7 +92,6 @@ test("v5 stories retain their original text and mix safely with new journal snap
   const migrated = JSON.parse((await page.evaluate(key => localStorage.getItem(key), key))!);
   expect(migrated.state).toEqual(fixture.state);
   if (isMobile) await page.getByRole("tab", { name: "生活", exact: true }).click();
-  await read.click();
   await page.locator(".event-panel").getByRole("button").first().click();
   await waitForSaved(page);
   if (isMobile) await page.getByRole("tab", { name: "紀錄", exact: true }).click();
@@ -96,7 +139,7 @@ test("v4 migration keeps coarse elder kinship neutral and preserves original byt
   await expect(page.locator(".reveal .member h3")).toHaveText(["孩子（小樹）", "你的家中長輩（不同住）"]);
   expect(await page.evaluate(key => localStorage.getItem(`${key}.preserved.0`), key)).toBe(raw);
   const saved = JSON.parse((await page.evaluate(key => localStorage.getItem(key), key))!);
-  expect(saved.schemaVersion).toBe(6);
+  expect(saved.schemaVersion).toBe(7);
   expect(saved.state.actorProfiles).toEqual(fixture.state.actorProfiles);
   expect(saved.state.history).toEqual(fixture.state.history);
 });
@@ -274,10 +317,10 @@ test("browse original previews, reroll, choose, read reactions, restore and pres
   await expect(page.locator("#event-title")).toBeFocused();
   const life = page.getByRole("tabpanel", { name: "生活", exact: true });
   await life.getByRole("button").first().click();
-  await expect(life.getByText("故事正在發展", { exact: true })).toBeVisible();
+  await expect(life.getByText("故事正在發展", { exact: true })).toHaveCount(0);
   await expect(page.locator(".reaction-label")).toHaveCount(0);
   const saved = await page.evaluate((key) => localStorage.getItem(key), key);
-  await life.getByRole("button", { name: "繼續故事", exact: true }).click();
+  await expect(life.getByRole("button", { name: "繼續故事", exact: true })).toHaveCount(0);
   expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(
     saved,
   );

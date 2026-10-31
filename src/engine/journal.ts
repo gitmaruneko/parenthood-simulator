@@ -4,7 +4,7 @@ import { describeActor, resolveNarrativeText } from "./actor-profiles.js";
 type JournalState = Pick<GameState, "history" | "choiceHistory" | "reactionHistory">;
 export interface JournalRecord {
   id: string; sourceHistoryId: string; eventHistoryId: string;
-  ageStageId: string; turnId: string; kind: "choice" | "result";
+  ageStageId: string; turnId: string; kind: "choice" | "result" | "daily";
   text: string; choiceText?: string; legacy: boolean;
 }
 
@@ -17,7 +17,7 @@ export function projectJournal(state: JournalState): JournalRecord[] {
       turnId: entry.turnId, kind, text, ...(choiceText ? { choiceText } : {}), legacy: true,
     });
     if (entry.journal !== undefined) return entry.journal.map(item => ({ ...item,
-      ageStageId: entry.ageStageId, turnId: entry.turnId, legacy: false }));
+      eventHistoryId: "eventHistoryId" in item ? item.eventHistoryId : entry.id, ageStageId: entry.ageStageId, turnId: entry.turnId, legacy: false }));
     const reactions = (state.reactionHistory ?? []).filter(reaction => reaction.turnId === entry.turnId &&
       reaction.ageStageId === entry.ageStageId && reaction.text === entry.text);
     if (entry.kind === "reaction" && reactions.length === 1 && reactions[0]!.kind === "none") return [];

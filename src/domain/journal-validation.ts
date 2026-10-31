@@ -7,6 +7,8 @@ export function validateJournal(state: GameState, ctx: z.RefinementCtx): void {
   const usedReactions = new Set<number>();
   const familyActors = [state.family.childId, ...state.family.persistentActorIds];
   const reactionRows = state.history.filter(entry => entry.kind === "reaction");
+  const dailyTurns = new Set<string>();
+  const dailyTemplates = new Set<string>();
   let latestAnchor: GameState["history"][number] | undefined;
   let lastChoiceIndex = -1;
   let lastReactionIndex = -1;
@@ -14,6 +16,17 @@ export function validateJournal(state: GameState, ctx: z.RefinementCtx): void {
   state.history.forEach((entry, historyIndex) => {
     if (entry.resolvedEventId) latestAnchor = entry;
     entry.journal?.forEach((item, sequence) => {
+      if (item.kind === "daily") {
+        if (dailyTurns.has(entry.turnId) || dailyTemplates.has(item.templateId) || ids.has(item.id) ||
+            entry.id !== `${entry.turnId}-completion-${item.templateId}` ||
+            item.id !== `${entry.id}-journal-0` || item.sourceHistoryId !== entry.id ||
+            entry.journal?.length !== 1 || entry.resolvedEventId !== undefined || entry.kind !== "event" ||
+            item.text !== entry.text || item.actorIds[0] !== state.family.childId ||
+            state.history.filter(source => source.id === entry.id).length !== 1)
+          fail("invalid daily source or duplicate completion");
+        ids.add(item.id); dailyTurns.add(entry.turnId); dailyTemplates.add(item.templateId);
+        return;
+      }
       const anchorMatches = state.history.filter(anchor => anchor.id === item.eventHistoryId);
       const anchor = anchorMatches[0];
       if (ids.has(item.id) || item.id !== `${entry.id}-journal-${sequence}` ||
