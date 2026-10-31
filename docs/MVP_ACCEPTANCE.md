@@ -1,5 +1,9 @@
 # MVP integration acceptance — Issue #13
 
+UX v2 T6 (#40), 2026-11-01: current UX and Save v1–v7 verification is recorded in
+[UX v2 integration acceptance](UX_V2_ACCEPTANCE.md). Counts and the human
+playtest below are historical MVP evidence, not a sign-off for the redesigned UI.
+
 Acceptance date: 2026-10-24 (Asia/Taipei). Parent: GitHub #1. Dependencies
 #9, #10, #11 and #12 were CLOSED when checked. This report records evidence;
 it does not declare the MVP formally accepted while sign-offs remain pending.
