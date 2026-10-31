@@ -5,6 +5,7 @@
 家庭生活紀錄是主畫面的唯一已發生敘事流；移除大型故事區與 readThrough。
 「繼續生活」交由 Session 送出目前公開的 nextInput，每次只送一個命令。
 忙碌、保存阻擋或 nextInput 不可用時停用。重大選擇暫留內嵌，Dialog 留給 #39。
+選擇只送 CHOOSE，不再由 Session 自動串接下一個 ADVANCE；當下已確認多少就顯示多少。
 手機「生活／紀錄」使用同一個 FamilyLog DOM 與同一份 Journal；紀錄頁隱藏生活
 操作，心事只提供定位索引。場景預設收合，長歷史沿文件捲動。
 

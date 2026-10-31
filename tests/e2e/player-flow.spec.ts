@@ -94,6 +94,8 @@ test("v5 stories retain their original text and mix safely with new journal snap
   if (isMobile) await page.getByRole("tab", { name: "生活", exact: true }).click();
   await page.locator(".event-panel").getByRole("button").first().click();
   await waitForSaved(page);
+  await page.getByRole("button", { name: "繼續生活", exact: true }).click();
+  await waitForSaved(page);
   if (isMobile) await page.getByRole("tab", { name: "紀錄", exact: true }).click();
   await expect(log).toContainText("天亮後");
   const saved = (await page.evaluate(key => localStorage.getItem(key), key))!;

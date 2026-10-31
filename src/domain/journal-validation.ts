@@ -18,6 +18,8 @@ export function validateJournal(state: GameState, ctx: z.RefinementCtx): void {
     entry.journal?.forEach((item, sequence) => {
       if (item.kind === "daily") {
         if (dailyTurns.has(entry.turnId) || dailyTemplates.has(item.templateId) || ids.has(item.id) ||
+            (state.currentTurnId === entry.turnId &&
+              (!state.turn || ["active", "awaitingInput"].includes(state.turn.status))) ||
             entry.id !== `${entry.turnId}-completion-${item.templateId}` ||
             item.id !== `${entry.id}-journal-0` || item.sourceHistoryId !== entry.id ||
             entry.journal?.length !== 1 || entry.resolvedEventId !== undefined || entry.kind !== "event" ||

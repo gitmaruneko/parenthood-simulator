@@ -26,6 +26,10 @@ it("commits one concrete daily snapshot only when a Turn first ends, with no mec
   const old = { ...ended.state, history: chosen.history };
   expect(transitionGame(old, content, { type: "ADVANCE" }).state.history).toEqual(chosen.history);
   expect(getPlayerView(loaded.state, content).nextInput).toEqual({ type: "START_TURN" });
+  const withoutProgress = structuredClone(loaded.state);
+  delete withoutProgress.ageStageProgress;
+  expect(transitionGame(withoutProgress, content, { type: "START_TURN" }).state.ageStageProgress!.nodeCount)
+    .toBe(chosen.ageStageProgress!.nodeCount);
 });
 
 it("validates a closed zero-effect catalogue and rejects invalid ages, IDs, prose and effects", () => {
@@ -124,6 +128,9 @@ it("migrates v6 exactly and refuses daily snapshots disguised as v6", () => {
   expect(values.get(`${LOCAL_SAVE_KEY}.preserved.0`)).toBe(old);
   expect(JSON.parse(values.get(LOCAL_SAVE_KEY)!).state).toEqual(chosen);
   const ended = transitionGame(chosen, content, { type: "END_TURN" }).state;
+  const inconsistent = JSON.parse(serializeGame(ended));
+  inconsistent.state.turn.status = "active";
+  expect(restoreGame(JSON.stringify(inconsistent)).status).toBe("error");
   const disguised = JSON.stringify({ schemaVersion: 6, state: ended });
   expect(restoreGame(disguised)).toMatchObject({ status: "error", rawData: disguised });
   for (const mutate of [

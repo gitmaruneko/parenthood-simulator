@@ -12,6 +12,19 @@ import { legacyState } from "./helpers/legacy-state.js";
 import { getPlayerView, projectJournal, transitionGame } from "../src/engine/index.js";
 import { createMvpContent } from "../src/content/mvp.js";
 
+it("accepts a choice without issuing an implicit ADVANCE to fill the journal", async () => {
+  const run = createFamilyRun({ seed: 42 });
+  const content = createMvpContent(run.actors);
+  const pending = transitionGame(run.state, content, { type: "ADVANCE" }).state;
+  const storage = memory();
+  storage.setItem(LOCAL_SAVE_KEY, serializeGame(pending));
+  const session = createPlayerSession(createLocalSaveStore(storage));
+  await session.check(); await session.resume(); await session.choose("coordinate");
+  expect(JSON.parse(storage.getItem(LOCAL_SAVE_KEY)!).state)
+    .toEqual(transitionGame(pending, content, { type: "CHOOSE", choiceId: "coordinate" }).state);
+  expect(session.getSnapshot().game!.nextInput).toEqual({ type: "ADVANCE" });
+});
+
 it("continues with exactly the public nextInput and retries a failed daily save without replaying it", async () => {
   const run = createFamilyRun({ seed: 42 });
   const content = createMvpContent(run.actors);
@@ -499,6 +512,7 @@ it("retries the exact final state after a later automatic-node checkpoint fails"
   await session.startFamily();
   remaining = 2;
   await session.choose("coordinate");
+  await session.advance();
   const history = session.getSnapshot().game!.history;
   expect(session.getSnapshot().status).toBe("儲存失敗");
   remaining = Infinity;

@@ -234,6 +234,7 @@ it("bolds only the saved choice and shows each actual consequence once while kee
     setItem: (key, value) => { values.set(key, value); } }), () => 42);
   await session.check(); await session.newStory(); session.reveal(); await session.startFamily();
   await session.choose("coordinate");
+  await session.advance();
   const saved = session.getSnapshot().game!;
   render(<GameScreen game={saved} busy={false} blocked={false} onChoose={vi.fn()} onAdvance={vi.fn()} />);
   const log = screen.getByRole("list", { name: "已發生的事件" });

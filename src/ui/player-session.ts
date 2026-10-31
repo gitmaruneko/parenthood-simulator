@@ -288,22 +288,8 @@ export const createPlayerSession = (
     );
     state = result.transition.state;
     savingResult(result.save);
-    // Engine traverses automatic nodes. Reading the resulting story is local UI state.
-    if (
-      !needsSave &&
-      input.type === "CHOOSE" &&
-      getPlayerView(state, content).nextInput?.type === "ADVANCE"
-    ) {
-      const automatic = transitionAndSave(
-        state,
-        content,
-        { type: "ADVANCE" },
-        store,
-        expectedRaw,
-      );
-      state = automatic.transition.state;
-      savingResult(automatic.save);
-    }
+    // A command commits only its actual results. Continue submits the nextInput;
+    // traversal and safety boundaries remain owned by the engine.
     publish({ game: presentGame() });
   };
   const session = {
