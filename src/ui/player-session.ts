@@ -1,4 +1,5 @@
-import type { ContentPack, GameState } from "../domain/schemas.js";
+import type { ContentPack, EventNode, GameState } from "../domain/schemas.js";
+import { projectJournal, type JournalRecord } from "../engine/journal.js";
 import type { FamilyLifeDirectionId } from "../domain/family-life-direction.js";
 import { createMvpContent } from "../content/mvp.js";
 import { resolveFamilyMembers, resolveEventIdentity } from "../engine/actor-profiles.js";
@@ -51,6 +52,12 @@ export interface GamePresentation extends ReturnType<typeof getPlayerView> {
   readonly planningLoad: number;
   readonly openingResources: GameState["resources"] | null;
 }
+export interface DecisionPresentation {
+  readonly key: string;
+  readonly event: EventNode;
+  readonly status: "ready" | "submitting" | "unsaved";
+  readonly records: readonly JournalRecord[];
+}
 export interface PlayerSnapshot {
   readonly page: "home" | "assessment" | "reveal" | "game";
   readonly home: HomeSaveView;
@@ -58,6 +65,8 @@ export interface PlayerSnapshot {
   readonly status: string;
   readonly error: string | null;
   readonly canRetrySave: boolean;
+  readonly hasUnsavedChanges: boolean;
+  readonly decision: DecisionPresentation | null;
   readonly dialog: "confirm" | "recovery" | null;
   readonly reveal: {
     seed: number;
@@ -83,6 +92,8 @@ export const createPlayerSession = (
     status: "",
     error: null,
     canRetrySave: false,
+    hasUnsavedChanges: false,
+    decision: null,
     dialog: null,
     reveal: null,
     game: null,
@@ -112,6 +123,14 @@ export const createPlayerSession = (
   let directionQueue: Promise<void> = Promise.resolve();
   let pendingDirections = 0;
   let storyGeneration = 0;
+  const pendingDecision = (): DecisionPresentation | null => {
+    if (!state) return null;
+    const event = getPlayerView(state, content).pendingEvent;
+    return event ? {
+      key: `${storyGeneration}/${state.currentTurnId}/${event.id}/${state.eventProgress?.nodeIndex ?? state.turn?.nodeCount}`,
+      event, status: "ready", records: [],
+    } : null;
+  };
   const waitForDirection = () => new Promise<void>((resolve) => {
     const ready = () => {
       if (!snapshot.busy && (!needsSave || snapshot.page !== "game")) {
@@ -218,6 +237,9 @@ export const createPlayerSession = (
     publish({
       status: result.status === "saved" ? "已儲存" : "儲存失敗",
       canRetrySave: retryable,
+      hasUnsavedChanges: needsSave,
+      decision: result.status === "saved" && snapshot.decision?.status === "unsaved"
+        ? pendingDecision() : snapshot.decision,
       error: result.status === "error" ? result.error.message : null,
     });
     return result.status === "saved";
@@ -230,7 +252,10 @@ export const createPlayerSession = (
       action();
     } catch {
       publish({
-        error: "這次操作未完成，既有存檔未刪除。請重新讀取故事後重試。",
+        decision: snapshot.decision?.status === "submitting" ? pendingDecision() : snapshot.decision,
+        error: snapshot.decision?.status === "submitting"
+          ? "這個選擇未被接受，尚未改變紀錄。請重新選擇目前可用的做法。"
+          : "這次操作未完成，既有存檔未刪除。請重新讀取故事後重試。",
         status: "操作未完成",
       });
     } finally {
@@ -244,6 +269,7 @@ export const createPlayerSession = (
       dialog: null,
       reveal: null,
       game: null,
+      decision: null,
       gameTab: "life",
     });
   };
@@ -276,9 +302,14 @@ export const createPlayerSession = (
       reveal: presentReveal(run),
       dialog: null,
       status: "已儲存",
+      canRetrySave: false,
+      hasUnsavedChanges: false,
+      decision: pendingDecision(),
     });
   };
   const execute = (input: EngineInput) => {
+    const previousHistoryLength = state!.history.length;
+    const submitted = snapshot.decision;
     const result = transitionAndSave(
       state!,
       content,
@@ -290,7 +321,13 @@ export const createPlayerSession = (
     savingResult(result.save);
     // A command commits only its actual results. Continue submits the nextInput;
     // traversal and safety boundaries remain owned by the engine.
-    publish({ game: presentGame() });
+    const sourceIds = new Set(state.history.slice(previousHistoryLength).map(entry => entry.id));
+    const decision: DecisionPresentation | null = input.type === "CHOOSE" &&
+      result.save.status === "error" && submitted
+      ? { ...submitted, status: "unsaved", records: projectJournal(state)
+          .filter(record => sourceIds.has(record.sourceHistoryId)).reverse() }
+      : pendingDecision();
+    publish({ game: presentGame(), decision });
   };
   const session = {
     getSnapshot: () => snapshot,
@@ -300,7 +337,7 @@ export const createPlayerSession = (
         listeners.delete(listener);
       };
     },
-    check: () =>
+    check: () => snapshot.page !== "home" ? Promise.resolve() :
       operate("正在確認這台裝置的故事…", () => {
         if (snapshot.page === "home") inspect();
       }),
@@ -309,7 +346,7 @@ export const createPlayerSession = (
       pendingReplay = null;
       storyGeneration++;
       confirmedRaw = undefined;
-      publish({ page: "home", dialog: null, error: null });
+      publish({ page: "home", dialog: null, decision: null, error: null });
       void session.check();
     },
     newStory: () =>
@@ -447,17 +484,31 @@ export const createPlayerSession = (
         const input = getPlayerView(state, content).nextInput;
         if (input) execute(input);
       }),
-    choose: (choiceId: string) =>
-      operate("儲存中…", () => {
+    choose: (choiceId: string, occurrenceKey: string) => {
+      const decision = snapshot.decision;
+      if (snapshot.busy || needsSave || !decision || decision.key !== occurrenceKey ||
+          decision.status !== "ready") return Promise.resolve();
+      publish({ decision: { ...decision, status: "submitting" } });
+      return operate("儲存中…", () => {
         if (
           !state ||
           needsSave ||
           snapshot.page !== "game" ||
+          snapshot.decision?.key !== occurrenceKey ||
           !getPlayerView(state, content).pendingEvent
         )
           return;
         execute({ type: "CHOOSE", choiceId });
-      }),
+      });
+    },
+    retryDecisionSave: (occurrenceKey: string): Promise<void> => {
+      if (snapshot.decision?.key !== occurrenceKey || !needsSave)
+        return Promise.resolve();
+      return session.retrySave();
+    },
+    reloadDecision: (occurrenceKey: string) => {
+      if (snapshot.decision?.key === occurrenceKey && needsSave) session.home();
+    },
     setDirection: (directionId: FamilyLifeDirectionId) => {
       const generation = storyGeneration;
       const applyDirection = () => operate("儲存中…", () => {

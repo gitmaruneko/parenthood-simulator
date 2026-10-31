@@ -19,7 +19,7 @@ it("accepts a choice without issuing an implicit ADVANCE to fill the journal", a
   const storage = memory();
   storage.setItem(LOCAL_SAVE_KEY, serializeGame(pending));
   const session = createPlayerSession(createLocalSaveStore(storage));
-  await session.check(); await session.resume(); await session.choose("coordinate");
+  await session.check(); await session.resume(); await session.choose("coordinate", session.getSnapshot().decision!.key);
   expect(JSON.parse(storage.getItem(LOCAL_SAVE_KEY)!).state)
     .toEqual(transitionGame(pending, content, { type: "CHOOSE", choiceId: "coordinate" }).state);
   expect(session.getSnapshot().game!.nextInput).toEqual({ type: "ADVANCE" });
@@ -80,7 +80,7 @@ it("keeps revealed identities through pending events, reload, review and replay"
     ({ id, displayName, relationship, lifeDetail, ageLabel }))).toEqual(members);
   for (let step = 0; step < 250 && !restored.getSnapshot().game!.review; step++) {
     const game = restored.getSnapshot().game!;
-    if (game.pendingEvent) await restored.choose(game.pendingEvent.choices[0]!.id);
+    if (game.pendingEvent) await restored.choose(game.pendingEvent.choices[0]!.id, restored.getSnapshot().decision!.key);
     else await restored.advance();
   }
   expect(restored.getSnapshot().game!.review).not.toBeNull();
@@ -272,7 +272,7 @@ it("presents only generated family members with relationships and the child's cu
       expect(game.members[2]!.relationship).toMatch(/媽媽|爸爸|婆婆|公公|岳母|岳父/);
     }
     const before = game.members.map((member) => ({ ...member }));
-    await session.choose("coordinate");
+    await session.choose("coordinate", session.getSnapshot().decision!.key);
     const after = session.getSnapshot().game!;
     for (const member of after.members) {
       const reaction = after.reactions.filter((entry) => entry.actorId === member.id).at(-1);
@@ -323,7 +323,7 @@ it("keeps an unsaved direction visible, blocks progression, and retries without 
   expect(unsaved!.activeFamilyLifeDirectionId).toBe("caregiver-wellbeing");
   expect(session.getSnapshot().error).toContain("尚未儲存");
   expect(storage.getItem(LOCAL_SAVE_KEY)).toBe(raw);
-  await session.choose("coordinate");
+  await session.choose("coordinate", session.getSnapshot().decision!.key);
   expect(session.getSnapshot().game).toEqual(unsaved);
   fail = false; await session.retrySave();
   expect(store.load()).toMatchObject({ status: "restored", state: { activeFamilyLifeDirectionId: "caregiver-wellbeing" } });
@@ -335,7 +335,7 @@ it("reserves direction submission before a same-tick choice can overtake it", as
   const session = createPlayerSession(createLocalSaveStore(storage), () => 42);
   await session.check(); await session.newStory(); session.reveal(); await session.startFamily();
   const change = session.setDirection("parent-child-time");
-  await session.choose("coordinate");
+  await session.choose("coordinate", session.getSnapshot().decision!.key);
   await change;
   expect(session.getSnapshot().game!.choices).toHaveLength(0);
   expect(session.getSnapshot().game!.activeFamilyLifeDirectionId).toBe("parent-child-time");
@@ -401,9 +401,9 @@ it("never overwrites a newer tab's progress when a failed save is retried", asyn
   const other = createPlayerSession(createLocalSaveStore(storage));
   await other.check();
   await other.resume();
-  await other.choose("coordinate");
+  await other.choose("coordinate", other.getSnapshot().decision!.key);
   const latest = storage.getItem(LOCAL_SAVE_KEY);
-  await session.choose("carry");
+  await session.choose("carry", session.getSnapshot().decision!.key);
   expect(session.getSnapshot().error).toContain("存檔已改變");
   await session.retrySave();
   expect(storage.getItem(LOCAL_SAVE_KEY)).toBe(latest);
@@ -444,8 +444,8 @@ it("deduplicates commands and allows quota errors to retry without replaying a c
   await session.startFamily();
   fail = true;
   await Promise.all([
-    session.choose("coordinate"),
-    session.choose("coordinate"),
+    session.choose("coordinate", session.getSnapshot().decision!.key),
+    session.choose("coordinate", session.getSnapshot().decision!.key),
   ]);
   expect(session.getSnapshot().game!.choices).toHaveLength(1);
   expect(session.getSnapshot().canRetrySave).toBe(true);
@@ -511,7 +511,7 @@ it("retries the exact final state after a later automatic-node checkpoint fails"
   session.reveal();
   await session.startFamily();
   remaining = 2;
-  await session.choose("coordinate");
+  await session.choose("coordinate", session.getSnapshot().decision!.key);
   await session.advance();
   const history = session.getSnapshot().game!.history;
   expect(session.getSnapshot().status).toBe("儲存失敗");
