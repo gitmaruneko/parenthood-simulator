@@ -1,0 +1,4377 @@
+[
+  {
+    "label": "v3-pending",
+    "sourceCommit": "5680512",
+    "save": {
+      "schemaVersion": 3,
+      "state": {
+        "activeFamilyLifeDirectionId": "flexible",
+        "schemaVersion": 1,
+        "seed": 42,
+        "rngState": 440012121,
+        "currentAgeStageId": "age-stage-1",
+        "currentTurnId": "age-stage-1-turn-1",
+        "turn": {
+          "id": "age-stage-1-turn-1",
+          "ageStageId": "age-stage-1",
+          "status": "awaitingInput",
+          "nodeCount": 0,
+          "maxNodeCount": 4,
+          "activeEventId": "night-handoff-choice",
+          "processedEventIds": []
+        },
+        "eventProgress": {
+          "ageStageId": "age-stage-1",
+          "turnId": "age-stage-1-turn-1",
+          "eventId": "night-handoff-choice",
+          "nodeIndex": 0,
+          "status": "awaitingInput"
+        },
+        "ageStageProgress": {
+          "ageStageId": "age-stage-1",
+          "status": "active",
+          "nodeCount": 0,
+          "turnCount": 1
+        },
+        "turnNumber": 1,
+        "resources": {
+          "finances": 38,
+          "energy": 32,
+          "support": 50,
+          "timeFlexibility": 61,
+          "connection": 57
+        },
+        "planningLoad": 0,
+        "family": {
+          "householdComposition": "twoCaregivers",
+          "careParticipation": "uneven",
+          "workArrangement": "unstable",
+          "preferredAddress": "照顧者",
+          "childId": "child-1",
+          "persistentActorIds": [
+            "caregiver-2"
+          ]
+        },
+        "tendencies": {
+          "responsibility": 0,
+          "flexibility": 0,
+          "selfCare": 0,
+          "sharedCare": 0
+        },
+        "flags": [],
+        "relationshipMemories": [],
+        "completedEventIds": [],
+        "scheduledFollowUps": [],
+        "choiceHistory": [],
+        "history": [],
+        "replayOrigin": {
+          "resources": {
+            "finances": 38,
+            "energy": 32,
+            "support": 50,
+            "timeFlexibility": 61,
+            "connection": 57
+          },
+          "tendencies": {
+            "responsibility": 0,
+            "flexibility": 0,
+            "selfCare": 0,
+            "sharedCare": 0
+          },
+          "rngState": 2903413604,
+          "actors": [
+            {
+              "id": "child-1",
+              "role": "child",
+              "displayName": "孩子",
+              "availability": 0.6697340414393693,
+              "initiative": 0.17481389874592423,
+              "workflowOwnership": 0.5265925421845168,
+              "reliability": 0.2732279943302274,
+              "boundaryRespect": 0.6247446539346129
+            },
+            {
+              "id": "caregiver-2",
+              "role": "partner",
+              "displayName": "共同照顧者",
+              "availability": 0.43273732415400445,
+              "initiative": 0.23615852755028754,
+              "workflowOwnership": 0.12496186711359769,
+              "reliability": 0.8820588334929198,
+              "boundaryRespect": 0.7457375649828464
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "label": "v3-mid-turn",
+    "sourceCommit": "5680512",
+    "save": {
+      "schemaVersion": 3,
+      "state": {
+        "activeFamilyLifeDirectionId": "flexible",
+        "schemaVersion": 1,
+        "seed": 42,
+        "rngState": 1639742264,
+        "currentAgeStageId": "age-stage-1",
+        "currentTurnId": "age-stage-1-turn-1",
+        "turn": {
+          "id": "age-stage-1-turn-1",
+          "ageStageId": "age-stage-1",
+          "status": "active",
+          "nodeCount": 1,
+          "maxNodeCount": 4,
+          "activeEventId": null,
+          "processedEventIds": [
+            "night-handoff-choice"
+          ]
+        },
+        "eventProgress": {
+          "ageStageId": "age-stage-1",
+          "turnId": "age-stage-1-turn-1",
+          "eventId": "night-handoff-choice",
+          "nodeIndex": 0,
+          "status": "completed"
+        },
+        "ageStageProgress": {
+          "ageStageId": "age-stage-1",
+          "status": "active",
+          "nodeCount": 1,
+          "turnCount": 1
+        },
+        "turnNumber": 1,
+        "eventLastResolvedTurn": {
+          "night-handoff-choice": 1
+        },
+        "resources": {
+          "finances": 38,
+          "energy": 31,
+          "support": 50,
+          "timeFlexibility": 59,
+          "connection": 57
+        },
+        "planningLoad": 1,
+        "family": {
+          "householdComposition": "twoCaregivers",
+          "careParticipation": "uneven",
+          "workArrangement": "unstable",
+          "preferredAddress": "照顧者",
+          "childId": "child-1",
+          "persistentActorIds": [
+            "caregiver-2"
+          ]
+        },
+        "tendencies": {
+          "responsibility": 0,
+          "flexibility": 0,
+          "selfCare": 0,
+          "sharedCare": 1
+        },
+        "flags": [],
+        "relationshipMemories": [],
+        "completedEventIds": [
+          "night-handoff-choice"
+        ],
+        "scheduledFollowUps": [
+          {
+            "id": "scheduled-age-stage-1-turn-1-1-0",
+            "eventId": "night-handoff-reflection",
+            "targetAgeStageId": "age-stage-1",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-1-turn-1",
+            "status": "pending"
+          },
+          {
+            "id": "scheduled-age-stage-1-turn-1-1-1",
+            "eventId": "night-handoff-support",
+            "targetAgeStageId": "age-stage-1",
+            "dueAfterTurns": 1,
+            "priority": 10,
+            "status": "pending"
+          }
+        ],
+        "choiceHistory": [
+          {
+            "eventId": "night-handoff-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1"
+          }
+        ],
+        "reactionHistory": [
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "no-comment",
+            "actorId": null,
+            "kind": "none",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。",
+            "eventId": "night-handoff-choice",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1"
+          }
+        ],
+        "history": [
+          {
+            "id": "story-age-stage-1-turn-1-1",
+            "resolvedEventId": "night-handoff-choice",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "event",
+            "text": "孩子醒來，你一邊安撫，一邊想著還沒洗的用品和明天的安排。輪班表上還有空白，眼前的照顧和之後要記住的事疊在一起。"
+          },
+          {
+            "id": "choice-effect-age-stage-1-turn-1-1-0",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "planning",
+            "text": "你為「凌晨的交接」整理了可協調的工作，支持是否可用仍需確認。"
+          },
+          {
+            "id": "reaction-age-stage-1-turn-1-1-0",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "reaction",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。"
+          }
+        ],
+        "replayOrigin": {
+          "resources": {
+            "finances": 38,
+            "energy": 32,
+            "support": 50,
+            "timeFlexibility": 61,
+            "connection": 57
+          },
+          "tendencies": {
+            "responsibility": 0,
+            "flexibility": 0,
+            "selfCare": 0,
+            "sharedCare": 0
+          },
+          "rngState": 2903413604,
+          "actors": [
+            {
+              "id": "child-1",
+              "role": "child",
+              "displayName": "孩子",
+              "availability": 0.6697340414393693,
+              "initiative": 0.17481389874592423,
+              "workflowOwnership": 0.5265925421845168,
+              "reliability": 0.2732279943302274,
+              "boundaryRespect": 0.6247446539346129
+            },
+            {
+              "id": "caregiver-2",
+              "role": "partner",
+              "displayName": "共同照顧者",
+              "availability": 0.43273732415400445,
+              "initiative": 0.23615852755028754,
+              "workflowOwnership": 0.12496186711359769,
+              "reliability": 0.8820588334929198,
+              "boundaryRespect": 0.7457375649828464
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "label": "v3-completed-custom-review",
+    "sourceCommit": "5680512",
+    "save": {
+      "schemaVersion": 3,
+      "state": {
+        "activeFamilyLifeDirectionId": "flexible",
+        "schemaVersion": 1,
+        "seed": 42,
+        "rngState": 1823989555,
+        "currentAgeStageId": "age-stage-12",
+        "currentTurnId": "age-stage-12-turn-1",
+        "turn": {
+          "id": "age-stage-12-turn-1",
+          "ageStageId": "age-stage-12",
+          "status": "completed",
+          "nodeCount": 3,
+          "maxNodeCount": 4,
+          "activeEventId": null,
+          "processedEventIds": [
+            "school-transition-choice",
+            "school-transition-reflection",
+            "mvp-breathing-space"
+          ]
+        },
+        "eventProgress": {
+          "ageStageId": "age-stage-12",
+          "turnId": "age-stage-12-turn-1",
+          "eventId": "mvp-breathing-space",
+          "nodeIndex": 2,
+          "status": "completed"
+        },
+        "ageStageProgress": {
+          "ageStageId": "age-stage-12",
+          "status": "completed",
+          "nodeCount": 3,
+          "turnCount": 1
+        },
+        "completedAgeStages": [
+          {
+            "ageStageId": "age-stage-1",
+            "status": "safelyEnded",
+            "nodeCount": 6,
+            "turnCount": 2,
+            "storyEntryIds": [
+              "story-age-stage-1-turn-1-1",
+              "choice-effect-age-stage-1-turn-1-1-0",
+              "reaction-age-stage-1-turn-1-1-0",
+              "story-age-stage-1-turn-1-2",
+              "story-age-stage-1-turn-1-3",
+              "story-age-stage-1-turn-2-1",
+              "story-age-stage-1-turn-2-2",
+              "choice-effect-age-stage-1-turn-2-2-0",
+              "story-age-stage-1-turn-2-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-2",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-2-turn-1-1",
+              "choice-effect-age-stage-2-turn-1-1-0",
+              "reaction-age-stage-2-turn-1-1-0",
+              "story-age-stage-2-turn-1-2",
+              "story-age-stage-2-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-3",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-3-turn-1-1",
+              "choice-effect-age-stage-3-turn-1-1-0",
+              "reaction-age-stage-3-turn-1-1-0",
+              "story-age-stage-3-turn-1-2",
+              "story-age-stage-3-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-4",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-4-turn-1-1",
+              "choice-effect-age-stage-4-turn-1-1-0",
+              "reaction-age-stage-4-turn-1-1-0",
+              "story-age-stage-4-turn-1-2",
+              "story-age-stage-4-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-5",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-5-turn-1-1",
+              "choice-effect-age-stage-5-turn-1-1-0",
+              "reaction-age-stage-5-turn-1-1-0",
+              "story-age-stage-5-turn-1-2",
+              "story-age-stage-5-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-6",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-6-turn-1-1",
+              "choice-effect-age-stage-6-turn-1-1-0",
+              "reaction-age-stage-6-turn-1-1-0",
+              "story-age-stage-6-turn-1-2",
+              "story-age-stage-6-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-7",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-7-turn-1-1",
+              "choice-effect-age-stage-7-turn-1-1-0",
+              "reaction-age-stage-7-turn-1-1-0",
+              "story-age-stage-7-turn-1-2",
+              "story-age-stage-7-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-8",
+            "status": "safelyEnded",
+            "nodeCount": 6,
+            "turnCount": 2,
+            "storyEntryIds": [
+              "story-age-stage-8-turn-1-1",
+              "choice-effect-age-stage-8-turn-1-1-0",
+              "reaction-age-stage-8-turn-1-1-0",
+              "story-age-stage-8-turn-1-2",
+              "story-age-stage-8-turn-1-3",
+              "story-age-stage-8-turn-2-1",
+              "story-age-stage-8-turn-2-2",
+              "choice-effect-age-stage-8-turn-2-2-0",
+              "story-age-stage-8-turn-2-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-9",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-9-turn-1-1",
+              "choice-effect-age-stage-9-turn-1-1-0",
+              "reaction-age-stage-9-turn-1-1-0",
+              "story-age-stage-9-turn-1-2",
+              "story-age-stage-9-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-10",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-10-turn-1-1",
+              "choice-effect-age-stage-10-turn-1-1-0",
+              "reaction-age-stage-10-turn-1-1-0",
+              "story-age-stage-10-turn-1-2",
+              "story-age-stage-10-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-11",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-11-turn-1-1",
+              "choice-effect-age-stage-11-turn-1-1-0",
+              "reaction-age-stage-11-turn-1-1-0",
+              "story-age-stage-11-turn-1-2",
+              "story-age-stage-11-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-12",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-12-turn-1-1",
+              "choice-effect-age-stage-12-turn-1-1-0",
+              "reaction-age-stage-12-turn-1-1-0",
+              "story-age-stage-12-turn-1-2",
+              "story-age-stage-12-turn-1-3"
+            ]
+          }
+        ],
+        "turnNumber": 14,
+        "eventLastResolvedTurn": {
+          "night-handoff-choice": 1,
+          "night-handoff-reflection": 1,
+          "mvp-breathing-space": 14,
+          "night-handoff-support": 2,
+          "night-handoff-reconnect": 2,
+          "night-handoff-repair": 2,
+          "meal-preparation-choice": 3,
+          "meal-preparation-reflection": 3,
+          "backup-contact-choice": 4,
+          "backup-contact-reflection": 4,
+          "grandparent-boundary-choice": 5,
+          "grandparent-boundary-reflection": 5,
+          "leaving-playground-choice": 6,
+          "leaving-playground-reflection": 6,
+          "shared-ownership-choice": 7,
+          "shared-ownership-reflection": 7,
+          "rainy-pickup-choice": 8,
+          "rainy-pickup-reflection": 8,
+          "preschool-handoff-choice": 9,
+          "preschool-handoff-reflection": 9,
+          "preschool-handoff-support": 10,
+          "preschool-handoff-reconnect": 10,
+          "preschool-handoff-repair": 10,
+          "school-notice-choice": 11,
+          "school-notice-reflection": 11,
+          "quiet-time-choice": 12,
+          "quiet-time-reflection": 12,
+          "family-ritual-choice": 13,
+          "family-ritual-reflection": 13,
+          "school-transition-choice": 14,
+          "school-transition-reflection": 14
+        },
+        "resources": {
+          "finances": 38,
+          "energy": 24,
+          "support": 58,
+          "timeFlexibility": 37,
+          "connection": 63
+        },
+        "planningLoad": 8,
+        "family": {
+          "householdComposition": "twoCaregivers",
+          "careParticipation": "uneven",
+          "workArrangement": "unstable",
+          "preferredAddress": "照顧者",
+          "childId": "child-1",
+          "persistentActorIds": [
+            "caregiver-2"
+          ]
+        },
+        "tendencies": {
+          "responsibility": 0,
+          "flexibility": 0,
+          "selfCare": 0,
+          "sharedCare": 12
+        },
+        "flags": [],
+        "relationshipMemories": [
+          {
+            "id": "night-handoff-support-memory",
+            "category": "support",
+            "text": "你確認了一段可用的支持，也減少了需要獨自追蹤的事。",
+            "createdAtAgeStageId": "age-stage-1",
+            "createdAtTurn": 2
+          },
+          {
+            "id": "night-handoff-repair-memory",
+            "category": "repair",
+            "text": "你們留下一個重新對話的起點，並確認下一次的聯絡方式。",
+            "createdAtAgeStageId": "age-stage-1",
+            "createdAtTurn": 2
+          },
+          {
+            "id": "heard-the-plan",
+            "actorId": "caregiver-2",
+            "category": "connection",
+            "text": "你們交換了各自能承接的範圍。",
+            "createdAtAgeStageId": "age-stage-5",
+            "createdAtTurn": 6
+          },
+          {
+            "id": "shared-ownership-checklist-support",
+            "category": "support",
+            "text": "重複使用的用品清單，接住了一部分需要記住的事。",
+            "createdAtAgeStageId": "age-stage-6",
+            "createdAtTurn": 7
+          },
+          {
+            "id": "heard-the-plan",
+            "actorId": "caregiver-2",
+            "category": "connection",
+            "text": "你們交換了各自能承接的範圍。",
+            "createdAtAgeStageId": "age-stage-8",
+            "createdAtTurn": 9
+          },
+          {
+            "id": "preschool-handoff-support-memory",
+            "category": "support",
+            "text": "你確認了一段可用的支持，也減少了需要獨自追蹤的事。",
+            "createdAtAgeStageId": "age-stage-8",
+            "createdAtTurn": 10
+          },
+          {
+            "id": "preschool-handoff-repair-memory",
+            "category": "repair",
+            "text": "你們留下一個重新對話的起點，並確認下一次的聯絡方式。",
+            "createdAtAgeStageId": "age-stage-8",
+            "createdAtTurn": 10
+          },
+          {
+            "id": "heard-the-plan",
+            "actorId": "caregiver-2",
+            "category": "connection",
+            "text": "你們交換了各自能承接的範圍。",
+            "createdAtAgeStageId": "age-stage-11",
+            "createdAtTurn": 13
+          },
+          {
+            "id": "heard-the-plan",
+            "actorId": "caregiver-2",
+            "category": "connection",
+            "text": "你們交換了各自能承接的範圍。",
+            "createdAtAgeStageId": "age-stage-12",
+            "createdAtTurn": 14
+          }
+        ],
+        "completedEventIds": [
+          "night-handoff-choice",
+          "night-handoff-reflection",
+          "mvp-breathing-space",
+          "night-handoff-support",
+          "night-handoff-reconnect",
+          "night-handoff-repair",
+          "meal-preparation-choice",
+          "meal-preparation-reflection",
+          "backup-contact-choice",
+          "backup-contact-reflection",
+          "grandparent-boundary-choice",
+          "grandparent-boundary-reflection",
+          "leaving-playground-choice",
+          "leaving-playground-reflection",
+          "shared-ownership-choice",
+          "shared-ownership-reflection",
+          "rainy-pickup-choice",
+          "rainy-pickup-reflection",
+          "preschool-handoff-choice",
+          "preschool-handoff-reflection",
+          "preschool-handoff-support",
+          "preschool-handoff-reconnect",
+          "preschool-handoff-repair",
+          "school-notice-choice",
+          "school-notice-reflection",
+          "quiet-time-choice",
+          "quiet-time-reflection",
+          "family-ritual-choice",
+          "family-ritual-reflection",
+          "school-transition-choice",
+          "school-transition-reflection"
+        ],
+        "scheduledFollowUps": [
+          {
+            "id": "scheduled-age-stage-1-turn-1-1-0",
+            "eventId": "night-handoff-reflection",
+            "targetAgeStageId": "age-stage-1",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-1-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-1-turn-1-1-1",
+            "eventId": "night-handoff-support",
+            "targetAgeStageId": "age-stage-1",
+            "dueAfterTurns": 1,
+            "priority": 10,
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-1-turn-2-1-0",
+            "eventId": "night-handoff-reconnect",
+            "targetAgeStageId": "age-stage-1",
+            "dueAfterTurns": 1,
+            "priority": 0,
+            "immediateTurnId": "age-stage-1-turn-2",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-1-turn-2-2-0",
+            "eventId": "night-handoff-repair",
+            "targetAgeStageId": "age-stage-1",
+            "dueAfterTurns": 1,
+            "priority": 0,
+            "immediateTurnId": "age-stage-1-turn-2",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-2-turn-1-1-0",
+            "eventId": "meal-preparation-reflection",
+            "targetAgeStageId": "age-stage-2",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-2-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-3-turn-1-1-0",
+            "eventId": "backup-contact-reflection",
+            "targetAgeStageId": "age-stage-3",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-3-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-4-turn-1-1-0",
+            "eventId": "grandparent-boundary-reflection",
+            "targetAgeStageId": "age-stage-4",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-4-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-5-turn-1-1-0",
+            "eventId": "leaving-playground-reflection",
+            "targetAgeStageId": "age-stage-5",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-5-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-6-turn-1-1-0",
+            "eventId": "shared-ownership-reflection",
+            "targetAgeStageId": "age-stage-6",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-6-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-7-turn-1-1-0",
+            "eventId": "rainy-pickup-reflection",
+            "targetAgeStageId": "age-stage-7",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-7-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-8-turn-1-1-0",
+            "eventId": "preschool-handoff-reflection",
+            "targetAgeStageId": "age-stage-8",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-8-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-8-turn-1-1-1",
+            "eventId": "preschool-handoff-support",
+            "targetAgeStageId": "age-stage-8",
+            "dueAfterTurns": 1,
+            "priority": 10,
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-8-turn-2-1-0",
+            "eventId": "preschool-handoff-reconnect",
+            "targetAgeStageId": "age-stage-8",
+            "dueAfterTurns": 1,
+            "priority": 0,
+            "immediateTurnId": "age-stage-8-turn-2",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-8-turn-2-2-0",
+            "eventId": "preschool-handoff-repair",
+            "targetAgeStageId": "age-stage-8",
+            "dueAfterTurns": 1,
+            "priority": 0,
+            "immediateTurnId": "age-stage-8-turn-2",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-9-turn-1-1-0",
+            "eventId": "school-notice-reflection",
+            "targetAgeStageId": "age-stage-9",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-9-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-10-turn-1-1-0",
+            "eventId": "quiet-time-reflection",
+            "targetAgeStageId": "age-stage-10",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-10-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-11-turn-1-1-0",
+            "eventId": "family-ritual-reflection",
+            "targetAgeStageId": "age-stage-11",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-11-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-12-turn-1-1-0",
+            "eventId": "school-transition-reflection",
+            "targetAgeStageId": "age-stage-12",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-12-turn-1",
+            "status": "consumed"
+          }
+        ],
+        "choiceHistory": [
+          {
+            "eventId": "night-handoff-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1"
+          },
+          {
+            "eventId": "night-handoff-reconnect",
+            "choiceId": "pause",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-2"
+          },
+          {
+            "eventId": "meal-preparation-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-2",
+            "turnId": "age-stage-2-turn-1"
+          },
+          {
+            "eventId": "backup-contact-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-3",
+            "turnId": "age-stage-3-turn-1"
+          },
+          {
+            "eventId": "grandparent-boundary-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-4",
+            "turnId": "age-stage-4-turn-1"
+          },
+          {
+            "eventId": "leaving-playground-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-5",
+            "turnId": "age-stage-5-turn-1"
+          },
+          {
+            "eventId": "shared-ownership-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-6",
+            "turnId": "age-stage-6-turn-1"
+          },
+          {
+            "eventId": "rainy-pickup-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-7",
+            "turnId": "age-stage-7-turn-1"
+          },
+          {
+            "eventId": "preschool-handoff-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-1"
+          },
+          {
+            "eventId": "preschool-handoff-reconnect",
+            "choiceId": "pause",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-2"
+          },
+          {
+            "eventId": "school-notice-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-9",
+            "turnId": "age-stage-9-turn-1"
+          },
+          {
+            "eventId": "quiet-time-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-10",
+            "turnId": "age-stage-10-turn-1"
+          },
+          {
+            "eventId": "family-ritual-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-11",
+            "turnId": "age-stage-11-turn-1"
+          },
+          {
+            "eventId": "school-transition-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-12",
+            "turnId": "age-stage-12-turn-1"
+          }
+        ],
+        "reactionHistory": [
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "no-comment",
+            "actorId": null,
+            "kind": "none",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。",
+            "eventId": "night-handoff-choice",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "child-response",
+            "actorId": "child-1",
+            "kind": "neutral",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "eventId": "meal-preparation-choice",
+            "ageStageId": "age-stage-2",
+            "turnId": "age-stage-2-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "child-response",
+            "actorId": "child-1",
+            "kind": "neutral",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "eventId": "backup-contact-choice",
+            "ageStageId": "age-stage-3",
+            "turnId": "age-stage-3-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "no-comment",
+            "actorId": null,
+            "kind": "none",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。",
+            "eventId": "grandparent-boundary-choice",
+            "ageStageId": "age-stage-4",
+            "turnId": "age-stage-4-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "understanding",
+            "actorId": "caregiver-2",
+            "kind": "understanding",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。",
+            "eventId": "leaving-playground-choice",
+            "ageStageId": "age-stage-5",
+            "turnId": "age-stage-5-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "child-response",
+            "actorId": "child-1",
+            "kind": "neutral",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "eventId": "shared-ownership-choice",
+            "ageStageId": "age-stage-6",
+            "turnId": "age-stage-6-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "child-response",
+            "actorId": "child-1",
+            "kind": "neutral",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "eventId": "rainy-pickup-choice",
+            "ageStageId": "age-stage-7",
+            "turnId": "age-stage-7-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "understanding",
+            "actorId": "caregiver-2",
+            "kind": "understanding",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。",
+            "eventId": "preschool-handoff-choice",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "no-comment",
+            "actorId": null,
+            "kind": "none",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。",
+            "eventId": "school-notice-choice",
+            "ageStageId": "age-stage-9",
+            "turnId": "age-stage-9-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "child-response",
+            "actorId": "child-1",
+            "kind": "neutral",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "eventId": "quiet-time-choice",
+            "ageStageId": "age-stage-10",
+            "turnId": "age-stage-10-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "understanding",
+            "actorId": "caregiver-2",
+            "kind": "understanding",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。",
+            "eventId": "family-ritual-choice",
+            "ageStageId": "age-stage-11",
+            "turnId": "age-stage-11-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "understanding",
+            "actorId": "caregiver-2",
+            "kind": "understanding",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。",
+            "eventId": "school-transition-choice",
+            "ageStageId": "age-stage-12",
+            "turnId": "age-stage-12-turn-1"
+          }
+        ],
+        "history": [
+          {
+            "id": "story-age-stage-1-turn-1-1",
+            "resolvedEventId": "night-handoff-choice",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "event",
+            "text": "孩子醒來，你一邊安撫，一邊想著還沒洗的用品和明天的安排。輪班表上還有空白，眼前的照顧和之後要記住的事疊在一起。"
+          },
+          {
+            "id": "choice-effect-age-stage-1-turn-1-1-0",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "planning",
+            "text": "你為「凌晨的交接」整理了可協調的工作，支持是否可用仍需確認。"
+          },
+          {
+            "id": "reaction-age-stage-1-turn-1-1-0",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "reaction",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。"
+          },
+          {
+            "id": "story-age-stage-1-turn-1-2",
+            "resolvedEventId": "night-handoff-reflection",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "event",
+            "text": "天亮後，用品和待辦仍在桌邊。你發現昨晚除了安撫，也花了力氣記住誰何時能接手。"
+          },
+          {
+            "id": "story-age-stage-1-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。"
+          },
+          {
+            "id": "story-age-stage-1-turn-2-1",
+            "resolvedEventId": "night-handoff-support",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-2",
+            "kind": "support",
+            "text": "過了那一晚，你再次確認可用的協助，也把能延後的用品整理挪開。支持先從減少一段工作開始，不必等到有人能接下全部。"
+          },
+          {
+            "id": "story-age-stage-1-turn-2-2",
+            "resolvedEventId": "night-handoff-reconnect",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-2",
+            "kind": "event",
+            "text": "事情暫時告一段落，你回想剛才的交接。有些話可以現在慢慢說，也可以先留下一個約定，等彼此有力氣再接回來。"
+          },
+          {
+            "id": "choice-effect-age-stage-1-turn-2-2-0",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-2",
+            "kind": "repair",
+            "text": "你承認現在需要休息，也留下了之後繼續對話的約定。"
+          },
+          {
+            "id": "story-age-stage-1-turn-2-3",
+            "resolvedEventId": "night-handoff-repair",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-2",
+            "kind": "repair",
+            "text": "你讓對方知道剛才的匆忙不等於不在意，也確認接下來可以怎麼聯絡。問題還能再談，這次重新靠近的嘗試先留在你們的生活裡。"
+          },
+          {
+            "id": "story-age-stage-2-turn-1-1",
+            "resolvedEventId": "meal-preparation-choice",
+            "ageStageId": "age-stage-2",
+            "turnId": "age-stage-2-turn-1",
+            "kind": "event",
+            "text": "到了準備餐點的時間，採買清單、清潔和陪伴都在等你。家人的做法各有習慣，今天你得先決定如何分配有限的時間。"
+          },
+          {
+            "id": "choice-effect-age-stage-2-turn-1-1-0",
+            "ageStageId": "age-stage-2",
+            "turnId": "age-stage-2-turn-1",
+            "kind": "planning",
+            "text": "你為「餐桌前的準備」整理了可協調的工作，支持是否可用仍需確認。"
+          },
+          {
+            "id": "reaction-age-stage-2-turn-1-1-0",
+            "ageStageId": "age-stage-2",
+            "turnId": "age-stage-2-turn-1",
+            "kind": "reaction",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。"
+          },
+          {
+            "id": "story-age-stage-2-turn-1-2",
+            "resolvedEventId": "meal-preparation-reflection",
+            "ageStageId": "age-stage-2",
+            "turnId": "age-stage-2-turn-1",
+            "kind": "event",
+            "text": "餐點結束後，清理又花了一段時間。你把準備和收尾一起記進下次討論的分工，而不只計算端上桌的那一刻。"
+          },
+          {
+            "id": "story-age-stage-2-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-2",
+            "turnId": "age-stage-2-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。"
+          },
+          {
+            "id": "story-age-stage-3-turn-1-1",
+            "resolvedEventId": "backup-contact-choice",
+            "ageStageId": "age-stage-3",
+            "turnId": "age-stage-3-turn-1",
+            "kind": "event",
+            "text": "工作時段突然變了，原本留給照顧的時間也跟著移動。單一照顧者可能需要找不同住的親友，其他家庭也得重新確認誰真的能接手。"
+          },
+          {
+            "id": "choice-effect-age-stage-3-turn-1-1-0",
+            "ageStageId": "age-stage-3",
+            "turnId": "age-stage-3-turn-1",
+            "kind": "planning",
+            "text": "你為「臨時變動的工作時間」整理了可協調的工作，支持是否可用仍需確認。"
+          },
+          {
+            "id": "reaction-age-stage-3-turn-1-1-0",
+            "ageStageId": "age-stage-3",
+            "turnId": "age-stage-3-turn-1",
+            "kind": "reaction",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。"
+          },
+          {
+            "id": "story-age-stage-3-turn-1-2",
+            "resolvedEventId": "backup-contact-reflection",
+            "ageStageId": "age-stage-3",
+            "turnId": "age-stage-3-turn-1",
+            "kind": "event",
+            "text": "訊息往返後，行程暫時接上了。你記下這次確認時間、交接物品與追蹤回覆所花的心力。"
+          },
+          {
+            "id": "story-age-stage-3-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-3",
+            "turnId": "age-stage-3-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。"
+          },
+          {
+            "id": "story-age-stage-4-turn-1-1",
+            "resolvedEventId": "grandparent-boundary-choice",
+            "ageStageId": "age-stage-4",
+            "turnId": "age-stage-4-turn-1",
+            "kind": "event",
+            "text": "長輩分享過去照顧的習慣，你也想保留眼前試出的節奏。同住或來探望都可能需要談界線，今天的對話要從哪一小段開始？"
+          },
+          {
+            "id": "choice-effect-age-stage-4-turn-1-1-0",
+            "ageStageId": "age-stage-4",
+            "turnId": "age-stage-4-turn-1",
+            "kind": "planning",
+            "text": "你為「長輩帶來的作息建議」整理了可協調的工作，支持是否可用仍需確認。"
+          },
+          {
+            "id": "reaction-age-stage-4-turn-1-1-0",
+            "ageStageId": "age-stage-4",
+            "turnId": "age-stage-4-turn-1",
+            "kind": "reaction",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。"
+          },
+          {
+            "id": "story-age-stage-4-turn-1-2",
+            "resolvedEventId": "grandparent-boundary-reflection",
+            "ageStageId": "age-stage-4",
+            "turnId": "age-stage-4-turn-1",
+            "kind": "event",
+            "text": "對話告一段落，彼此仍保有不同經驗。你記住哪些提醒讓你感到被支持，哪些界線需要下次再說清楚。"
+          },
+          {
+            "id": "story-age-stage-4-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-4",
+            "turnId": "age-stage-4-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。"
+          },
+          {
+            "id": "story-age-stage-5-turn-1-1",
+            "resolvedEventId": "leaving-playground-choice",
+            "ageStageId": "age-stage-5",
+            "turnId": "age-stage-5-turn-1",
+            "kind": "event",
+            "text": "你準備離開公園，孩子卻還想繼續玩。回家的交通和晚餐都在等，旁邊的人也看了過來；你的時間與孩子當下的心情暫時對不上。"
+          },
+          {
+            "id": "choice-effect-age-stage-5-turn-1-1-0",
+            "ageStageId": "age-stage-5",
+            "turnId": "age-stage-5-turn-1",
+            "kind": "planning",
+            "text": "你為「遊戲還沒結束」整理了可協調的工作，支持是否可用仍需確認。"
+          },
+          {
+            "id": "reaction-age-stage-5-turn-1-1-0",
+            "ageStageId": "age-stage-5",
+            "turnId": "age-stage-5-turn-1",
+            "kind": "reaction",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。"
+          },
+          {
+            "id": "story-age-stage-5-turn-1-2",
+            "resolvedEventId": "leaving-playground-reflection",
+            "ageStageId": "age-stage-5",
+            "turnId": "age-stage-5-turn-1",
+            "kind": "event",
+            "text": "離開公園後，孩子慢慢安靜下來，你也整理剛才沒說完的話。那幾道目光留在心裡，卻沒有替你決定家庭下一步。"
+          },
+          {
+            "id": "story-age-stage-5-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-5",
+            "turnId": "age-stage-5-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。"
+          },
+          {
+            "id": "story-age-stage-6-turn-1-1",
+            "resolvedEventId": "shared-ownership-choice",
+            "ageStageId": "age-stage-6",
+            "turnId": "age-stage-6-turn-1",
+            "kind": "event",
+            "text": "用品又快用完了。有人願意幫忙購買，卻等著你提醒品項與數量。雙照顧者也可能像獨自照顧，執行有人接手，追蹤卻仍留在同一人身上。"
+          },
+          {
+            "id": "choice-effect-age-stage-6-turn-1-1-0",
+            "ageStageId": "age-stage-6",
+            "turnId": "age-stage-6-turn-1",
+            "kind": "planning",
+            "text": "你為「誰會記得補用品」整理了可協調的工作，支持是否可用仍需確認。"
+          },
+          {
+            "id": "reaction-age-stage-6-turn-1-1-0",
+            "ageStageId": "age-stage-6",
+            "turnId": "age-stage-6-turn-1",
+            "kind": "reaction",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。"
+          },
+          {
+            "id": "story-age-stage-6-turn-1-2",
+            "resolvedEventId": "shared-ownership-reflection",
+            "ageStageId": "age-stage-6",
+            "turnId": "age-stage-6-turn-1",
+            "kind": "support",
+            "text": "你找到一份可重複使用的用品清單，把每次都要憑記憶盤點的工作放下一小段。支持也可以是一個讓安排更省力的工具，不必等到有人能接手全部。"
+          },
+          {
+            "id": "story-age-stage-6-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-6",
+            "turnId": "age-stage-6-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。"
+          },
+          {
+            "id": "story-age-stage-7-turn-1-1",
+            "resolvedEventId": "rainy-pickup-choice",
+            "ageStageId": "age-stage-7",
+            "turnId": "age-stage-7-turn-1",
+            "kind": "event",
+            "text": "雨勢改變了原來的交通安排，你得重新確認接送地點。即使平常共同分擔，今天也可能各有工作卡住；備援是否有空還需要問過。"
+          },
+          {
+            "id": "choice-effect-age-stage-7-turn-1-1-0",
+            "ageStageId": "age-stage-7",
+            "turnId": "age-stage-7-turn-1",
+            "kind": "planning",
+            "text": "你為「雨天的接送變更」整理了可協調的工作，支持是否可用仍需確認。"
+          },
+          {
+            "id": "reaction-age-stage-7-turn-1-1-0",
+            "ageStageId": "age-stage-7",
+            "turnId": "age-stage-7-turn-1",
+            "kind": "reaction",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。"
+          },
+          {
+            "id": "story-age-stage-7-turn-1-2",
+            "resolvedEventId": "rainy-pickup-reflection",
+            "ageStageId": "age-stage-7",
+            "turnId": "age-stage-7-turn-1",
+            "kind": "event",
+            "text": "抵達後你才有空收起濕掉的物品。交通變動也帶來聯絡與確認工作，這些時間沒有出現在原本的行程裡。"
+          },
+          {
+            "id": "story-age-stage-7-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-7",
+            "turnId": "age-stage-7-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。"
+          },
+          {
+            "id": "story-age-stage-8-turn-1-1",
+            "resolvedEventId": "preschool-handoff-choice",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-1",
+            "kind": "event",
+            "text": "孩子到了教室門口卻停住腳步。你想陪一會，也看見上班時間逼近；老師正在接待其他家庭，今天的交接需要重新安排。"
+          },
+          {
+            "id": "choice-effect-age-stage-8-turn-1-1-0",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-1",
+            "kind": "planning",
+            "text": "你為「教室門口的停頓」整理了可協調的工作，支持是否可用仍需確認。"
+          },
+          {
+            "id": "reaction-age-stage-8-turn-1-1-0",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-1",
+            "kind": "reaction",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。"
+          },
+          {
+            "id": "story-age-stage-8-turn-1-2",
+            "resolvedEventId": "preschool-handoff-reflection",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-1",
+            "kind": "event",
+            "text": "離開教室後，工作訊息接著響起。入園不只是一段告別，也連著接送、用品與誰負責追蹤今天的消息。"
+          },
+          {
+            "id": "story-age-stage-8-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。"
+          },
+          {
+            "id": "story-age-stage-8-turn-2-1",
+            "resolvedEventId": "preschool-handoff-support",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-2",
+            "kind": "support",
+            "text": "下一次交接前，你和老師確認了聯絡方式，也把可延後的工作另作安排。有人接住一段訊息追蹤，並不表示每個困難都消失了。"
+          },
+          {
+            "id": "story-age-stage-8-turn-2-2",
+            "resolvedEventId": "preschool-handoff-reconnect",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-2",
+            "kind": "event",
+            "text": "事情暫時告一段落，你回想剛才的交接。有些話可以現在慢慢說，也可以先留下一個約定，等彼此有力氣再接回來。"
+          },
+          {
+            "id": "choice-effect-age-stage-8-turn-2-2-0",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-2",
+            "kind": "repair",
+            "text": "你承認現在需要休息，也留下了之後繼續對話的約定。"
+          },
+          {
+            "id": "story-age-stage-8-turn-2-3",
+            "resolvedEventId": "preschool-handoff-repair",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-2",
+            "kind": "repair",
+            "text": "你讓對方知道剛才的匆忙不等於不在意，也確認接下來可以怎麼聯絡。問題還能再談，這次重新靠近的嘗試先留在你們的生活裡。"
+          },
+          {
+            "id": "story-age-stage-9-turn-1-1",
+            "resolvedEventId": "school-notice-choice",
+            "ageStageId": "age-stage-9",
+            "turnId": "age-stage-9-turn-1",
+            "kind": "event",
+            "text": "學校通知需要回覆，還要準備一份物品。你下班後才讀到訊息，家人也各有安排；表格不大，記住和追蹤的工作卻不會自己消失。"
+          },
+          {
+            "id": "choice-effect-age-stage-9-turn-1-1-0",
+            "ageStageId": "age-stage-9",
+            "turnId": "age-stage-9-turn-1",
+            "kind": "planning",
+            "text": "你為「通知上的截止時間」整理了可協調的工作，支持是否可用仍需確認。"
+          },
+          {
+            "id": "reaction-age-stage-9-turn-1-1-0",
+            "ageStageId": "age-stage-9",
+            "turnId": "age-stage-9-turn-1",
+            "kind": "reaction",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。"
+          },
+          {
+            "id": "story-age-stage-9-turn-1-2",
+            "resolvedEventId": "school-notice-reflection",
+            "ageStageId": "age-stage-9",
+            "turnId": "age-stage-9-turn-1",
+            "kind": "event",
+            "text": "回覆送出後，你記下準備的過程。完成通知背後也有找材料、確認期限和提醒交接，值得在分工時被看見。"
+          },
+          {
+            "id": "story-age-stage-9-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-9",
+            "turnId": "age-stage-9-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。"
+          },
+          {
+            "id": "story-age-stage-10-turn-1-1",
+            "resolvedEventId": "quiet-time-choice",
+            "ageStageId": "age-stage-10",
+            "turnId": "age-stage-10-turn-1",
+            "kind": "event",
+            "text": "孩子想找你一起玩，你原本打算留一段安靜時間。全職照顧或彈性工作都不代表隨時有空，今天的陪伴與休息需要重新放進安排。"
+          },
+          {
+            "id": "choice-effect-age-stage-10-turn-1-1-0",
+            "ageStageId": "age-stage-10",
+            "turnId": "age-stage-10-turn-1",
+            "kind": "planning",
+            "text": "你為「留給自己的半小時」整理了可協調的工作，支持是否可用仍需確認。"
+          },
+          {
+            "id": "reaction-age-stage-10-turn-1-1-0",
+            "ageStageId": "age-stage-10",
+            "turnId": "age-stage-10-turn-1",
+            "kind": "reaction",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。"
+          },
+          {
+            "id": "story-age-stage-10-turn-1-2",
+            "resolvedEventId": "quiet-time-reflection",
+            "ageStageId": "age-stage-10",
+            "turnId": "age-stage-10-turn-1",
+            "kind": "event",
+            "text": "一天將近結束，你回看哪些時間真的能休息，哪些只是換一件工作。陪伴和自己的需要都留在今天的紀錄裡。"
+          },
+          {
+            "id": "story-age-stage-10-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-10",
+            "turnId": "age-stage-10-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。"
+          },
+          {
+            "id": "story-age-stage-11-turn-1-1",
+            "resolvedEventId": "family-ritual-choice",
+            "ageStageId": "age-stage-11",
+            "turnId": "age-stage-11-turn-1",
+            "kind": "event",
+            "text": "家人想安排一次相聚，孩子也有期待。不同世代對準備的想像不一樣，有人想到熱鬧，有人已經在想採買、聯絡與清理。"
+          },
+          {
+            "id": "choice-effect-age-stage-11-turn-1-1-0",
+            "ageStageId": "age-stage-11",
+            "turnId": "age-stage-11-turn-1",
+            "kind": "planning",
+            "text": "你為「今年想怎麼相聚」整理了可協調的工作，支持是否可用仍需確認。"
+          },
+          {
+            "id": "reaction-age-stage-11-turn-1-1-0",
+            "ageStageId": "age-stage-11",
+            "turnId": "age-stage-11-turn-1",
+            "kind": "reaction",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。"
+          },
+          {
+            "id": "story-age-stage-11-turn-1-2",
+            "resolvedEventId": "family-ritual-reflection",
+            "ageStageId": "age-stage-11",
+            "turnId": "age-stage-11-turn-1",
+            "kind": "event",
+            "text": "相聚留下了一些片刻，也留下需要收拾的物品。你把喜歡的回憶和籌備的心力一起留下，作為下次安排的參考。"
+          },
+          {
+            "id": "story-age-stage-11-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-11",
+            "turnId": "age-stage-11-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。"
+          },
+          {
+            "id": "story-age-stage-12-turn-1-1",
+            "resolvedEventId": "school-transition-choice",
+            "ageStageId": "age-stage-12",
+            "turnId": "age-stage-12-turn-1",
+            "kind": "event",
+            "text": "新的學習階段快到了，孩子問起接下來的生活。你看著聯絡、接送與用品清單，也想到這些年曾經重新協調過的分工。"
+          },
+          {
+            "id": "choice-effect-age-stage-12-turn-1-1-0",
+            "ageStageId": "age-stage-12",
+            "turnId": "age-stage-12-turn-1",
+            "kind": "planning",
+            "text": "你為「下一段生活的清單」整理了可協調的工作，支持是否可用仍需確認。"
+          },
+          {
+            "id": "reaction-age-stage-12-turn-1-1-0",
+            "ageStageId": "age-stage-12",
+            "turnId": "age-stage-12-turn-1",
+            "kind": "reaction",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。"
+          },
+          {
+            "id": "story-age-stage-12-turn-1-2",
+            "resolvedEventId": "school-transition-reflection",
+            "ageStageId": "age-stage-12",
+            "turnId": "age-stage-12-turn-1",
+            "kind": "event",
+            "text": "清單還沒全部完成，但你們已有可以再談的起點。這段家庭生活留下的不是分數，而是那些承接、求助與重新連上的時刻。"
+          },
+          {
+            "id": "story-age-stage-12-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-12",
+            "turnId": "age-stage-12-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。"
+          }
+        ],
+        "review": {
+          "familySummary": "家中有另一位照顧者，實際參與仍需要協調。\n目前照顧安排落在不同人身上的份量可能不一樣。\n工作時段或收入可能變動，生活安排需要保留調整空間。",
+          "narrativeOverview": "從出生後的日常到約六歲，這個家庭留下了 14 次選擇。安排、記掛與收尾穿過不同階段；有人接住生活中的一部分，也有重新靠近的片刻。這些經歷可以同時包含疲憊、快樂與未完成的事。",
+          "timeline": [
+            {
+              "ageStageId": "age-stage-1",
+              "title": "2 個月",
+              "storyEntryIds": [
+                "story-age-stage-1-turn-1-1",
+                "choice-effect-age-stage-1-turn-1-1-0",
+                "reaction-age-stage-1-turn-1-1-0",
+                "story-age-stage-1-turn-1-2",
+                "story-age-stage-1-turn-1-3",
+                "story-age-stage-1-turn-2-1",
+                "story-age-stage-1-turn-2-2",
+                "choice-effect-age-stage-1-turn-2-2-0",
+                "story-age-stage-1-turn-2-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-2",
+              "title": "6 個月",
+              "storyEntryIds": [
+                "story-age-stage-2-turn-1-1",
+                "choice-effect-age-stage-2-turn-1-1-0",
+                "reaction-age-stage-2-turn-1-1-0",
+                "story-age-stage-2-turn-1-2",
+                "story-age-stage-2-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-3",
+              "title": "10 個月",
+              "storyEntryIds": [
+                "story-age-stage-3-turn-1-1",
+                "choice-effect-age-stage-3-turn-1-1-0",
+                "reaction-age-stage-3-turn-1-1-0",
+                "story-age-stage-3-turn-1-2",
+                "story-age-stage-3-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-4",
+              "title": "15 個月",
+              "storyEntryIds": [
+                "story-age-stage-4-turn-1-1",
+                "choice-effect-age-stage-4-turn-1-1-0",
+                "reaction-age-stage-4-turn-1-1-0",
+                "story-age-stage-4-turn-1-2",
+                "story-age-stage-4-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-5",
+              "title": "21 個月",
+              "storyEntryIds": [
+                "story-age-stage-5-turn-1-1",
+                "choice-effect-age-stage-5-turn-1-1-0",
+                "reaction-age-stage-5-turn-1-1-0",
+                "story-age-stage-5-turn-1-2",
+                "story-age-stage-5-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-6",
+              "title": "27 個月",
+              "storyEntryIds": [
+                "story-age-stage-6-turn-1-1",
+                "choice-effect-age-stage-6-turn-1-1-0",
+                "reaction-age-stage-6-turn-1-1-0",
+                "story-age-stage-6-turn-1-2",
+                "story-age-stage-6-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-7",
+              "title": "33 個月",
+              "storyEntryIds": [
+                "story-age-stage-7-turn-1-1",
+                "choice-effect-age-stage-7-turn-1-1-0",
+                "reaction-age-stage-7-turn-1-1-0",
+                "story-age-stage-7-turn-1-2",
+                "story-age-stage-7-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-8",
+              "title": "39 個月",
+              "storyEntryIds": [
+                "story-age-stage-8-turn-1-1",
+                "choice-effect-age-stage-8-turn-1-1-0",
+                "reaction-age-stage-8-turn-1-1-0",
+                "story-age-stage-8-turn-1-2",
+                "story-age-stage-8-turn-1-3",
+                "story-age-stage-8-turn-2-1",
+                "story-age-stage-8-turn-2-2",
+                "choice-effect-age-stage-8-turn-2-2-0",
+                "story-age-stage-8-turn-2-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-9",
+              "title": "45 個月",
+              "storyEntryIds": [
+                "story-age-stage-9-turn-1-1",
+                "choice-effect-age-stage-9-turn-1-1-0",
+                "reaction-age-stage-9-turn-1-1-0",
+                "story-age-stage-9-turn-1-2",
+                "story-age-stage-9-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-10",
+              "title": "52 個月",
+              "storyEntryIds": [
+                "story-age-stage-10-turn-1-1",
+                "choice-effect-age-stage-10-turn-1-1-0",
+                "reaction-age-stage-10-turn-1-1-0",
+                "story-age-stage-10-turn-1-2",
+                "story-age-stage-10-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-11",
+              "title": "61 個月",
+              "storyEntryIds": [
+                "story-age-stage-11-turn-1-1",
+                "choice-effect-age-stage-11-turn-1-1-0",
+                "reaction-age-stage-11-turn-1-1-0",
+                "story-age-stage-11-turn-1-2",
+                "story-age-stage-11-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-12",
+              "title": "71 個月",
+              "storyEntryIds": [
+                "story-age-stage-12-turn-1-1",
+                "choice-effect-age-stage-12-turn-1-1-0",
+                "reaction-age-stage-12-turn-1-1-0",
+                "story-age-stage-12-turn-1-2",
+                "story-age-stage-12-turn-1-3"
+              ]
+            }
+          ],
+          "keyMomentIds": [
+            "story-age-stage-12-turn-1-1",
+            "story-age-stage-11-turn-1-1",
+            "story-age-stage-10-turn-1-1"
+          ],
+          "supportMomentIds": [
+            "story-age-stage-1-turn-2-1",
+            "story-age-stage-6-turn-1-2",
+            "story-age-stage-8-turn-2-1"
+          ],
+          "repairMomentIds": [
+            "choice-effect-age-stage-1-turn-2-2-0",
+            "story-age-stage-1-turn-2-3",
+            "choice-effect-age-stage-8-turn-2-2-0",
+            "story-age-stage-8-turn-2-3"
+          ],
+          "endStateResources": {
+            "finances": 38,
+            "energy": 24,
+            "support": 58,
+            "timeFlexibility": 37,
+            "connection": 63
+          },
+          "themes": [
+            "learning-self-care",
+            "growing-together"
+          ],
+          "safeShareText": "《今天也在養小孩》\n從出生後到約六歲，我走過了一段家庭日常。\n學著照顧自己、一起慢慢長大\n支持、疲憊與重新靠近，都可以留在同一段故事裡。這是遊戲中的家庭紀錄，沒有標準育兒答案。"
+        },
+        "replayOrigin": {
+          "resources": {
+            "finances": 38,
+            "energy": 32,
+            "support": 50,
+            "timeFlexibility": 61,
+            "connection": 57
+          },
+          "tendencies": {
+            "responsibility": 0,
+            "flexibility": 0,
+            "selfCare": 0,
+            "sharedCare": 0
+          },
+          "rngState": 2903413604,
+          "actors": [
+            {
+              "id": "child-1",
+              "role": "child",
+              "displayName": "孩子",
+              "availability": 0.6697340414393693,
+              "initiative": 0.17481389874592423,
+              "workflowOwnership": 0.5265925421845168,
+              "reliability": 0.2732279943302274,
+              "boundaryRespect": 0.6247446539346129
+            },
+            {
+              "id": "caregiver-2",
+              "role": "partner",
+              "displayName": "共同照顧者",
+              "availability": 0.43273732415400445,
+              "initiative": 0.23615852755028754,
+              "workflowOwnership": 0.12496186711359769,
+              "reliability": 0.8820588334929198,
+              "boundaryRespect": 0.7457375649828464
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "label": "v6-pending",
+    "sourceCommit": "9b1a3d2",
+    "save": {
+      "schemaVersion": 6,
+      "state": {
+        "activeFamilyLifeDirectionId": "flexible",
+        "schemaVersion": 1,
+        "seed": 42,
+        "rngState": 440012121,
+        "currentAgeStageId": "age-stage-1",
+        "currentTurnId": "age-stage-1-turn-1",
+        "turn": {
+          "id": "age-stage-1-turn-1",
+          "ageStageId": "age-stage-1",
+          "status": "awaitingInput",
+          "nodeCount": 0,
+          "maxNodeCount": 4,
+          "activeEventId": "night-handoff-choice",
+          "processedEventIds": []
+        },
+        "eventProgress": {
+          "ageStageId": "age-stage-1",
+          "turnId": "age-stage-1-turn-1",
+          "eventId": "night-handoff-choice",
+          "nodeIndex": 0,
+          "status": "awaitingInput"
+        },
+        "ageStageProgress": {
+          "ageStageId": "age-stage-1",
+          "status": "active",
+          "nodeCount": 0,
+          "turnCount": 1
+        },
+        "turnNumber": 1,
+        "resources": {
+          "finances": 38,
+          "energy": 32,
+          "support": 50,
+          "timeFlexibility": 61,
+          "connection": 57
+        },
+        "planningLoad": 0,
+        "family": {
+          "householdComposition": "twoCaregivers",
+          "careParticipation": "uneven",
+          "workArrangement": "unstable",
+          "preferredAddress": "照顧者",
+          "childId": "child-1",
+          "persistentActorIds": [
+            "caregiver-2"
+          ]
+        },
+        "tendencies": {
+          "responsibility": 0,
+          "flexibility": 0,
+          "selfCare": 0,
+          "sharedCare": 0
+        },
+        "flags": [],
+        "relationshipMemories": [],
+        "completedEventIds": [],
+        "scheduledFollowUps": [],
+        "choiceHistory": [],
+        "history": [],
+        "actorProfiles": {
+          "caregiver-2": {
+            "profileVersion": 2,
+            "source": "generated-v2",
+            "name": "雅婷",
+            "relationshipToPlayer": "wife",
+            "lifeDetail": {
+              "templateVersion": 2,
+              "templateId": "bags",
+              "source": "generated-v2"
+            }
+          },
+          "child-1": {
+            "profileVersion": 2,
+            "source": "generated-v2",
+            "name": "小禾",
+            "relationshipToPlayer": "child",
+            "lifeDetail": {
+              "templateVersion": 2,
+              "templateId": "toys",
+              "source": "generated-v2"
+            }
+          }
+        },
+        "replayOrigin": {
+          "resources": {
+            "finances": 38,
+            "energy": 32,
+            "support": 50,
+            "timeFlexibility": 61,
+            "connection": 57
+          },
+          "tendencies": {
+            "responsibility": 0,
+            "flexibility": 0,
+            "selfCare": 0,
+            "sharedCare": 0
+          },
+          "rngState": 2903413604,
+          "actors": [
+            {
+              "id": "child-1",
+              "role": "child",
+              "displayName": "孩子",
+              "availability": 0.6697340414393693,
+              "initiative": 0.17481389874592423,
+              "workflowOwnership": 0.5265925421845168,
+              "reliability": 0.2732279943302274,
+              "boundaryRespect": 0.6247446539346129
+            },
+            {
+              "id": "caregiver-2",
+              "role": "partner",
+              "displayName": "共同照顧者",
+              "availability": 0.43273732415400445,
+              "initiative": 0.23615852755028754,
+              "workflowOwnership": 0.12496186711359769,
+              "reliability": 0.8820588334929198,
+              "boundaryRespect": 0.7457375649828464
+            }
+          ],
+          "actorProfiles": {
+            "caregiver-2": {
+              "profileVersion": 2,
+              "source": "generated-v2",
+              "name": "雅婷",
+              "relationshipToPlayer": "wife",
+              "lifeDetail": {
+                "templateVersion": 2,
+                "templateId": "bags",
+                "source": "generated-v2"
+              }
+            },
+            "child-1": {
+              "profileVersion": 2,
+              "source": "generated-v2",
+              "name": "小禾",
+              "relationshipToPlayer": "child",
+              "lifeDetail": {
+                "templateVersion": 2,
+                "templateId": "toys",
+                "source": "generated-v2"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "v6-mid-turn",
+    "sourceCommit": "9b1a3d2",
+    "save": {
+      "schemaVersion": 6,
+      "state": {
+        "activeFamilyLifeDirectionId": "flexible",
+        "schemaVersion": 1,
+        "seed": 42,
+        "rngState": 1639742264,
+        "currentAgeStageId": "age-stage-1",
+        "currentTurnId": "age-stage-1-turn-1",
+        "turn": {
+          "id": "age-stage-1-turn-1",
+          "ageStageId": "age-stage-1",
+          "status": "active",
+          "nodeCount": 1,
+          "maxNodeCount": 4,
+          "activeEventId": null,
+          "processedEventIds": [
+            "night-handoff-choice"
+          ]
+        },
+        "eventProgress": {
+          "ageStageId": "age-stage-1",
+          "turnId": "age-stage-1-turn-1",
+          "eventId": "night-handoff-choice",
+          "nodeIndex": 0,
+          "status": "completed"
+        },
+        "ageStageProgress": {
+          "ageStageId": "age-stage-1",
+          "status": "active",
+          "nodeCount": 1,
+          "turnCount": 1
+        },
+        "turnNumber": 1,
+        "eventLastResolvedTurn": {
+          "night-handoff-choice": 1
+        },
+        "resources": {
+          "finances": 38,
+          "energy": 31,
+          "support": 50,
+          "timeFlexibility": 59,
+          "connection": 57
+        },
+        "planningLoad": 1,
+        "family": {
+          "householdComposition": "twoCaregivers",
+          "careParticipation": "uneven",
+          "workArrangement": "unstable",
+          "preferredAddress": "照顧者",
+          "childId": "child-1",
+          "persistentActorIds": [
+            "caregiver-2"
+          ]
+        },
+        "tendencies": {
+          "responsibility": 0,
+          "flexibility": 0,
+          "selfCare": 0,
+          "sharedCare": 1
+        },
+        "flags": [],
+        "relationshipMemories": [],
+        "completedEventIds": [
+          "night-handoff-choice"
+        ],
+        "scheduledFollowUps": [
+          {
+            "id": "scheduled-age-stage-1-turn-1-1-0",
+            "eventId": "night-handoff-reflection",
+            "targetAgeStageId": "age-stage-1",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-1-turn-1",
+            "status": "pending"
+          },
+          {
+            "id": "scheduled-age-stage-1-turn-1-1-1",
+            "eventId": "night-handoff-support",
+            "targetAgeStageId": "age-stage-1",
+            "dueAfterTurns": 1,
+            "priority": 10,
+            "status": "pending"
+          }
+        ],
+        "choiceHistory": [
+          {
+            "eventId": "night-handoff-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1"
+          }
+        ],
+        "reactionHistory": [
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "no-comment",
+            "actorId": null,
+            "kind": "none",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。",
+            "eventId": "night-handoff-choice",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1"
+          }
+        ],
+        "history": [
+          {
+            "id": "story-age-stage-1-turn-1-1",
+            "resolvedEventId": "night-handoff-choice",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "event",
+            "text": "與孩子（小禾）一起生活的日常。孩子醒來，你一邊安撫，一邊想著還沒洗的用品和明天的安排。輪班表上還有空白，眼前的照顧和之後要記住的事疊在一起。",
+            "journal": [
+              {
+                "id": "story-age-stage-1-turn-1-1-journal-0",
+                "sourceHistoryId": "story-age-stage-1-turn-1-1",
+                "eventHistoryId": "story-age-stage-1-turn-1-1",
+                "eventId": "night-handoff-choice",
+                "sequence": 0,
+                "text": "凌晨的交接：凌晨孩子醒來，待洗的用品還放在桌邊，今晚的交接時段尚未確認。\n你選擇：把今晚需要的事列出來，協調一段可交接的時間",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 0,
+                "choiceText": "把今晚需要的事列出來，協調一段可交接的時間"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-1-turn-1-1-0",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "planning",
+            "text": "你把待洗的用品、安撫和明早的準備寫成清單，在輪班表留出想協調的時段；能否交接還要等回覆。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-1-turn-1-1-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-1-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-1-turn-1-1",
+                "eventId": "night-handoff-choice",
+                "sequence": 0,
+                "text": "凌晨的交接：你把待洗的用品、安撫和明早的準備寫成清單，在輪班表留出想協調的時段；能否交接還要等回覆。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "reaction-age-stage-1-turn-1-1-0",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "reaction",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。",
+            "journal": []
+          }
+        ],
+        "actorProfiles": {
+          "caregiver-2": {
+            "profileVersion": 2,
+            "source": "generated-v2",
+            "name": "雅婷",
+            "relationshipToPlayer": "wife",
+            "lifeDetail": {
+              "templateVersion": 2,
+              "templateId": "bags",
+              "source": "generated-v2"
+            }
+          },
+          "child-1": {
+            "profileVersion": 2,
+            "source": "generated-v2",
+            "name": "小禾",
+            "relationshipToPlayer": "child",
+            "lifeDetail": {
+              "templateVersion": 2,
+              "templateId": "toys",
+              "source": "generated-v2"
+            }
+          }
+        },
+        "replayOrigin": {
+          "resources": {
+            "finances": 38,
+            "energy": 32,
+            "support": 50,
+            "timeFlexibility": 61,
+            "connection": 57
+          },
+          "tendencies": {
+            "responsibility": 0,
+            "flexibility": 0,
+            "selfCare": 0,
+            "sharedCare": 0
+          },
+          "rngState": 2903413604,
+          "actors": [
+            {
+              "id": "child-1",
+              "role": "child",
+              "displayName": "孩子",
+              "availability": 0.6697340414393693,
+              "initiative": 0.17481389874592423,
+              "workflowOwnership": 0.5265925421845168,
+              "reliability": 0.2732279943302274,
+              "boundaryRespect": 0.6247446539346129
+            },
+            {
+              "id": "caregiver-2",
+              "role": "partner",
+              "displayName": "共同照顧者",
+              "availability": 0.43273732415400445,
+              "initiative": 0.23615852755028754,
+              "workflowOwnership": 0.12496186711359769,
+              "reliability": 0.8820588334929198,
+              "boundaryRespect": 0.7457375649828464
+            }
+          ],
+          "actorProfiles": {
+            "caregiver-2": {
+              "profileVersion": 2,
+              "source": "generated-v2",
+              "name": "雅婷",
+              "relationshipToPlayer": "wife",
+              "lifeDetail": {
+                "templateVersion": 2,
+                "templateId": "bags",
+                "source": "generated-v2"
+              }
+            },
+            "child-1": {
+              "profileVersion": 2,
+              "source": "generated-v2",
+              "name": "小禾",
+              "relationshipToPlayer": "child",
+              "lifeDetail": {
+                "templateVersion": 2,
+                "templateId": "toys",
+                "source": "generated-v2"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "label": "v6-completed-custom-review",
+    "sourceCommit": "9b1a3d2",
+    "save": {
+      "schemaVersion": 6,
+      "state": {
+        "activeFamilyLifeDirectionId": "flexible",
+        "schemaVersion": 1,
+        "seed": 42,
+        "rngState": 1823989555,
+        "currentAgeStageId": "age-stage-12",
+        "currentTurnId": "age-stage-12-turn-1",
+        "turn": {
+          "id": "age-stage-12-turn-1",
+          "ageStageId": "age-stage-12",
+          "status": "completed",
+          "nodeCount": 3,
+          "maxNodeCount": 4,
+          "activeEventId": null,
+          "processedEventIds": [
+            "school-transition-choice",
+            "school-transition-reflection",
+            "mvp-breathing-space"
+          ]
+        },
+        "eventProgress": {
+          "ageStageId": "age-stage-12",
+          "turnId": "age-stage-12-turn-1",
+          "eventId": "mvp-breathing-space",
+          "nodeIndex": 2,
+          "status": "completed"
+        },
+        "ageStageProgress": {
+          "ageStageId": "age-stage-12",
+          "status": "completed",
+          "nodeCount": 3,
+          "turnCount": 1
+        },
+        "completedAgeStages": [
+          {
+            "ageStageId": "age-stage-1",
+            "status": "safelyEnded",
+            "nodeCount": 6,
+            "turnCount": 2,
+            "storyEntryIds": [
+              "story-age-stage-1-turn-1-1",
+              "choice-effect-age-stage-1-turn-1-1-0",
+              "reaction-age-stage-1-turn-1-1-0",
+              "story-age-stage-1-turn-1-2",
+              "story-age-stage-1-turn-1-3",
+              "story-age-stage-1-turn-2-1",
+              "story-age-stage-1-turn-2-2",
+              "choice-effect-age-stage-1-turn-2-2-0",
+              "story-age-stage-1-turn-2-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-2",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-2-turn-1-1",
+              "choice-effect-age-stage-2-turn-1-1-0",
+              "reaction-age-stage-2-turn-1-1-0",
+              "story-age-stage-2-turn-1-2",
+              "story-age-stage-2-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-3",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-3-turn-1-1",
+              "choice-effect-age-stage-3-turn-1-1-0",
+              "reaction-age-stage-3-turn-1-1-0",
+              "story-age-stage-3-turn-1-2",
+              "story-age-stage-3-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-4",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-4-turn-1-1",
+              "choice-effect-age-stage-4-turn-1-1-0",
+              "reaction-age-stage-4-turn-1-1-0",
+              "story-age-stage-4-turn-1-2",
+              "story-age-stage-4-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-5",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-5-turn-1-1",
+              "choice-effect-age-stage-5-turn-1-1-0",
+              "reaction-age-stage-5-turn-1-1-0",
+              "story-age-stage-5-turn-1-2",
+              "story-age-stage-5-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-6",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-6-turn-1-1",
+              "choice-effect-age-stage-6-turn-1-1-0",
+              "reaction-age-stage-6-turn-1-1-0",
+              "story-age-stage-6-turn-1-2",
+              "story-age-stage-6-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-7",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-7-turn-1-1",
+              "choice-effect-age-stage-7-turn-1-1-0",
+              "reaction-age-stage-7-turn-1-1-0",
+              "story-age-stage-7-turn-1-2",
+              "story-age-stage-7-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-8",
+            "status": "safelyEnded",
+            "nodeCount": 6,
+            "turnCount": 2,
+            "storyEntryIds": [
+              "story-age-stage-8-turn-1-1",
+              "choice-effect-age-stage-8-turn-1-1-0",
+              "reaction-age-stage-8-turn-1-1-0",
+              "story-age-stage-8-turn-1-2",
+              "story-age-stage-8-turn-1-3",
+              "story-age-stage-8-turn-2-1",
+              "story-age-stage-8-turn-2-2",
+              "choice-effect-age-stage-8-turn-2-2-0",
+              "story-age-stage-8-turn-2-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-9",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-9-turn-1-1",
+              "choice-effect-age-stage-9-turn-1-1-0",
+              "reaction-age-stage-9-turn-1-1-0",
+              "story-age-stage-9-turn-1-2",
+              "story-age-stage-9-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-10",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-10-turn-1-1",
+              "choice-effect-age-stage-10-turn-1-1-0",
+              "reaction-age-stage-10-turn-1-1-0",
+              "story-age-stage-10-turn-1-2",
+              "story-age-stage-10-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-11",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-11-turn-1-1",
+              "choice-effect-age-stage-11-turn-1-1-0",
+              "reaction-age-stage-11-turn-1-1-0",
+              "story-age-stage-11-turn-1-2",
+              "story-age-stage-11-turn-1-3"
+            ]
+          },
+          {
+            "ageStageId": "age-stage-12",
+            "status": "completed",
+            "nodeCount": 3,
+            "turnCount": 1,
+            "storyEntryIds": [
+              "story-age-stage-12-turn-1-1",
+              "choice-effect-age-stage-12-turn-1-1-0",
+              "reaction-age-stage-12-turn-1-1-0",
+              "story-age-stage-12-turn-1-2",
+              "story-age-stage-12-turn-1-3"
+            ]
+          }
+        ],
+        "turnNumber": 14,
+        "eventLastResolvedTurn": {
+          "night-handoff-choice": 1,
+          "night-handoff-reflection": 1,
+          "mvp-breathing-space": 14,
+          "night-handoff-support": 2,
+          "night-handoff-reconnect": 2,
+          "night-handoff-repair": 2,
+          "meal-preparation-choice": 3,
+          "meal-preparation-reflection": 3,
+          "backup-contact-choice": 4,
+          "backup-contact-reflection": 4,
+          "grandparent-boundary-choice": 5,
+          "grandparent-boundary-reflection": 5,
+          "leaving-playground-choice": 6,
+          "leaving-playground-reflection": 6,
+          "shared-ownership-choice": 7,
+          "shared-ownership-reflection": 7,
+          "rainy-pickup-choice": 8,
+          "rainy-pickup-reflection": 8,
+          "preschool-handoff-choice": 9,
+          "preschool-handoff-reflection": 9,
+          "preschool-handoff-support": 10,
+          "preschool-handoff-reconnect": 10,
+          "preschool-handoff-repair": 10,
+          "school-notice-choice": 11,
+          "school-notice-reflection": 11,
+          "quiet-time-choice": 12,
+          "quiet-time-reflection": 12,
+          "family-ritual-choice": 13,
+          "family-ritual-reflection": 13,
+          "school-transition-choice": 14,
+          "school-transition-reflection": 14
+        },
+        "resources": {
+          "finances": 38,
+          "energy": 24,
+          "support": 58,
+          "timeFlexibility": 37,
+          "connection": 63
+        },
+        "planningLoad": 8,
+        "family": {
+          "householdComposition": "twoCaregivers",
+          "careParticipation": "uneven",
+          "workArrangement": "unstable",
+          "preferredAddress": "照顧者",
+          "childId": "child-1",
+          "persistentActorIds": [
+            "caregiver-2"
+          ]
+        },
+        "tendencies": {
+          "responsibility": 0,
+          "flexibility": 0,
+          "selfCare": 0,
+          "sharedCare": 12
+        },
+        "flags": [],
+        "relationshipMemories": [
+          {
+            "id": "night-handoff-support-memory",
+            "category": "support",
+            "text": "你確認了一段可用的支持，也減少了需要獨自追蹤的事。",
+            "createdAtAgeStageId": "age-stage-1",
+            "createdAtTurn": 2
+          },
+          {
+            "id": "night-handoff-repair-memory",
+            "category": "repair",
+            "text": "你們留下一個重新對話的起點，並確認下一次的聯絡方式。",
+            "createdAtAgeStageId": "age-stage-1",
+            "createdAtTurn": 2
+          },
+          {
+            "id": "heard-the-plan",
+            "actorId": "caregiver-2",
+            "category": "connection",
+            "text": "你們交換了各自能承接的範圍。",
+            "createdAtAgeStageId": "age-stage-5",
+            "createdAtTurn": 6
+          },
+          {
+            "id": "shared-ownership-checklist-support",
+            "category": "support",
+            "text": "重複使用的用品清單，接住了一部分需要記住的事。",
+            "createdAtAgeStageId": "age-stage-6",
+            "createdAtTurn": 7
+          },
+          {
+            "id": "heard-the-plan",
+            "actorId": "caregiver-2",
+            "category": "connection",
+            "text": "你們交換了各自能承接的範圍。",
+            "createdAtAgeStageId": "age-stage-8",
+            "createdAtTurn": 9
+          },
+          {
+            "id": "preschool-handoff-support-memory",
+            "category": "support",
+            "text": "你確認了一段可用的支持，也減少了需要獨自追蹤的事。",
+            "createdAtAgeStageId": "age-stage-8",
+            "createdAtTurn": 10
+          },
+          {
+            "id": "preschool-handoff-repair-memory",
+            "category": "repair",
+            "text": "你們留下一個重新對話的起點，並確認下一次的聯絡方式。",
+            "createdAtAgeStageId": "age-stage-8",
+            "createdAtTurn": 10
+          },
+          {
+            "id": "heard-the-plan",
+            "actorId": "caregiver-2",
+            "category": "connection",
+            "text": "你們交換了各自能承接的範圍。",
+            "createdAtAgeStageId": "age-stage-11",
+            "createdAtTurn": 13
+          },
+          {
+            "id": "heard-the-plan",
+            "actorId": "caregiver-2",
+            "category": "connection",
+            "text": "你們交換了各自能承接的範圍。",
+            "createdAtAgeStageId": "age-stage-12",
+            "createdAtTurn": 14
+          }
+        ],
+        "completedEventIds": [
+          "night-handoff-choice",
+          "night-handoff-reflection",
+          "mvp-breathing-space",
+          "night-handoff-support",
+          "night-handoff-reconnect",
+          "night-handoff-repair",
+          "meal-preparation-choice",
+          "meal-preparation-reflection",
+          "backup-contact-choice",
+          "backup-contact-reflection",
+          "grandparent-boundary-choice",
+          "grandparent-boundary-reflection",
+          "leaving-playground-choice",
+          "leaving-playground-reflection",
+          "shared-ownership-choice",
+          "shared-ownership-reflection",
+          "rainy-pickup-choice",
+          "rainy-pickup-reflection",
+          "preschool-handoff-choice",
+          "preschool-handoff-reflection",
+          "preschool-handoff-support",
+          "preschool-handoff-reconnect",
+          "preschool-handoff-repair",
+          "school-notice-choice",
+          "school-notice-reflection",
+          "quiet-time-choice",
+          "quiet-time-reflection",
+          "family-ritual-choice",
+          "family-ritual-reflection",
+          "school-transition-choice",
+          "school-transition-reflection"
+        ],
+        "scheduledFollowUps": [
+          {
+            "id": "scheduled-age-stage-1-turn-1-1-0",
+            "eventId": "night-handoff-reflection",
+            "targetAgeStageId": "age-stage-1",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-1-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-1-turn-1-1-1",
+            "eventId": "night-handoff-support",
+            "targetAgeStageId": "age-stage-1",
+            "dueAfterTurns": 1,
+            "priority": 10,
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-1-turn-2-1-0",
+            "eventId": "night-handoff-reconnect",
+            "targetAgeStageId": "age-stage-1",
+            "dueAfterTurns": 1,
+            "priority": 0,
+            "immediateTurnId": "age-stage-1-turn-2",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-1-turn-2-2-0",
+            "eventId": "night-handoff-repair",
+            "targetAgeStageId": "age-stage-1",
+            "dueAfterTurns": 1,
+            "priority": 0,
+            "immediateTurnId": "age-stage-1-turn-2",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-2-turn-1-1-0",
+            "eventId": "meal-preparation-reflection",
+            "targetAgeStageId": "age-stage-2",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-2-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-3-turn-1-1-0",
+            "eventId": "backup-contact-reflection",
+            "targetAgeStageId": "age-stage-3",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-3-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-4-turn-1-1-0",
+            "eventId": "grandparent-boundary-reflection",
+            "targetAgeStageId": "age-stage-4",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-4-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-5-turn-1-1-0",
+            "eventId": "leaving-playground-reflection",
+            "targetAgeStageId": "age-stage-5",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-5-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-6-turn-1-1-0",
+            "eventId": "shared-ownership-reflection",
+            "targetAgeStageId": "age-stage-6",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-6-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-7-turn-1-1-0",
+            "eventId": "rainy-pickup-reflection",
+            "targetAgeStageId": "age-stage-7",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-7-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-8-turn-1-1-0",
+            "eventId": "preschool-handoff-reflection",
+            "targetAgeStageId": "age-stage-8",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-8-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-8-turn-1-1-1",
+            "eventId": "preschool-handoff-support",
+            "targetAgeStageId": "age-stage-8",
+            "dueAfterTurns": 1,
+            "priority": 10,
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-8-turn-2-1-0",
+            "eventId": "preschool-handoff-reconnect",
+            "targetAgeStageId": "age-stage-8",
+            "dueAfterTurns": 1,
+            "priority": 0,
+            "immediateTurnId": "age-stage-8-turn-2",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-8-turn-2-2-0",
+            "eventId": "preschool-handoff-repair",
+            "targetAgeStageId": "age-stage-8",
+            "dueAfterTurns": 1,
+            "priority": 0,
+            "immediateTurnId": "age-stage-8-turn-2",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-9-turn-1-1-0",
+            "eventId": "school-notice-reflection",
+            "targetAgeStageId": "age-stage-9",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-9-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-10-turn-1-1-0",
+            "eventId": "quiet-time-reflection",
+            "targetAgeStageId": "age-stage-10",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-10-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-11-turn-1-1-0",
+            "eventId": "family-ritual-reflection",
+            "targetAgeStageId": "age-stage-11",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-11-turn-1",
+            "status": "consumed"
+          },
+          {
+            "id": "scheduled-age-stage-12-turn-1-1-0",
+            "eventId": "school-transition-reflection",
+            "targetAgeStageId": "age-stage-12",
+            "dueAfterTurns": 0,
+            "priority": 0,
+            "immediateTurnId": "age-stage-12-turn-1",
+            "status": "consumed"
+          }
+        ],
+        "choiceHistory": [
+          {
+            "eventId": "night-handoff-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1"
+          },
+          {
+            "eventId": "night-handoff-reconnect",
+            "choiceId": "pause",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-2"
+          },
+          {
+            "eventId": "meal-preparation-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-2",
+            "turnId": "age-stage-2-turn-1"
+          },
+          {
+            "eventId": "backup-contact-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-3",
+            "turnId": "age-stage-3-turn-1"
+          },
+          {
+            "eventId": "grandparent-boundary-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-4",
+            "turnId": "age-stage-4-turn-1"
+          },
+          {
+            "eventId": "leaving-playground-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-5",
+            "turnId": "age-stage-5-turn-1"
+          },
+          {
+            "eventId": "shared-ownership-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-6",
+            "turnId": "age-stage-6-turn-1"
+          },
+          {
+            "eventId": "rainy-pickup-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-7",
+            "turnId": "age-stage-7-turn-1"
+          },
+          {
+            "eventId": "preschool-handoff-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-1"
+          },
+          {
+            "eventId": "preschool-handoff-reconnect",
+            "choiceId": "pause",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-2"
+          },
+          {
+            "eventId": "school-notice-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-9",
+            "turnId": "age-stage-9-turn-1"
+          },
+          {
+            "eventId": "quiet-time-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-10",
+            "turnId": "age-stage-10-turn-1"
+          },
+          {
+            "eventId": "family-ritual-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-11",
+            "turnId": "age-stage-11-turn-1"
+          },
+          {
+            "eventId": "school-transition-choice",
+            "choiceId": "coordinate",
+            "ageStageId": "age-stage-12",
+            "turnId": "age-stage-12-turn-1"
+          }
+        ],
+        "reactionHistory": [
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "no-comment",
+            "actorId": null,
+            "kind": "none",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。",
+            "eventId": "night-handoff-choice",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "child-response",
+            "actorId": "child-1",
+            "kind": "neutral",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "eventId": "meal-preparation-choice",
+            "ageStageId": "age-stage-2",
+            "turnId": "age-stage-2-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "child-response",
+            "actorId": "child-1",
+            "kind": "neutral",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "eventId": "backup-contact-choice",
+            "ageStageId": "age-stage-3",
+            "turnId": "age-stage-3-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "no-comment",
+            "actorId": null,
+            "kind": "none",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。",
+            "eventId": "grandparent-boundary-choice",
+            "ageStageId": "age-stage-4",
+            "turnId": "age-stage-4-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "understanding",
+            "actorId": "caregiver-2",
+            "kind": "understanding",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。",
+            "eventId": "leaving-playground-choice",
+            "ageStageId": "age-stage-5",
+            "turnId": "age-stage-5-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "child-response",
+            "actorId": "child-1",
+            "kind": "neutral",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "eventId": "shared-ownership-choice",
+            "ageStageId": "age-stage-6",
+            "turnId": "age-stage-6-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "child-response",
+            "actorId": "child-1",
+            "kind": "neutral",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "eventId": "rainy-pickup-choice",
+            "ageStageId": "age-stage-7",
+            "turnId": "age-stage-7-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "understanding",
+            "actorId": "caregiver-2",
+            "kind": "understanding",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。",
+            "eventId": "preschool-handoff-choice",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "no-comment",
+            "actorId": null,
+            "kind": "none",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。",
+            "eventId": "school-notice-choice",
+            "ageStageId": "age-stage-9",
+            "turnId": "age-stage-9-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "child-response",
+            "actorId": "child-1",
+            "kind": "neutral",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "eventId": "quiet-time-choice",
+            "ageStageId": "age-stage-10",
+            "turnId": "age-stage-10-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "understanding",
+            "actorId": "caregiver-2",
+            "kind": "understanding",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。",
+            "eventId": "family-ritual-choice",
+            "ageStageId": "age-stage-11",
+            "turnId": "age-stage-11-turn-1"
+          },
+          {
+            "poolId": "everyday-responses",
+            "reactionId": "understanding",
+            "actorId": "caregiver-2",
+            "kind": "understanding",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。",
+            "eventId": "school-transition-choice",
+            "ageStageId": "age-stage-12",
+            "turnId": "age-stage-12-turn-1"
+          }
+        ],
+        "history": [
+          {
+            "id": "story-age-stage-1-turn-1-1",
+            "resolvedEventId": "night-handoff-choice",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "event",
+            "text": "與孩子（小禾）一起生活的日常。孩子醒來，你一邊安撫，一邊想著還沒洗的用品和明天的安排。輪班表上還有空白，眼前的照顧和之後要記住的事疊在一起。",
+            "journal": [
+              {
+                "id": "story-age-stage-1-turn-1-1-journal-0",
+                "sourceHistoryId": "story-age-stage-1-turn-1-1",
+                "eventHistoryId": "story-age-stage-1-turn-1-1",
+                "eventId": "night-handoff-choice",
+                "sequence": 0,
+                "text": "凌晨的交接：凌晨孩子醒來，待洗的用品還放在桌邊，今晚的交接時段尚未確認。\n你選擇：把今晚需要的事列出來，協調一段可交接的時間",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 0,
+                "choiceText": "把今晚需要的事列出來，協調一段可交接的時間"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-1-turn-1-1-0",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "planning",
+            "text": "你把待洗的用品、安撫和明早的準備寫成清單，在輪班表留出想協調的時段；能否交接還要等回覆。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-1-turn-1-1-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-1-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-1-turn-1-1",
+                "eventId": "night-handoff-choice",
+                "sequence": 0,
+                "text": "凌晨的交接：你把待洗的用品、安撫和明早的準備寫成清單，在輪班表留出想協調的時段；能否交接還要等回覆。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "reaction-age-stage-1-turn-1-1-0",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "reaction",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。",
+            "journal": []
+          },
+          {
+            "id": "story-age-stage-1-turn-1-2",
+            "resolvedEventId": "night-handoff-reflection",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "event",
+            "text": "天亮後，用品和待辦仍在桌邊。你發現昨晚除了安撫，也花了力氣記住誰何時能接手。",
+            "journal": [
+              {
+                "id": "story-age-stage-1-turn-1-2-journal-0",
+                "sourceHistoryId": "story-age-stage-1-turn-1-2",
+                "eventHistoryId": "story-age-stage-1-turn-1-2",
+                "eventId": "night-handoff-reflection",
+                "sequence": 0,
+                "text": "凌晨的交接之後：天亮後，用品和待辦仍在桌邊。你發現昨晚除了安撫，也花了力氣記住誰何時能接手。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-1-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。",
+            "journal": []
+          },
+          {
+            "id": "story-age-stage-1-turn-2-1",
+            "resolvedEventId": "night-handoff-support",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-2",
+            "kind": "support",
+            "text": "過了那一晚，你再次確認可用的協助，也把能延後的用品整理挪開。支持先從減少一段工作開始，不必等到有人能接下全部。",
+            "journal": [
+              {
+                "id": "story-age-stage-1-turn-2-1-journal-0",
+                "sourceHistoryId": "story-age-stage-1-turn-2-1",
+                "eventHistoryId": "story-age-stage-1-turn-2-1",
+                "eventId": "night-handoff-support",
+                "sequence": 0,
+                "text": "把安排變成可用的支持：過了那一晚，你再次確認可用的協助，也把能延後的用品整理挪開。支持先從減少一段工作開始，不必等到有人能接下全部。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-1-turn-2-2",
+            "resolvedEventId": "night-handoff-reconnect",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-2",
+            "kind": "event",
+            "text": "事情暫時告一段落，你回想剛才的交接。有些話可以現在慢慢說，也可以先留下一個約定，等彼此有力氣再接回來。",
+            "journal": [
+              {
+                "id": "story-age-stage-1-turn-2-2-journal-0",
+                "sourceHistoryId": "story-age-stage-1-turn-2-2",
+                "eventHistoryId": "story-age-stage-1-turn-2-2",
+                "eventId": "night-handoff-reconnect",
+                "sequence": 0,
+                "text": "找回可以說話的空間：事情暫時告一段落，你回想剛才的交接。有些話可以現在慢慢說，也可以先留下一個約定，等彼此有力氣再接回來。\n你選擇：先留一點休息時間，約定稍後再談",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 1,
+                "choiceText": "先留一點休息時間，約定稍後再談"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-1-turn-2-2-0",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-2",
+            "kind": "repair",
+            "text": "你承認現在需要休息，也留下了之後繼續對話的約定。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-1-turn-2-2-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-1-turn-2-2-0",
+                "eventHistoryId": "story-age-stage-1-turn-2-2",
+                "eventId": "night-handoff-reconnect",
+                "sequence": 0,
+                "text": "找回可以說話的空間：你承認現在需要休息，也留下了之後繼續對話的約定。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-1-turn-2-3",
+            "resolvedEventId": "night-handoff-repair",
+            "ageStageId": "age-stage-1",
+            "turnId": "age-stage-1-turn-2",
+            "kind": "repair",
+            "text": "你讓對方知道剛才的匆忙不等於不在意，也確認接下來可以怎麼聯絡。問題還能再談，這次重新靠近的嘗試先留在你們的生活裡。",
+            "journal": [
+              {
+                "id": "story-age-stage-1-turn-2-3-journal-0",
+                "sourceHistoryId": "story-age-stage-1-turn-2-3",
+                "eventHistoryId": "story-age-stage-1-turn-2-3",
+                "eventId": "night-handoff-repair",
+                "sequence": 0,
+                "text": "留下一個重新連上的起點：你讓對方知道剛才的匆忙不等於不在意，也確認接下來可以怎麼聯絡。問題還能再談，這次重新靠近的嘗試先留在你們的生活裡。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-2-turn-1-1",
+            "resolvedEventId": "meal-preparation-choice",
+            "ageStageId": "age-stage-2",
+            "turnId": "age-stage-2-turn-1",
+            "kind": "event",
+            "text": "與孩子（小禾）一起生活的日常。到了準備餐點的時間，採買清單、清潔和陪伴都在等你。家人的做法各有習慣，今天你得先決定如何分配有限的時間。",
+            "journal": [
+              {
+                "id": "story-age-stage-2-turn-1-1-journal-0",
+                "sourceHistoryId": "story-age-stage-2-turn-1-1",
+                "eventHistoryId": "story-age-stage-2-turn-1-1",
+                "eventId": "meal-preparation-choice",
+                "sequence": 0,
+                "text": "餐桌前的準備：餐前的採買、備料和餐後清潔擠在同一段時間裡。\n你選擇：簡化今天的備餐，留時間確認分工",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 2,
+                "choiceText": "簡化今天的備餐，留時間確認分工"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-2-turn-1-1-0",
+            "ageStageId": "age-stage-2",
+            "turnId": "age-stage-2-turn-1",
+            "kind": "planning",
+            "text": "你從今天的備餐清單刪去一道需要久煮的餐點，把採買與餐後清潔分開列出，準備逐項確認分工。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-2-turn-1-1-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-2-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-2-turn-1-1",
+                "eventId": "meal-preparation-choice",
+                "sequence": 0,
+                "text": "餐桌前的準備：你從今天的備餐清單刪去一道需要久煮的餐點，把採買與餐後清潔分開列出，準備逐項確認分工。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "reaction-age-stage-2-turn-1-1-0",
+            "ageStageId": "age-stage-2",
+            "turnId": "age-stage-2-turn-1",
+            "kind": "reaction",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "journal": [
+              {
+                "id": "reaction-age-stage-2-turn-1-1-0-journal-0",
+                "sourceHistoryId": "reaction-age-stage-2-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-2-turn-1-1",
+                "eventId": "meal-preparation-choice",
+                "sequence": 0,
+                "text": "餐桌前的準備時，孩子（小禾）：孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+                "actorIds": [
+                  "child-1"
+                ],
+                "kind": "result",
+                "reactionHistoryIndex": 1
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-2-turn-1-2",
+            "resolvedEventId": "meal-preparation-reflection",
+            "ageStageId": "age-stage-2",
+            "turnId": "age-stage-2-turn-1",
+            "kind": "event",
+            "text": "餐點結束後，清理又花了一段時間。你把準備和收尾一起記進下次討論的分工，而不只計算端上桌的那一刻。",
+            "journal": [
+              {
+                "id": "story-age-stage-2-turn-1-2-journal-0",
+                "sourceHistoryId": "story-age-stage-2-turn-1-2",
+                "eventHistoryId": "story-age-stage-2-turn-1-2",
+                "eventId": "meal-preparation-reflection",
+                "sequence": 0,
+                "text": "餐桌前的準備之後：餐點結束後，清理又花了一段時間。你把準備和收尾一起記進下次討論的分工，而不只計算端上桌的那一刻。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-2-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-2",
+            "turnId": "age-stage-2-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。",
+            "journal": []
+          },
+          {
+            "id": "story-age-stage-3-turn-1-1",
+            "resolvedEventId": "backup-contact-choice",
+            "ageStageId": "age-stage-3",
+            "turnId": "age-stage-3-turn-1",
+            "kind": "event",
+            "text": "與孩子（小禾）一起生活的日常。工作時段突然變了，原本留給照顧的時間也跟著移動。單一照顧者可能需要找不同住的親友，其他家庭也得重新確認誰真的能接手。",
+            "journal": [
+              {
+                "id": "story-age-stage-3-turn-1-1-journal-0",
+                "sourceHistoryId": "story-age-stage-3-turn-1-1",
+                "eventHistoryId": "story-age-stage-3-turn-1-1",
+                "eventId": "backup-contact-choice",
+                "sequence": 0,
+                "text": "臨時變動的工作時間：工作時段臨時變動，原本的照顧時間需要重新安排。\n你選擇：聯絡備援並說清楚這次需要的時間",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 3,
+                "choiceText": "聯絡備援並說清楚這次需要的時間"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-3-turn-1-1-0",
+            "ageStageId": "age-stage-3",
+            "turnId": "age-stage-3-turn-1",
+            "kind": "planning",
+            "text": "你發出寫有開始、結束時間的備援詢問，把需要交接的物品列在訊息裡；目前還沒有確認誰會接手。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-3-turn-1-1-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-3-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-3-turn-1-1",
+                "eventId": "backup-contact-choice",
+                "sequence": 0,
+                "text": "臨時變動的工作時間：你發出寫有開始、結束時間的備援詢問，把需要交接的物品列在訊息裡；目前還沒有確認誰會接手。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "reaction-age-stage-3-turn-1-1-0",
+            "ageStageId": "age-stage-3",
+            "turnId": "age-stage-3-turn-1",
+            "kind": "reaction",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "journal": [
+              {
+                "id": "reaction-age-stage-3-turn-1-1-0-journal-0",
+                "sourceHistoryId": "reaction-age-stage-3-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-3-turn-1-1",
+                "eventId": "backup-contact-choice",
+                "sequence": 0,
+                "text": "臨時變動的工作時間時，孩子（小禾）：孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+                "actorIds": [
+                  "child-1"
+                ],
+                "kind": "result",
+                "reactionHistoryIndex": 2
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-3-turn-1-2",
+            "resolvedEventId": "backup-contact-reflection",
+            "ageStageId": "age-stage-3",
+            "turnId": "age-stage-3-turn-1",
+            "kind": "event",
+            "text": "訊息往返後，行程暫時接上了。你記下這次確認時間、交接物品與追蹤回覆所花的心力。",
+            "journal": [
+              {
+                "id": "story-age-stage-3-turn-1-2-journal-0",
+                "sourceHistoryId": "story-age-stage-3-turn-1-2",
+                "eventHistoryId": "story-age-stage-3-turn-1-2",
+                "eventId": "backup-contact-reflection",
+                "sequence": 0,
+                "text": "臨時變動的工作時間之後：訊息往返後，行程暫時接上了。你記下這次確認時間、交接物品與追蹤回覆所花的心力。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-3-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-3",
+            "turnId": "age-stage-3-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。",
+            "journal": []
+          },
+          {
+            "id": "story-age-stage-4-turn-1-1",
+            "resolvedEventId": "grandparent-boundary-choice",
+            "ageStageId": "age-stage-4",
+            "turnId": "age-stage-4-turn-1",
+            "kind": "event",
+            "text": "你回想曾經聽過的作息建議，也想保留眼前試出的節奏。有些想法仍需要整理，今天先從哪一小段開始？",
+            "journal": [
+              {
+                "id": "story-age-stage-4-turn-1-1-journal-0",
+                "sourceHistoryId": "story-age-stage-4-turn-1-1",
+                "eventHistoryId": "story-age-stage-4-turn-1-1",
+                "eventId": "grandparent-boundary-choice",
+                "sequence": 0,
+                "text": "作息安排的不同想法：回想不同的作息建議時，你想保留眼前試出的生活節奏。\n你選擇：先說明這次希望被尊重的作息安排",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 4,
+                "choiceText": "先說明這次希望被尊重的作息安排"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-4-turn-1-1-0",
+            "ageStageId": "age-stage-4",
+            "turnId": "age-stage-4-turn-1",
+            "kind": "planning",
+            "text": "你把想保留的作息時間寫下，整理成一段具體說明，準備在下次談照顧安排時表達界線。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-4-turn-1-1-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-4-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-4-turn-1-1",
+                "eventId": "grandparent-boundary-choice",
+                "sequence": 0,
+                "text": "作息安排的不同想法：你把想保留的作息時間寫下，整理成一段具體說明，準備在下次談照顧安排時表達界線。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "reaction-age-stage-4-turn-1-1-0",
+            "ageStageId": "age-stage-4",
+            "turnId": "age-stage-4-turn-1",
+            "kind": "reaction",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。",
+            "journal": []
+          },
+          {
+            "id": "story-age-stage-4-turn-1-2",
+            "resolvedEventId": "grandparent-boundary-reflection",
+            "ageStageId": "age-stage-4",
+            "turnId": "age-stage-4-turn-1",
+            "kind": "event",
+            "text": "對話告一段落，彼此仍保有不同經驗。你記住哪些提醒讓你感到被支持，哪些界線需要下次再說清楚。",
+            "journal": [
+              {
+                "id": "story-age-stage-4-turn-1-2-journal-0",
+                "sourceHistoryId": "story-age-stage-4-turn-1-2",
+                "eventHistoryId": "story-age-stage-4-turn-1-2",
+                "eventId": "grandparent-boundary-reflection",
+                "sequence": 0,
+                "text": "作息安排的不同想法之後：對話告一段落，彼此仍保有不同經驗。你記住哪些提醒讓你感到被支持，哪些界線需要下次再說清楚。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-4-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-4",
+            "turnId": "age-stage-4-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。",
+            "journal": []
+          },
+          {
+            "id": "story-age-stage-5-turn-1-1",
+            "resolvedEventId": "leaving-playground-choice",
+            "ageStageId": "age-stage-5",
+            "turnId": "age-stage-5-turn-1",
+            "kind": "event",
+            "text": "與孩子（小禾）一起生活的日常。你準備離開公園，孩子卻還想繼續玩。回家的交通和晚餐都在等，旁邊的人也看了過來；你的時間與孩子當下的心情暫時對不上。",
+            "journal": [
+              {
+                "id": "story-age-stage-5-turn-1-1-journal-0",
+                "sourceHistoryId": "story-age-stage-5-turn-1-1",
+                "eventHistoryId": "story-age-stage-5-turn-1-1",
+                "eventId": "leaving-playground-choice",
+                "sequence": 0,
+                "text": "遊戲還沒結束：孩子還想留在公園，回家的交通和晚餐時間已經逼近。\n你選擇：留一小段告別時間，同時調整晚餐安排",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 5,
+                "choiceText": "留一小段告別時間，同時調整晚餐安排"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-5-turn-1-1-0",
+            "ageStageId": "age-stage-5",
+            "turnId": "age-stage-5-turn-1",
+            "kind": "planning",
+            "text": "你留出一小段告別遊戲的時間，把晚餐準備往後挪，先和孩子說明接下來要回家。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-5-turn-1-1-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-5-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-5-turn-1-1",
+                "eventId": "leaving-playground-choice",
+                "sequence": 0,
+                "text": "遊戲還沒結束：你留出一小段告別遊戲的時間，把晚餐準備往後挪，先和孩子說明接下來要回家。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "reaction-age-stage-5-turn-1-1-0",
+            "ageStageId": "age-stage-5",
+            "turnId": "age-stage-5-turn-1",
+            "kind": "reaction",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。",
+            "journal": [
+              {
+                "id": "reaction-age-stage-5-turn-1-1-0-journal-0",
+                "sourceHistoryId": "reaction-age-stage-5-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-5-turn-1-1",
+                "eventId": "leaving-playground-choice",
+                "sequence": 0,
+                "text": "遊戲還沒結束時，太太：對方表示聽見了你的安排，也說出自己能參與的範圍。",
+                "actorIds": [
+                  "caregiver-2"
+                ],
+                "kind": "result",
+                "reactionHistoryIndex": 4
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-5-turn-1-2",
+            "resolvedEventId": "leaving-playground-reflection",
+            "ageStageId": "age-stage-5",
+            "turnId": "age-stage-5-turn-1",
+            "kind": "event",
+            "text": "離開公園後，孩子慢慢安靜下來，你也整理剛才沒說完的話。那幾道目光留在心裡，卻沒有替你決定家庭下一步。",
+            "journal": [
+              {
+                "id": "story-age-stage-5-turn-1-2-journal-0",
+                "sourceHistoryId": "story-age-stage-5-turn-1-2",
+                "eventHistoryId": "story-age-stage-5-turn-1-2",
+                "eventId": "leaving-playground-reflection",
+                "sequence": 0,
+                "text": "遊戲還沒結束之後：離開公園後，孩子慢慢安靜下來，你也整理剛才沒說完的話。那幾道目光留在心裡，卻沒有替你決定家庭下一步。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-5-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-5",
+            "turnId": "age-stage-5-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。",
+            "journal": []
+          },
+          {
+            "id": "story-age-stage-6-turn-1-1",
+            "resolvedEventId": "shared-ownership-choice",
+            "ageStageId": "age-stage-6",
+            "turnId": "age-stage-6-turn-1",
+            "kind": "event",
+            "text": "與孩子（小禾）一起生活的日常。用品又快用完了。有人願意幫忙購買，卻等著你提醒品項與數量。雙照顧者也可能像獨自照顧，執行有人接手，追蹤卻仍留在同一人身上。",
+            "journal": [
+              {
+                "id": "story-age-stage-6-turn-1-1-journal-0",
+                "sourceHistoryId": "story-age-stage-6-turn-1-1",
+                "eventHistoryId": "story-age-stage-6-turn-1-1",
+                "eventId": "shared-ownership-choice",
+                "sequence": 0,
+                "text": "誰會記得補用品：日常用品快用完，盤點品項和追蹤補貨仍需要有人記住。\n你選擇：討論從盤點到補齊的完整責任",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 6,
+                "choiceText": "討論從盤點到補齊的完整責任"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-6-turn-1-1-0",
+            "ageStageId": "age-stage-6",
+            "turnId": "age-stage-6-turn-1",
+            "kind": "planning",
+            "text": "你把盤點、採買和確認補齊分成三項，寫下希望完整交接的範圍；是否有人承接仍待確認。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-6-turn-1-1-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-6-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-6-turn-1-1",
+                "eventId": "shared-ownership-choice",
+                "sequence": 0,
+                "text": "誰會記得補用品：你把盤點、採買和確認補齊分成三項，寫下希望完整交接的範圍；是否有人承接仍待確認。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "reaction-age-stage-6-turn-1-1-0",
+            "ageStageId": "age-stage-6",
+            "turnId": "age-stage-6-turn-1",
+            "kind": "reaction",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "journal": [
+              {
+                "id": "reaction-age-stage-6-turn-1-1-0-journal-0",
+                "sourceHistoryId": "reaction-age-stage-6-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-6-turn-1-1",
+                "eventId": "shared-ownership-choice",
+                "sequence": 0,
+                "text": "誰會記得補用品時，孩子（小禾）：孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+                "actorIds": [
+                  "child-1"
+                ],
+                "kind": "result",
+                "reactionHistoryIndex": 5
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-6-turn-1-2",
+            "resolvedEventId": "shared-ownership-reflection",
+            "ageStageId": "age-stage-6",
+            "turnId": "age-stage-6-turn-1",
+            "kind": "support",
+            "text": "你找到一份可重複使用的用品清單，把每次都要憑記憶盤點的工作放下一小段。支持也可以是一個讓安排更省力的工具，不必等到有人能接手全部。",
+            "journal": [
+              {
+                "id": "story-age-stage-6-turn-1-2-journal-0",
+                "sourceHistoryId": "story-age-stage-6-turn-1-2",
+                "eventHistoryId": "story-age-stage-6-turn-1-2",
+                "eventId": "shared-ownership-reflection",
+                "sequence": 0,
+                "text": "誰會記得補用品之後：你找到一份可重複使用的用品清單，把每次都要憑記憶盤點的工作放下一小段。支持也可以是一個讓安排更省力的工具，不必等到有人能接手全部。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-6-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-6",
+            "turnId": "age-stage-6-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。",
+            "journal": []
+          },
+          {
+            "id": "story-age-stage-7-turn-1-1",
+            "resolvedEventId": "rainy-pickup-choice",
+            "ageStageId": "age-stage-7",
+            "turnId": "age-stage-7-turn-1",
+            "kind": "event",
+            "text": "與孩子（小禾）一起生活的日常。雨勢改變了原來的交通安排，你得重新確認接送地點。即使平常共同分擔，今天也可能各有工作卡住；備援是否有空還需要問過。",
+            "journal": [
+              {
+                "id": "story-age-stage-7-turn-1-1-journal-0",
+                "sourceHistoryId": "story-age-stage-7-turn-1-1",
+                "eventHistoryId": "story-age-stage-7-turn-1-1",
+                "eventId": "rainy-pickup-choice",
+                "sequence": 0,
+                "text": "雨天的接送變更：雨勢打亂交通，接送地點和時間需要重新確認。\n你選擇：重新確認接送時間與可用的備援",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 7,
+                "choiceText": "重新確認接送時間與可用的備援"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-7-turn-1-1-0",
+            "ageStageId": "age-stage-7",
+            "turnId": "age-stage-7-turn-1",
+            "kind": "planning",
+            "text": "你傳出新的接送地點與時間，將備援聯絡順序寫在旁邊；沒有把尚未確認的人算作已到場。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-7-turn-1-1-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-7-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-7-turn-1-1",
+                "eventId": "rainy-pickup-choice",
+                "sequence": 0,
+                "text": "雨天的接送變更：你傳出新的接送地點與時間，將備援聯絡順序寫在旁邊；沒有把尚未確認的人算作已到場。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "reaction-age-stage-7-turn-1-1-0",
+            "ageStageId": "age-stage-7",
+            "turnId": "age-stage-7-turn-1",
+            "kind": "reaction",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "journal": [
+              {
+                "id": "reaction-age-stage-7-turn-1-1-0-journal-0",
+                "sourceHistoryId": "reaction-age-stage-7-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-7-turn-1-1",
+                "eventId": "rainy-pickup-choice",
+                "sequence": 0,
+                "text": "雨天的接送變更時，孩子（小禾）：孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+                "actorIds": [
+                  "child-1"
+                ],
+                "kind": "result",
+                "reactionHistoryIndex": 6
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-7-turn-1-2",
+            "resolvedEventId": "rainy-pickup-reflection",
+            "ageStageId": "age-stage-7",
+            "turnId": "age-stage-7-turn-1",
+            "kind": "event",
+            "text": "抵達後你才有空收起濕掉的物品。交通變動也帶來聯絡與確認工作，這些時間沒有出現在原本的行程裡。",
+            "journal": [
+              {
+                "id": "story-age-stage-7-turn-1-2-journal-0",
+                "sourceHistoryId": "story-age-stage-7-turn-1-2",
+                "eventHistoryId": "story-age-stage-7-turn-1-2",
+                "eventId": "rainy-pickup-reflection",
+                "sequence": 0,
+                "text": "雨天的接送變更之後：抵達後你才有空收起濕掉的物品。交通變動也帶來聯絡與確認工作，這些時間沒有出現在原本的行程裡。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-7-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-7",
+            "turnId": "age-stage-7-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。",
+            "journal": []
+          },
+          {
+            "id": "story-age-stage-8-turn-1-1",
+            "resolvedEventId": "preschool-handoff-choice",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-1",
+            "kind": "event",
+            "text": "與孩子（小禾）一起生活的日常。孩子到了教室門口卻停住腳步。你想陪一會，也看見上班時間逼近；老師正在接待其他家庭，今天的交接需要重新安排。",
+            "journal": [
+              {
+                "id": "story-age-stage-8-turn-1-1-journal-0",
+                "sourceHistoryId": "story-age-stage-8-turn-1-1",
+                "eventHistoryId": "story-age-stage-8-turn-1-1",
+                "eventId": "preschool-handoff-choice",
+                "sequence": 0,
+                "text": "教室門口的停頓：孩子停在教室門口，上班時間逼近，老師還在接待其他家庭。\n你選擇：與老師約定交接方式並調整工作通知",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 8,
+                "choiceText": "與老師約定交接方式並調整工作通知"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-8-turn-1-1-0",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-1",
+            "kind": "planning",
+            "text": "你向老師提出想確認的交接方式，也把可能延後的工作通知寫好；老師能配合的細節還要再核對。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-8-turn-1-1-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-8-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-8-turn-1-1",
+                "eventId": "preschool-handoff-choice",
+                "sequence": 0,
+                "text": "教室門口的停頓：你向老師提出想確認的交接方式，也把可能延後的工作通知寫好；老師能配合的細節還要再核對。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "reaction-age-stage-8-turn-1-1-0",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-1",
+            "kind": "reaction",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。",
+            "journal": [
+              {
+                "id": "reaction-age-stage-8-turn-1-1-0-journal-0",
+                "sourceHistoryId": "reaction-age-stage-8-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-8-turn-1-1",
+                "eventId": "preschool-handoff-choice",
+                "sequence": 0,
+                "text": "教室門口的停頓時，太太：對方表示聽見了你的安排，也說出自己能參與的範圍。",
+                "actorIds": [
+                  "caregiver-2"
+                ],
+                "kind": "result",
+                "reactionHistoryIndex": 7
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-8-turn-1-2",
+            "resolvedEventId": "preschool-handoff-reflection",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-1",
+            "kind": "event",
+            "text": "離開教室後，工作訊息接著響起。入園不只是一段告別，也連著接送、用品與誰負責追蹤今天的消息。",
+            "journal": [
+              {
+                "id": "story-age-stage-8-turn-1-2-journal-0",
+                "sourceHistoryId": "story-age-stage-8-turn-1-2",
+                "eventHistoryId": "story-age-stage-8-turn-1-2",
+                "eventId": "preschool-handoff-reflection",
+                "sequence": 0,
+                "text": "教室門口的停頓之後：離開教室後，工作訊息接著響起。入園不只是一段告別，也連著接送、用品與誰負責追蹤今天的消息。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-8-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。",
+            "journal": []
+          },
+          {
+            "id": "story-age-stage-8-turn-2-1",
+            "resolvedEventId": "preschool-handoff-support",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-2",
+            "kind": "support",
+            "text": "下一次交接前，你和老師確認了聯絡方式，也把可延後的工作另作安排。有人接住一段訊息追蹤，並不表示每個困難都消失了。",
+            "journal": [
+              {
+                "id": "story-age-stage-8-turn-2-1-journal-0",
+                "sourceHistoryId": "story-age-stage-8-turn-2-1",
+                "eventHistoryId": "story-age-stage-8-turn-2-1",
+                "eventId": "preschool-handoff-support",
+                "sequence": 0,
+                "text": "把安排變成可用的支持：下一次交接前，你和老師確認了聯絡方式，也把可延後的工作另作安排。有人接住一段訊息追蹤，並不表示每個困難都消失了。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-8-turn-2-2",
+            "resolvedEventId": "preschool-handoff-reconnect",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-2",
+            "kind": "event",
+            "text": "事情暫時告一段落，你回想剛才的交接。有些話可以現在慢慢說，也可以先留下一個約定，等彼此有力氣再接回來。",
+            "journal": [
+              {
+                "id": "story-age-stage-8-turn-2-2-journal-0",
+                "sourceHistoryId": "story-age-stage-8-turn-2-2",
+                "eventHistoryId": "story-age-stage-8-turn-2-2",
+                "eventId": "preschool-handoff-reconnect",
+                "sequence": 0,
+                "text": "找回可以說話的空間：事情暫時告一段落，你回想剛才的交接。有些話可以現在慢慢說，也可以先留下一個約定，等彼此有力氣再接回來。\n你選擇：先留一點休息時間，約定稍後再談",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 9,
+                "choiceText": "先留一點休息時間，約定稍後再談"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-8-turn-2-2-0",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-2",
+            "kind": "repair",
+            "text": "你承認現在需要休息，也留下了之後繼續對話的約定。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-8-turn-2-2-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-8-turn-2-2-0",
+                "eventHistoryId": "story-age-stage-8-turn-2-2",
+                "eventId": "preschool-handoff-reconnect",
+                "sequence": 0,
+                "text": "找回可以說話的空間：你承認現在需要休息，也留下了之後繼續對話的約定。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-8-turn-2-3",
+            "resolvedEventId": "preschool-handoff-repair",
+            "ageStageId": "age-stage-8",
+            "turnId": "age-stage-8-turn-2",
+            "kind": "repair",
+            "text": "你讓對方知道剛才的匆忙不等於不在意，也確認接下來可以怎麼聯絡。問題還能再談，這次重新靠近的嘗試先留在你們的生活裡。",
+            "journal": [
+              {
+                "id": "story-age-stage-8-turn-2-3-journal-0",
+                "sourceHistoryId": "story-age-stage-8-turn-2-3",
+                "eventHistoryId": "story-age-stage-8-turn-2-3",
+                "eventId": "preschool-handoff-repair",
+                "sequence": 0,
+                "text": "留下一個重新連上的起點：你讓對方知道剛才的匆忙不等於不在意，也確認接下來可以怎麼聯絡。問題還能再談，這次重新靠近的嘗試先留在你們的生活裡。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-9-turn-1-1",
+            "resolvedEventId": "school-notice-choice",
+            "ageStageId": "age-stage-9",
+            "turnId": "age-stage-9-turn-1",
+            "kind": "event",
+            "text": "與孩子（小禾）一起生活的日常。學校通知需要回覆，還要準備一份物品。你下班後才讀到訊息，家人也各有安排；表格不大，記住和追蹤的工作卻不會自己消失。",
+            "journal": [
+              {
+                "id": "story-age-stage-9-turn-1-1-journal-0",
+                "sourceHistoryId": "story-age-stage-9-turn-1-1",
+                "eventHistoryId": "story-age-stage-9-turn-1-1",
+                "eventId": "school-notice-choice",
+                "sequence": 0,
+                "text": "通知上的截止時間：學校通知有回覆期限，還需要另外準備物品。\n你選擇：把回覆與準備工作一起攤開協調",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 10,
+                "choiceText": "把回覆與準備工作一起攤開協調"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-9-turn-1-1-0",
+            "ageStageId": "age-stage-9",
+            "turnId": "age-stage-9-turn-1",
+            "kind": "planning",
+            "text": "你把通知的截止時間、要回覆的內容和準備物品分開列出，準備逐項確認誰能承接。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-9-turn-1-1-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-9-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-9-turn-1-1",
+                "eventId": "school-notice-choice",
+                "sequence": 0,
+                "text": "通知上的截止時間：你把通知的截止時間、要回覆的內容和準備物品分開列出，準備逐項確認誰能承接。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "reaction-age-stage-9-turn-1-1-0",
+            "ageStageId": "age-stage-9",
+            "turnId": "age-stage-9-turn-1",
+            "kind": "reaction",
+            "text": "這一次沒有收到新的回應，安排先留待之後確認。",
+            "journal": []
+          },
+          {
+            "id": "story-age-stage-9-turn-1-2",
+            "resolvedEventId": "school-notice-reflection",
+            "ageStageId": "age-stage-9",
+            "turnId": "age-stage-9-turn-1",
+            "kind": "event",
+            "text": "回覆送出後，你記下準備的過程。完成通知背後也有找材料、確認期限和提醒交接，值得在分工時被看見。",
+            "journal": [
+              {
+                "id": "story-age-stage-9-turn-1-2-journal-0",
+                "sourceHistoryId": "story-age-stage-9-turn-1-2",
+                "eventHistoryId": "story-age-stage-9-turn-1-2",
+                "eventId": "school-notice-reflection",
+                "sequence": 0,
+                "text": "通知上的截止時間之後：回覆送出後，你記下準備的過程。完成通知背後也有找材料、確認期限和提醒交接，值得在分工時被看見。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-9-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-9",
+            "turnId": "age-stage-9-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。",
+            "journal": []
+          },
+          {
+            "id": "story-age-stage-10-turn-1-1",
+            "resolvedEventId": "quiet-time-choice",
+            "ageStageId": "age-stage-10",
+            "turnId": "age-stage-10-turn-1",
+            "kind": "event",
+            "text": "與孩子（小禾）一起生活的日常。孩子想找你一起玩，你原本打算留一段安靜時間。全職照顧或彈性工作都不代表隨時有空，今天的陪伴與休息需要重新放進安排。",
+            "journal": [
+              {
+                "id": "story-age-stage-10-turn-1-1-journal-0",
+                "sourceHistoryId": "story-age-stage-10-turn-1-1",
+                "eventHistoryId": "story-age-stage-10-turn-1-1",
+                "eventId": "quiet-time-choice",
+                "sequence": 0,
+                "text": "留給自己的半小時：孩子想一起玩，你原本替自己留下的一段安靜時間需要重新安排。\n你選擇：把休息需求說出來，重新安排陪伴時段",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 11,
+                "choiceText": "把休息需求說出來，重新安排陪伴時段"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-10-turn-1-1-0",
+            "ageStageId": "age-stage-10",
+            "turnId": "age-stage-10-turn-1",
+            "kind": "planning",
+            "text": "你說出自己需要休息，把陪伴與安靜時間分成兩段寫下；還沒確認的交接不算進可休息的時間。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-10-turn-1-1-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-10-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-10-turn-1-1",
+                "eventId": "quiet-time-choice",
+                "sequence": 0,
+                "text": "留給自己的半小時：你說出自己需要休息，把陪伴與安靜時間分成兩段寫下；還沒確認的交接不算進可休息的時間。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "reaction-age-stage-10-turn-1-1-0",
+            "ageStageId": "age-stage-10",
+            "turnId": "age-stage-10-turn-1",
+            "kind": "reaction",
+            "text": "孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+            "journal": [
+              {
+                "id": "reaction-age-stage-10-turn-1-1-0-journal-0",
+                "sourceHistoryId": "reaction-age-stage-10-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-10-turn-1-1",
+                "eventId": "quiet-time-choice",
+                "sequence": 0,
+                "text": "留給自己的半小時時，孩子（小禾）：孩子用聲音和動作回應，今天的節奏還需要慢慢磨合。",
+                "actorIds": [
+                  "child-1"
+                ],
+                "kind": "result",
+                "reactionHistoryIndex": 9
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-10-turn-1-2",
+            "resolvedEventId": "quiet-time-reflection",
+            "ageStageId": "age-stage-10",
+            "turnId": "age-stage-10-turn-1",
+            "kind": "event",
+            "text": "一天將近結束，你回看哪些時間真的能休息，哪些只是換一件工作。陪伴和自己的需要都留在今天的紀錄裡。",
+            "journal": [
+              {
+                "id": "story-age-stage-10-turn-1-2-journal-0",
+                "sourceHistoryId": "story-age-stage-10-turn-1-2",
+                "eventHistoryId": "story-age-stage-10-turn-1-2",
+                "eventId": "quiet-time-reflection",
+                "sequence": 0,
+                "text": "留給自己的半小時之後：一天將近結束，你回看哪些時間真的能休息，哪些只是換一件工作。陪伴和自己的需要都留在今天的紀錄裡。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-10-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-10",
+            "turnId": "age-stage-10-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。",
+            "journal": []
+          },
+          {
+            "id": "story-age-stage-11-turn-1-1",
+            "resolvedEventId": "family-ritual-choice",
+            "ageStageId": "age-stage-11",
+            "turnId": "age-stage-11-turn-1",
+            "kind": "event",
+            "text": "與孩子（小禾）一起生活的日常。家人想安排一次相聚，孩子也有期待。不同世代對準備的想像不一樣，有人想到熱鬧，有人已經在想採買、聯絡與清理。",
+            "journal": [
+              {
+                "id": "story-age-stage-11-turn-1-1-journal-0",
+                "sourceHistoryId": "story-age-stage-11-turn-1-1",
+                "eventHistoryId": "story-age-stage-11-turn-1-1",
+                "eventId": "family-ritual-choice",
+                "sequence": 0,
+                "text": "今年想怎麼相聚：準備家庭相聚時，採買、聯絡與清理也跟著排進行程。\n你選擇：縮小活動規模，先確認每個人願意接的工作",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 12,
+                "choiceText": "縮小活動規模，先確認每個人願意接的工作"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-11-turn-1-1-0",
+            "ageStageId": "age-stage-11",
+            "turnId": "age-stage-11-turn-1",
+            "kind": "planning",
+            "text": "你縮減聚會清單，把採買、聯絡和收尾分開列出，等待參與的人確認願意承接的工作。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-11-turn-1-1-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-11-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-11-turn-1-1",
+                "eventId": "family-ritual-choice",
+                "sequence": 0,
+                "text": "今年想怎麼相聚：你縮減聚會清單，把採買、聯絡和收尾分開列出，等待參與的人確認願意承接的工作。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "reaction-age-stage-11-turn-1-1-0",
+            "ageStageId": "age-stage-11",
+            "turnId": "age-stage-11-turn-1",
+            "kind": "reaction",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。",
+            "journal": [
+              {
+                "id": "reaction-age-stage-11-turn-1-1-0-journal-0",
+                "sourceHistoryId": "reaction-age-stage-11-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-11-turn-1-1",
+                "eventId": "family-ritual-choice",
+                "sequence": 0,
+                "text": "今年想怎麼相聚時，太太：對方表示聽見了你的安排，也說出自己能參與的範圍。",
+                "actorIds": [
+                  "caregiver-2"
+                ],
+                "kind": "result",
+                "reactionHistoryIndex": 10
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-11-turn-1-2",
+            "resolvedEventId": "family-ritual-reflection",
+            "ageStageId": "age-stage-11",
+            "turnId": "age-stage-11-turn-1",
+            "kind": "event",
+            "text": "相聚留下了一些片刻，也留下需要收拾的物品。你把喜歡的回憶和籌備的心力一起留下，作為下次安排的參考。",
+            "journal": [
+              {
+                "id": "story-age-stage-11-turn-1-2-journal-0",
+                "sourceHistoryId": "story-age-stage-11-turn-1-2",
+                "eventHistoryId": "story-age-stage-11-turn-1-2",
+                "eventId": "family-ritual-reflection",
+                "sequence": 0,
+                "text": "今年想怎麼相聚之後：相聚留下了一些片刻，也留下需要收拾的物品。你把喜歡的回憶和籌備的心力一起留下，作為下次安排的參考。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-11-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-11",
+            "turnId": "age-stage-11-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。",
+            "journal": []
+          },
+          {
+            "id": "story-age-stage-12-turn-1-1",
+            "resolvedEventId": "school-transition-choice",
+            "ageStageId": "age-stage-12",
+            "turnId": "age-stage-12-turn-1",
+            "kind": "event",
+            "text": "與孩子（小禾）一起生活的日常。新的學習階段快到了，孩子問起接下來的生活。你看著聯絡、接送與用品清單，也想到這些年曾經重新協調過的分工。",
+            "journal": [
+              {
+                "id": "story-age-stage-12-turn-1-1-journal-0",
+                "sourceHistoryId": "story-age-stage-12-turn-1-1",
+                "eventHistoryId": "story-age-stage-12-turn-1-1",
+                "eventId": "school-transition-choice",
+                "sequence": 0,
+                "text": "下一段生活的清單：新的學習階段將近，聯絡、接送與用品清單還有許多待確認的項目。\n你選擇：一起挑出最需要先確認的一件事",
+                "actorIds": [],
+                "kind": "choice",
+                "choiceHistoryIndex": 13,
+                "choiceText": "一起挑出最需要先確認的一件事"
+              }
+            ]
+          },
+          {
+            "id": "choice-effect-age-stage-12-turn-1-1-0",
+            "ageStageId": "age-stage-12",
+            "turnId": "age-stage-12-turn-1",
+            "kind": "planning",
+            "text": "你從清單圈出最需要先確認的一件事，把其他還不確定的項目留在下一次討論欄。",
+            "journal": [
+              {
+                "id": "choice-effect-age-stage-12-turn-1-1-0-journal-0",
+                "sourceHistoryId": "choice-effect-age-stage-12-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-12-turn-1-1",
+                "eventId": "school-transition-choice",
+                "sequence": 0,
+                "text": "下一段生活的清單：你從清單圈出最需要先確認的一件事，把其他還不確定的項目留在下一次討論欄。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "reaction-age-stage-12-turn-1-1-0",
+            "ageStageId": "age-stage-12",
+            "turnId": "age-stage-12-turn-1",
+            "kind": "reaction",
+            "text": "對方表示聽見了你的安排，也說出自己能參與的範圍。",
+            "journal": [
+              {
+                "id": "reaction-age-stage-12-turn-1-1-0-journal-0",
+                "sourceHistoryId": "reaction-age-stage-12-turn-1-1-0",
+                "eventHistoryId": "story-age-stage-12-turn-1-1",
+                "eventId": "school-transition-choice",
+                "sequence": 0,
+                "text": "下一段生活的清單時，太太：對方表示聽見了你的安排，也說出自己能參與的範圍。",
+                "actorIds": [
+                  "caregiver-2"
+                ],
+                "kind": "result",
+                "reactionHistoryIndex": 11
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-12-turn-1-2",
+            "resolvedEventId": "school-transition-reflection",
+            "ageStageId": "age-stage-12",
+            "turnId": "age-stage-12-turn-1",
+            "kind": "event",
+            "text": "清單還沒全部完成，但你們已有可以再談的起點。這段家庭生活留下的不是分數，而是那些承接、求助與重新連上的時刻。",
+            "journal": [
+              {
+                "id": "story-age-stage-12-turn-1-2-journal-0",
+                "sourceHistoryId": "story-age-stage-12-turn-1-2",
+                "eventHistoryId": "story-age-stage-12-turn-1-2",
+                "eventId": "school-transition-reflection",
+                "sequence": 0,
+                "text": "下一段生活的清單之後：清單還沒全部完成，但你們已有可以再談的起點。這段家庭生活留下的不是分數，而是那些承接、求助與重新連上的時刻。",
+                "actorIds": [],
+                "kind": "result"
+              }
+            ]
+          },
+          {
+            "id": "story-age-stage-12-turn-1-3",
+            "resolvedEventId": "mvp-breathing-space",
+            "ageStageId": "age-stage-12",
+            "turnId": "age-stage-12-turn-1",
+            "kind": "event",
+            "text": "這一段暫時沒有新的安排。你讓生活留一點空白，等待下一次交接，或帶著今天的經驗走向下一個階段。",
+            "journal": []
+          }
+        ],
+        "review": {
+          "familySummary": "家中有另一位照顧者，實際參與仍需要協調。\n目前照顧安排落在不同人身上的份量可能不一樣。\n工作時段或收入可能變動，生活安排需要保留調整空間。",
+          "narrativeOverview": "從出生後的日常到約六歲，這個家庭留下了 14 次選擇。安排、記掛與收尾穿過不同階段；有人接住生活中的一部分，也有重新靠近的片刻。這些經歷可以同時包含疲憊、快樂與未完成的事。",
+          "timeline": [
+            {
+              "ageStageId": "age-stage-1",
+              "title": "2 個月",
+              "storyEntryIds": [
+                "story-age-stage-1-turn-1-1",
+                "choice-effect-age-stage-1-turn-1-1-0",
+                "reaction-age-stage-1-turn-1-1-0",
+                "story-age-stage-1-turn-1-2",
+                "story-age-stage-1-turn-1-3",
+                "story-age-stage-1-turn-2-1",
+                "story-age-stage-1-turn-2-2",
+                "choice-effect-age-stage-1-turn-2-2-0",
+                "story-age-stage-1-turn-2-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-2",
+              "title": "6 個月",
+              "storyEntryIds": [
+                "story-age-stage-2-turn-1-1",
+                "choice-effect-age-stage-2-turn-1-1-0",
+                "reaction-age-stage-2-turn-1-1-0",
+                "story-age-stage-2-turn-1-2",
+                "story-age-stage-2-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-3",
+              "title": "10 個月",
+              "storyEntryIds": [
+                "story-age-stage-3-turn-1-1",
+                "choice-effect-age-stage-3-turn-1-1-0",
+                "reaction-age-stage-3-turn-1-1-0",
+                "story-age-stage-3-turn-1-2",
+                "story-age-stage-3-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-4",
+              "title": "15 個月",
+              "storyEntryIds": [
+                "story-age-stage-4-turn-1-1",
+                "choice-effect-age-stage-4-turn-1-1-0",
+                "reaction-age-stage-4-turn-1-1-0",
+                "story-age-stage-4-turn-1-2",
+                "story-age-stage-4-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-5",
+              "title": "21 個月",
+              "storyEntryIds": [
+                "story-age-stage-5-turn-1-1",
+                "choice-effect-age-stage-5-turn-1-1-0",
+                "reaction-age-stage-5-turn-1-1-0",
+                "story-age-stage-5-turn-1-2",
+                "story-age-stage-5-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-6",
+              "title": "27 個月",
+              "storyEntryIds": [
+                "story-age-stage-6-turn-1-1",
+                "choice-effect-age-stage-6-turn-1-1-0",
+                "reaction-age-stage-6-turn-1-1-0",
+                "story-age-stage-6-turn-1-2",
+                "story-age-stage-6-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-7",
+              "title": "33 個月",
+              "storyEntryIds": [
+                "story-age-stage-7-turn-1-1",
+                "choice-effect-age-stage-7-turn-1-1-0",
+                "reaction-age-stage-7-turn-1-1-0",
+                "story-age-stage-7-turn-1-2",
+                "story-age-stage-7-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-8",
+              "title": "39 個月",
+              "storyEntryIds": [
+                "story-age-stage-8-turn-1-1",
+                "choice-effect-age-stage-8-turn-1-1-0",
+                "reaction-age-stage-8-turn-1-1-0",
+                "story-age-stage-8-turn-1-2",
+                "story-age-stage-8-turn-1-3",
+                "story-age-stage-8-turn-2-1",
+                "story-age-stage-8-turn-2-2",
+                "choice-effect-age-stage-8-turn-2-2-0",
+                "story-age-stage-8-turn-2-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-9",
+              "title": "45 個月",
+              "storyEntryIds": [
+                "story-age-stage-9-turn-1-1",
+                "choice-effect-age-stage-9-turn-1-1-0",
+                "reaction-age-stage-9-turn-1-1-0",
+                "story-age-stage-9-turn-1-2",
+                "story-age-stage-9-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-10",
+              "title": "52 個月",
+              "storyEntryIds": [
+                "story-age-stage-10-turn-1-1",
+                "choice-effect-age-stage-10-turn-1-1-0",
+                "reaction-age-stage-10-turn-1-1-0",
+                "story-age-stage-10-turn-1-2",
+                "story-age-stage-10-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-11",
+              "title": "61 個月",
+              "storyEntryIds": [
+                "story-age-stage-11-turn-1-1",
+                "choice-effect-age-stage-11-turn-1-1-0",
+                "reaction-age-stage-11-turn-1-1-0",
+                "story-age-stage-11-turn-1-2",
+                "story-age-stage-11-turn-1-3"
+              ]
+            },
+            {
+              "ageStageId": "age-stage-12",
+              "title": "71 個月",
+              "storyEntryIds": [
+                "story-age-stage-12-turn-1-1",
+                "choice-effect-age-stage-12-turn-1-1-0",
+                "reaction-age-stage-12-turn-1-1-0",
+                "story-age-stage-12-turn-1-2",
+                "story-age-stage-12-turn-1-3"
+              ]
+            }
+          ],
+          "keyMomentIds": [
+            "story-age-stage-12-turn-1-1",
+            "story-age-stage-11-turn-1-1",
+            "story-age-stage-10-turn-1-1"
+          ],
+          "supportMomentIds": [
+            "story-age-stage-1-turn-2-1",
+            "story-age-stage-6-turn-1-2",
+            "story-age-stage-8-turn-2-1"
+          ],
+          "repairMomentIds": [
+            "choice-effect-age-stage-1-turn-2-2-0",
+            "story-age-stage-1-turn-2-3",
+            "choice-effect-age-stage-8-turn-2-2-0",
+            "story-age-stage-8-turn-2-3"
+          ],
+          "endStateResources": {
+            "finances": 38,
+            "energy": 24,
+            "support": 58,
+            "timeFlexibility": 37,
+            "connection": 63
+          },
+          "themes": [
+            "learning-self-care",
+            "growing-together"
+          ],
+          "safeShareText": "《今天也在養小孩》\n從出生後到約六歲，我走過了一段家庭日常。\n學著照顧自己、一起慢慢長大\n支持、疲憊與重新靠近，都可以留在同一段故事裡。這是遊戲中的家庭紀錄，沒有標準育兒答案。"
+        },
+        "actorProfiles": {
+          "caregiver-2": {
+            "profileVersion": 2,
+            "source": "generated-v2",
+            "name": "雅婷",
+            "relationshipToPlayer": "wife",
+            "lifeDetail": {
+              "templateVersion": 2,
+              "templateId": "bags",
+              "source": "generated-v2"
+            }
+          },
+          "child-1": {
+            "profileVersion": 2,
+            "source": "generated-v2",
+            "name": "小禾",
+            "relationshipToPlayer": "child",
+            "lifeDetail": {
+              "templateVersion": 2,
+              "templateId": "toys",
+              "source": "generated-v2"
+            }
+          }
+        },
+        "replayOrigin": {
+          "resources": {
+            "finances": 38,
+            "energy": 32,
+            "support": 50,
+            "timeFlexibility": 61,
+            "connection": 57
+          },
+          "tendencies": {
+            "responsibility": 0,
+            "flexibility": 0,
+            "selfCare": 0,
+            "sharedCare": 0
+          },
+          "rngState": 2903413604,
+          "actors": [
+            {
+              "id": "child-1",
+              "role": "child",
+              "displayName": "孩子",
+              "availability": 0.6697340414393693,
+              "initiative": 0.17481389874592423,
+              "workflowOwnership": 0.5265925421845168,
+              "reliability": 0.2732279943302274,
+              "boundaryRespect": 0.6247446539346129
+            },
+            {
+              "id": "caregiver-2",
+              "role": "partner",
+              "displayName": "共同照顧者",
+              "availability": 0.43273732415400445,
+              "initiative": 0.23615852755028754,
+              "workflowOwnership": 0.12496186711359769,
+              "reliability": 0.8820588334929198,
+              "boundaryRespect": 0.7457375649828464
+            }
+          ],
+          "actorProfiles": {
+            "caregiver-2": {
+              "profileVersion": 2,
+              "source": "generated-v2",
+              "name": "雅婷",
+              "relationshipToPlayer": "wife",
+              "lifeDetail": {
+                "templateVersion": 2,
+                "templateId": "bags",
+                "source": "generated-v2"
+              }
+            },
+            "child-1": {
+              "profileVersion": 2,
+              "source": "generated-v2",
+              "name": "小禾",
+              "relationshipToPlayer": "child",
+              "lifeDetail": {
+                "templateVersion": 2,
+                "templateId": "toys",
+                "source": "generated-v2"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+]
