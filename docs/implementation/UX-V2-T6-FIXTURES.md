@@ -25,7 +25,8 @@ TypeScript 編譯舊程式。暫存置於 Vite 忽略的 `node_modules/.cache/ux
 結束前確認真實目標在指定快取根目錄內，再刪除本次產生的目錄。一般測試**不呼叫**
 產生器，避免驗收時重建自己的 expected baseline；建議先產生完畢，再啟動瀏覽器測試。
 
-本輪兩次擷取（初次與重現）bytes 相同，SHA-256：
+本輪初次擷取與後續重建 bytes 相同；以下 SHA-256 針對產生器輸出的 LF bytes，
+Git checkout 若自動轉為 CRLF，檔案雜湊會不同，JSON 資料則相同：
 
 `1FE06B4043C854B67D3EE6EC78C1EE80C2B4523E48A2A5B6B0374AF1A62B8E9C`
 

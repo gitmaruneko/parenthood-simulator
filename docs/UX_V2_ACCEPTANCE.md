@@ -24,6 +24,8 @@
 證據接縫：`tests/ux-v2-integration.test.ts`、`tests/e2e/ux-v2-acceptance.spec.ts`。
 瀏覽器逐局輸出 `test-results/<case>/family-acceptance.json` 與截圖；保留摘要見
 [執行資料](examples/UX-V2-T6-RUNS.json)。
+四家庭的桌面／手機執行資料已逐欄比對相同；代表截圖為
+[單一照顧者桌面回顧](examples/UX-V2-T6-SINGLE-DESKTOP.png)及[多世代手機回顧](examples/UX-V2-T6-MULTI-MOBILE.png)。
 
 ## 確定性與同一份事實
 
@@ -95,10 +97,10 @@
 
 | 命令 | 結果 |
 | --- | --- |
-| `npm.cmd test -- --maxWorkers=2` | 最終 22 檔案／288 項，含新增整合、遷移與舊檔提示 19 項；執行結果在 PR 確認。 |
+| `npm.cmd test -- --maxWorkers=2` | 最終 22 檔案／288 項通過，含新增整合、遷移與舊檔提示 19 項。 |
 | `npm.cmd run typecheck` | 通過。 |
 | `npm.cmd run build` | 通過，77 modules，沿用 Save v7。 |
-| `npm.cmd run test:e2e -- --workers=2` | 原 50 項完整通過；新增舊檔降級桌面／手機後為 52 項，最終結果在 PR 確認。 |
+| `npm.cmd run test:e2e -- --workers=2` | 最終 52 項通過：既有 42 項、四家庭完整流程 8 項、缺開場資料舊檔 2 項。 |
 
 本地結果只代表此 checkout；未宣稱遠端 CI、正式站或預覽部署已驗收。
 
