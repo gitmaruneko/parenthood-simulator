@@ -82,9 +82,11 @@ export function describeActor(state: GameState, actorId: string): string | null 
 }
 
 export function resolveEventIdentity(event: EventNode, state: GameState): EventNode {
-  const render = (item: { text: string; actorText?: { actorId: string; prefix: string; suffix: string } | undefined }) => {
-    const identity = item.actorText && describeActor(state, item.actorText.actorId);
-    return identity ? `${item.actorText!.prefix}${identity}${item.actorText!.suffix}` : item.text;
-  };
-  return { ...event, text: render(event), choices: event.choices.map(choice => ({ ...choice, text: render(choice) })) };
+  return { ...event, text: resolveNarrativeText(event, state),
+    choices: event.choices.map(choice => ({ ...choice, text: resolveNarrativeText(choice, state) })) };
+}
+
+export function resolveNarrativeText(item: { text: string; actorText?: { actorId: string; prefix: string; suffix: string } | undefined }, state: GameState): string {
+  const identity = item.actorText && describeActor(state, item.actorText.actorId);
+  return identity ? `${item.actorText!.prefix}${identity}${item.actorText!.suffix}` : item.text;
 }

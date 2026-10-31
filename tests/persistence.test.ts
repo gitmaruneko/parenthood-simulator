@@ -116,7 +116,7 @@ describe("Save / Restore Boundary", () => {
     ]);
     const legacy = JSON.stringify(legacyState(chosen!.state));
     const profiles = unknownActorProfiles(chosen!.state.family);
-    const expected = { ...chosen!.state, actorProfiles: profiles,
+    const expected = { ...legacyState(chosen!.state), actorProfiles: profiles,
       replayOrigin: { ...chosen!.state.replayOrigin!, actorProfiles: profiles } };
     const restored = restoreGame(legacy);
     expect(restored).toMatchObject({ status: "restored", migratedFrom: 1, rawData: legacy,

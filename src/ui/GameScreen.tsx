@@ -3,6 +3,8 @@ import type { FamilySummary } from "../engine/index.js";
 import type { GamePresentation } from "./player-session.js";
 import { Illustration } from "./Illustration.js";
 import { FamilyMemberCard } from "./FamilyMemberCard.js";
+import { projectJournal } from "../engine/index.js";
+import { JournalText } from "./JournalText.js";
 import type { FamilyLifeDirectionId } from "../domain/family-life-direction.js";
 
 export function FamilyDetails({
@@ -95,12 +97,6 @@ function Resources({
     </div>
   );
 }
-const reactionNames: Record<string, string> = {
-  understanding: "理解與支持",
-  neutral: "中性回應",
-  criticism: "不同期待／批評",
-  none: "無反應",
-};
 const storyNames = {
   event: "生活片段",
   reaction: "實際觀察",
@@ -109,41 +105,8 @@ const storyNames = {
   repair: "重新連結",
 };
 
-function ConfirmedChoice({
-  game,
-  entry,
-}: {
-  game: GamePresentation;
-  entry: GamePresentation["history"][number];
-}) {
-  if (!entry.resolvedEventId) return null;
-  return (
-    <>
-      {game.choices
-        .filter(
-          (choice) =>
-            choice.eventId === entry.resolvedEventId &&
-            choice.turnId === entry.turnId,
-        )
-        .map((choice) => (
-          <div className="chosen" key={`${choice.eventId}/${choice.choiceId}`}>
-            <p>
-              你的選擇：
-              {game.choiceTexts[`${choice.eventId}/${choice.choiceId}`]}
-            </p>
-            {choice.anticipatedJudgment && (
-              <p>當時的預期評價：{choice.anticipatedJudgment}</p>
-            )}
-          </div>
-        ))}
-    </>
-  );
-}
-
 export function FamilyLog({ game }: { game: GamePresentation }) {
-  const events = game.history
-    .filter((entry) => entry.resolvedEventId)
-    .reverse();
+  const events = projectJournal({ history: game.history, choiceHistory: game.choices, reactionHistory: game.reactions }).reverse();
   return (
     <section aria-labelledby="log-title">
       <h2 id="log-title" tabIndex={-1}>
@@ -152,22 +115,11 @@ export function FamilyLog({ game }: { game: GamePresentation }) {
       {!events.length && <p>接下來的日常，會一段一段留在這裡。</p>}
       <ol className="event-log" aria-label="已發生的事件" role="list">
         {events.map((entry) => {
-          const choice = game.choices.find(
-            (choice) =>
-              choice.eventId === entry.resolvedEventId &&
-              choice.turnId === entry.turnId,
-          );
-          const choiceText =
-            choice && game.choiceTexts[`${choice.eventId}/${choice.choiceId}`];
           return (
-            <li className="log-entry" key={entry.id}>
+            <li className="log-entry" key={entry.id} id={`journal-${entry.id}`} tabIndex={-1} data-source-history-id={entry.sourceHistoryId}>
               <small>{game.storyTimeLabels[entry.turnId]}</small>
-              <span>
-                <strong>
-                  {game.eventTitles[entry.resolvedEventId!] ?? "生活片段"}
-                </strong>
-                {choiceText && ` — ${choiceText}`}
-              </span>
+              <span className="journal-kind">{entry.kind === "choice" ? "你的選擇" : "已發生的生活"}</span>
+              <JournalText entry={entry} />
             </li>
           );
         })}
@@ -249,6 +201,8 @@ export function GameScreen({
   const turnStories = game.history
     .filter((entry) => entry.turnId === game.currentTurnId)
     .reverse();
+  const journal = projectJournal({ history: game.history, choiceHistory: game.choices, reactionHistory: game.reactions });
+  const turnRecordCount = journal.filter(entry => entry.turnId === game.currentTurnId).length;
   const reading = game.history.length > readThrough && turnStories.length > 0;
   const event = game.pendingEvent;
   const focusKey = reading
@@ -258,9 +212,6 @@ export function GameScreen({
     if (initialTab === "records") document.getElementById("log-title")?.focus();
     else title.current?.focus();
   }, [focusKey, initialTab]);
-  const lastReaction = game.reactions
-    .filter((reaction) => reaction.turnId === game.currentTurnId)
-    .at(-1);
   const recentThoughts = game.history
     .filter((entry) => ["planning", "support", "repair"].includes(entry.kind))
     .slice(-4);
@@ -364,13 +315,10 @@ export function GameScreen({
             aria-atomic="true"
           >
             {reading
-              ? `故事更新，這個 Turn 已有 ${turnStories.length} 段紀錄。`
+              ? `故事更新，這個 Turn 已有 ${turnRecordCount} 段紀錄。`
               : event
                 ? `新的事件：${event.title}。等待你的選擇。`
                 : game.nextLabel}
-            {lastReaction
-              ? `最近的實際觀察：${reactionNames[lastReaction.kind] ?? lastReaction.kind}。${lastReaction.text}`
-              : ""}
           </p>
           <p className="eyebrow">
             {reading
@@ -386,33 +334,9 @@ export function GameScreen({
               ? "剛才的選擇，留在生活裡"
               : (event?.title ?? game.nextLabel)}
           </h2>
-          {game.cause && <p className="cause">前一段生活：{game.cause}</p>}
           <div className="story-stream">
-            {turnStories.map((entry) => (
-              <article key={entry.id}>
-                <span className="eyebrow">{storyNames[entry.kind]}</span>
-                {entry.resolvedEventId && (
-                  <h3>{game.eventTitles[entry.resolvedEventId]}</h3>
-                )}
-                <p>{entry.text}</p>
-                <ConfirmedChoice game={game} entry={entry} />
-              </article>
-            ))}
+            {turnStories.length > 0 && <p>已確認的選擇與結果已收進家庭生活紀錄。</p>}
           </div>
-          {game.reactions
-            .filter((reaction) => reaction.turnId === game.currentTurnId)
-            .map((reaction, index) => (
-              <p
-                className="reaction-label"
-                key={`${reaction.eventId}-${index}`}
-              >
-                實際觀察 ·{" "}
-                {game.members.find((member) => member.id === reaction.actorId)
-                  ?.displayName ?? "在場人物"}{" "}
-                · {reactionNames[reaction.kind] ?? reaction.kind}：
-                {reaction.text}
-              </p>
-            ))}
           {reading ? (
             <>
               <p>以上是已發生的故事。你可以慢慢讀；閱讀節奏不會改變結果。</p>
@@ -482,7 +406,11 @@ export function GameScreen({
               <p className="thought-note" key={entry.id}>
                 <small>{storyNames[entry.kind]}</small>
                 <br />
-                {entry.text}
+                <button className="journal-link" onClick={() => {
+                  setTab("records");
+                  const record = journal.find(record => record.sourceHistoryId === entry.id);
+                  requestAnimationFrame(() => document.getElementById(record ? `journal-${record.id}` : "log-title")?.focus());
+                }}>{game.storyTimeLabels[entry.turnId]} · 在生活紀錄查看這段記掛</button>
               </p>
             ))
           ) : (

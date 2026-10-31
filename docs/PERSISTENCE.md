@@ -1,7 +1,7 @@
 # Save and restore (issue #9)
 
 Family Life Direction update (#28–#30): every change is saved immediately through
-the existing boundary. Save v5 requires a known direction ID and actor profiles; legacy saves migrate
+the existing boundary. Save v6 requires a known direction ID and actor profiles; legacy saves migrate
 to `flexible` when absent, preserving committed data and RNG. Failures retain the
 in-memory choice for retry; conflicts never overwrite newer data.
 
@@ -14,11 +14,12 @@ boundary rather than implement storage or migration rules.
 
 | Save version | Shape | Restore behavior |
 | --- | --- | --- |
-| 1 | Unwrapped `GameState` with `schemaVersion: 1` | Explicitly migrate in memory to version 5; report `migratedFrom: 1` |
-| 2 | `{ schemaVersion: 2, state: GameState }` | Explicitly migrate in memory to version 5; report `migratedFrom: 2` |
-| 3 | `{ schemaVersion: 3, state: GameState }` with required direction | Explicitly migrate in memory to version 5; report `migratedFrom: 3` |
-| 4 | `{ schemaVersion: 4, state: GameState }` with v1 actor profiles | Strictly validate v4, preserve identities and migrate the envelope to v5; report `migratedFrom: 4` |
-| 5 | `{ schemaVersion: 5, state: GameState }` with direction and supported actor profiles | Validate and restore; report `migratedFrom: null` |
+| 1 | Unwrapped `GameState` with `schemaVersion: 1` | Explicitly migrate in memory to version 6; report `migratedFrom: 1` |
+| 2 | `{ schemaVersion: 2, state: GameState }` | Explicitly migrate in memory to version 6; report `migratedFrom: 2` |
+| 3 | `{ schemaVersion: 3, state: GameState }` with required direction | Explicitly migrate in memory to version 6; report `migratedFrom: 3` |
+| 4 | `{ schemaVersion: 4, state: GameState }` with v1 actor profiles | Strictly validate v4, preserve identities and migrate the envelope to v6; report `migratedFrom: 4` |
+| 5 | `{ schemaVersion: 5, state: GameState }` with direction and supported actor profiles | Strictly validate old history without journal fields, preserve data and migrate to v6; report `migratedFrom: 5` |
+| 6 | `{ schemaVersion: 6, state: GameState }` with optional history journal snapshots | Validate sources, ordering, choice/reaction indices and actor references; report `migratedFrom: null` |
 | Other | Unknown save or nested state version | Return `incompatible-version`, preserving the original bytes |
 
 The save version is independent of the domain's `GameState.schemaVersion`,
@@ -29,6 +30,10 @@ v4 retains names and coarse relationships exactly; it cannot contain the new
 v2 profile/template fields or precise elder relationships. Migration never turns
 an unknown parent into a mother, father or specific in-law. Current profiles and
 replay-origin identities must agree. See [family identities](ACTOR_PROFILES.md).
+v5 keeps every history string, identity and review reference; migration never
+backfills journal prose. A read-only legacy projection preserves old facts and
+uses a generic choice marker when original option text is unavailable. New
+checkpoints carry snapshots before each write; see [Journal](JOURNAL.md).
 
 All GameState fields are retained: seed and **current** `rngState`, family,
 resources, tendencies, planning load, flags, relationship memories, stage and
@@ -40,7 +45,7 @@ pending-input consistency. Required PRNG state cannot be substituted with seed.
 
 ## Public operations
 
-- `serializeGame(state)` returns a version-5 JSON string. Invalid state throws a
+- `serializeGame(state)` returns a version-6 JSON string. Invalid state throws a
   validation error; store operations convert that into a readable result.
 - `restoreGame(rawData)` returns `restored` with state and migration information,
   or `error` with a stable code, Traditional Chinese message, and exact raw data.

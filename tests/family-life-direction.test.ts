@@ -36,11 +36,11 @@ it("explicitly migrates v1/v2 saves without changing pending data or RNG and rej
     const restored = restoreGame(JSON.stringify(data));
     const profiles = unknownActorProfiles(waiting.family);
     expect(restored).toMatchObject({ status: "restored", migratedFrom: version,
-      state: { ...waiting, actorProfiles: profiles,
+      state: { ...waiting, history: legacyState(waiting).history, actorProfiles: profiles,
         replayOrigin: { ...waiting.replayOrigin!, actorProfiles: profiles } } });
   }
   const current = JSON.parse(serializeGame(waiting));
-  expect(current.schemaVersion).toBe(5);
+  expect(current.schemaVersion).toBe(6);
   for (const id of [undefined, null, "unknown-direction"]) {
     current.state.activeFamilyLifeDirectionId = id;
     const raw = JSON.stringify(current);

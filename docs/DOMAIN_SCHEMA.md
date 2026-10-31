@@ -2,7 +2,7 @@
 
 UX v2 T2 (#36): [Actor profiles](ACTOR_PROFILES.md) defines the versioned
 identity/relationship/habit contract, opening replay snapshot and actor-bound
-text templates. [Save v5](PERSISTENCE.md) validates identity references and
+text templates. [Save v6](PERSISTENCE.md) validates identity references and
 explicitly migrates older stories without inventing missing identities.
 
 Family Life Direction update (#28–#30): six stable direction IDs and a single

@@ -3,6 +3,11 @@
 完成第 12 個 AgeStage 後直接開啟回顧；首頁「重看家庭紀錄」也開啟同一份回顧。
 讀取回顧不推進故事、不消耗 PRNG，也不寫入存檔。
 
+T3（#37）：回顧正文與 FamilyLog 共用 [Journal](JOURNAL.md) 的只讀投影。關鍵
+時刻仍引用原 history ID，可呈現該事件已保存的選擇、效果及實際反應；時間線的
+來源各顯示一次，倒敘順序穩定。只有選項原文粗體。v5 舊原文與自選三個時刻
+升版後保留，不使用新版 ContentPack 的選項文字冒充舊玩家說過的話。
+
 ## 資料與敘事
 
 `createFamilyReview(GameState, ContentPack)` 是引擎公開邊界。依年齡順序建立

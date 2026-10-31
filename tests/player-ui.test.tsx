@@ -216,7 +216,27 @@ const game: GamePresentation = {
   choiceTexts: {},
 };
 
-it("keeps one compact record per resolved event instead of separate narrative and reaction entries", () => {
+it("bolds only the saved choice and shows each actual consequence once while keeping T3's inline controls", async () => {
+  const values = new Map<string, string>();
+  const session = createPlayerSession(createLocalSaveStore({ getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => { values.set(key, value); } }), () => 42);
+  await session.check(); await session.newStory(); session.reveal(); await session.startFamily();
+  await session.choose("coordinate");
+  const saved = session.getSnapshot().game!;
+  render(<GameScreen game={saved} busy={false} blocked={false} onChoose={vi.fn()} onAdvance={vi.fn()} />);
+  const log = screen.getByRole("list", { name: "已發生的事件" });
+  expect([...log.querySelectorAll("strong")].map(item => item.textContent))
+    .toEqual(["把今晚需要的事列出來，協調一段可交接的時間"]);
+  expect(screen.getAllByText(/你把待洗的用品、安撫和明早的準備寫成清單/)).toHaveLength(1);
+  const records = within(log).getAllByRole("listitem");
+  expect(records[0]!.textContent).toContain("天亮後");
+  expect(records.at(-1)!.textContent).toContain("你的選擇");
+  expect(screen.getByRole("button", { name: "繼續故事" })).toBeTruthy();
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(within(screen.getByRole("tabpanel", { name: "生活" })).queryByText(/你把待洗的用品/)).toBeNull();
+});
+
+it("keeps legacy facts readable without presenting current option text as historical wording", () => {
   const history: GamePresentation["history"] = [
     {
       id: "event-1",
@@ -290,20 +310,19 @@ it("keeps one compact record per resolved event instead of separate narrative an
     />,
   );
   const records = screen.getAllByRole("listitem");
-  expect(records).toHaveLength(3);
-  expect(records[2]!.textContent).toContain(
-    "凌晨的交接 — 今晚先自己承接，明天再談安排",
-  );
+  expect(records).toHaveLength(6);
+  expect(records[4]!.textContent).toContain("你在這次事件做了選擇。");
   expect(records[0]!.textContent).toContain("2 個月 2 天");
   expect(records[1]!.textContent).toContain("2 個月 1 天");
-  expect(records[2]!.textContent).toContain("2 個月 1 天");
+  expect(records[5]!.textContent).toContain("2 個月 1 天");
   expect(
     screen.getByRole("list", { name: "已發生的事件" }).textContent,
   ).not.toMatch(/階段|Turn/);
-  expect(records[1]!.textContent).toContain("凌晨的交接之後");
-  expect(screen.queryByText("記得與安排的細節。")).toBeNull();
-  expect(screen.queryByText("人物反應的細節。")).toBeNull();
-  expect(screen.queryByText("完整事件正文不重複鋪在紀錄裡。")).toBeNull();
+  expect(records[1]!.textContent).toContain("後續故事的完整段落。");
+  expect(screen.getByText("記得與安排的細節。")).toBeTruthy();
+  expect(screen.getByText("人物反應的細節。")).toBeTruthy();
+  expect(screen.getByText("完整事件正文不重複鋪在紀錄裡。")).toBeTruthy();
+  expect(screen.queryByText("今晚先自己承接，明天再談安排")).toBeNull();
   expect(history).toEqual(original);
 });
 it("shows the latest story first and offers continuation without a Turn-ended notice", async () => {
@@ -337,7 +356,7 @@ it("shows the latest story first and offers continuation without a Turn-ended no
     />,
   );
   const life = within(screen.getByRole("tabpanel", { name: "生活" }));
-  const stories = life.getAllByRole("article");
+  const stories = within(screen.getByRole("list", { name: "已發生的事件" })).getAllByRole("listitem");
   expect(stories[0]!.textContent).toContain("最新發生的故事。");
   expect(stories[1]!.textContent).toContain("較早發生的故事。");
   await userEvent.click(life.getByRole("button", { name: "繼續故事" }));
@@ -366,7 +385,7 @@ it("keeps AUTO_ADVANCE reading and mobile tabs separate from simulation commands
   expect(advance).not.toHaveBeenCalled();
   expect(choose).not.toHaveBeenCalled();
   expect(
-    within(screen.getByRole("tabpanel", { name: "生活" })).getByText(
+    within(screen.getByRole("tabpanel", { name: "紀錄" })).getByText(
       "有人接下一段工作。",
     ),
   ).toBeTruthy();
@@ -490,12 +509,12 @@ it("presents only supplied player choices and distinguishes anticipation from ob
     />,
   );
   expect(screen.getByText("心裡預期：也許對方正忙")).toBeTruthy();
-  expect(screen.getByText(/實際觀察 · 孩子 · 理解與支持/)).toBeTruthy();
-  expect(screen.getByText(/前一段生活：上一次交接時/)).toBeTruthy();
+  expect(screen.queryByText(/實際觀察 · 孩子 · 理解與支持/)).toBeNull();
+  expect(screen.queryByText(/前一段生活：上一次交接時/)).toBeNull();
   expect(
     within(screen.getByRole("tabpanel", { name: "生活" })).getByRole("status")
       .textContent,
-  ).toContain("最近的實際觀察");
+  ).toContain("等待你的選擇");
   await userEvent.click(
     screen.getByRole("button", { name: /一起確認可以接手的事/ }),
   );

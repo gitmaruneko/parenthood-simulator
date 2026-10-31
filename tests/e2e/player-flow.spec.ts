@@ -1,10 +1,67 @@
 import { test, expect, type Page } from "@playwright/test";
-import { createFamilyRun } from "../../src/engine/index.js";
+import { createFamilyRun, projectJournal } from "../../src/engine/index.js";
 import { legacyState } from "../helpers/legacy-state.js";
 import { serializeGame } from "../../src/persistence/index.js";
 import { readFileSync } from "node:fs";
 
 const key = "parenthood-simulator.save";
+test("saved journal choices are bold, actual results sort newest first and reload preserves every record", async ({ page, isMobile }) => {
+  await seedSave(page, serializeGame(createFamilyRun({ seed: 42 }).state));
+  await page.goto("/");
+  await page.getByRole("button", { name: "繼續上次生活", exact: true }).click();
+  await startFamily(page);
+  await page.locator(".event-panel").getByRole("button", { name: /詢問太太能否完整接手這一段/ }).click();
+  await waitForSaved(page);
+  const raw = (await page.evaluate(key => localStorage.getItem(key), key))!;
+  const state = JSON.parse(raw).state;
+  const expected = projectJournal(state).reverse();
+  if (isMobile) await page.getByRole("tab", { name: "紀錄", exact: true }).click();
+  const log = page.getByRole("list", { name: "已發生的事件" });
+  await expect(log.locator("li > p")).toHaveText(expected.map(entry => entry.text));
+  await expect(log.locator("strong")).toHaveText(["詢問太太能否完整接手這一段"]);
+  await expect(log).toContainText("你向太太提出完整交接的詢問");
+  await expect(log).toContainText("還沒有把交接當成已完成");
+  await expect(page.locator(".reaction-label, .chosen")).toHaveCount(0);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  const before = await log.locator("li > p").allTextContents();
+  await page.screenshot({ path: `test-results/journal-${isMobile ? "mobile" : "desktop"}.png`, fullPage: true });
+  await page.reload();
+  await page.getByRole("button", { name: "繼續上次生活", exact: true }).click();
+  if (isMobile) await page.getByRole("tab", { name: "紀錄", exact: true }).click();
+  expect(await log.locator("li > p").allTextContents()).toEqual(before);
+  expect(await page.evaluate(key => localStorage.getItem(key), key)).toBe(raw);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test("v5 stories retain their original text and mix safely with new journal snapshots", async ({ page, isMobile }) => {
+  const fixture = JSON.parse(readFileSync(new URL("../helpers/v5-journal-saves.json", import.meta.url), "utf8"))[2];
+  const raw = JSON.stringify(fixture);
+  await seedSave(page, raw);
+  await page.goto("/");
+  await page.getByRole("button", { name: "更新存檔並繼續", exact: true }).click();
+  const read = page.getByRole("button", { name: "繼續故事", exact: true });
+  await expect(read).toBeVisible();
+  if (isMobile) await page.getByRole("tab", { name: "紀錄", exact: true }).click();
+  const log = page.getByRole("list", { name: "已發生的事件" });
+  await expect(log).toContainText("你在這次事件做了選擇。");
+  expect(await page.evaluate(key => localStorage.getItem(`${key}.preserved.0`), key)).toBe(raw);
+  const migrated = JSON.parse((await page.evaluate(key => localStorage.getItem(key), key))!);
+  expect(migrated.state).toEqual(fixture.state);
+  if (isMobile) await page.getByRole("tab", { name: "生活", exact: true }).click();
+  await read.click();
+  await page.locator(".event-panel").getByRole("button").first().click();
+  await waitForSaved(page);
+  if (isMobile) await page.getByRole("tab", { name: "紀錄", exact: true }).click();
+  await expect(log).toContainText("天亮後");
+  const saved = (await page.evaluate(key => localStorage.getItem(key), key))!;
+  expect(JSON.parse(saved).state.history.slice(0, fixture.state.history.length)).toEqual(fixture.state.history);
+  const before = await log.locator("li > p").allTextContents();
+  await page.reload();
+  await page.getByRole("button", { name: "繼續上次生活", exact: true }).click();
+  if (isMobile) await page.getByRole("tab", { name: "紀錄", exact: true }).click();
+  expect(await log.locator("li > p").allTextContents()).toEqual(before);
+});
+
 test("explicit kinship titles stay consistent in reveal, real choices and restored member cards", async ({ page, isMobile }) => {
   const run = createFamilyRun({ seed: 4294967295 });
   await seedSave(page, serializeGame(run.state));
@@ -39,7 +96,7 @@ test("v4 migration keeps coarse elder kinship neutral and preserves original byt
   await expect(page.locator(".reveal .member h3")).toHaveText(["孩子（小樹）", "你的家中長輩（不同住）"]);
   expect(await page.evaluate(key => localStorage.getItem(`${key}.preserved.0`), key)).toBe(raw);
   const saved = JSON.parse((await page.evaluate(key => localStorage.getItem(key), key))!);
-  expect(saved.schemaVersion).toBe(5);
+  expect(saved.schemaVersion).toBe(6);
   expect(saved.state.actorProfiles).toEqual(fixture.state.actorProfiles);
   expect(saved.state.history).toEqual(fixture.state.history);
 });
@@ -218,7 +275,7 @@ test("browse original previews, reroll, choose, read reactions, restore and pres
   const life = page.getByRole("tabpanel", { name: "生活", exact: true });
   await life.getByRole("button").first().click();
   await expect(life.getByText("故事正在發展", { exact: true })).toBeVisible();
-  await expect(life.getByText(/實際觀察 ·/).first()).toBeVisible();
+  await expect(page.locator(".reaction-label")).toHaveCount(0);
   const saved = await page.evaluate((key) => localStorage.getItem(key), key);
   await life.getByRole("button", { name: "繼續故事", exact: true }).click();
   expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(
@@ -417,6 +474,7 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
   await expect(
     page.getByRole("heading", { name: "我們的家庭生活回顧" }),
   ).toBeVisible();
+  await expect(page.locator(".review-shell > section").nth(1).locator(".review-moment strong")).toHaveCount(3);
   const saved = await page.evaluate((key) => localStorage.getItem(key), key);
   await page.getByRole("button", { name: "返回首頁", exact: true }).click();
   await expect(

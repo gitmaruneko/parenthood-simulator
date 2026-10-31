@@ -691,6 +691,16 @@ button .muted,
   min-width: 0;
   overflow-wrap: anywhere;
 }
+.log-entry > p {
+  flex: 1 1 100%;
+  margin: 4px 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  font-weight: 400;
+}
+.log-entry strong { font-weight: 700; }
+.review-moment p { white-space: pre-line; font-weight: 400; }
+.review-moment strong { font-weight: 700; }
 .bottom-tabs,
 .drawer-toggle,
 .mobile-members,
