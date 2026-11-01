@@ -1,5 +1,11 @@
 # 可保存的生活紀錄
 
+Issue #42 的08A試玩增加一般 `narrative` 結果：已執行選項的具體動作可以有獨立
+正文，保存為 history.kind=narrative、Journal.kind=result，沿原來源錨點與排序驗證。
+它不增加節點、planning或support／repair統計；孩子回應仍取實際Reaction，none不造
+對白。v8要求每筆narrative有自己的result快照；舊v1–v7拒收新kind且不回填正文。
+詳見[相容與試玩範圍](implementation/ISSUE-42-08A-SLICE.md)。
+
 T5（#39）將必要選擇移至唯一 Dialog，取代 T4 暫留的內嵌選項。保存成功直接定位
 最新紀錄；保存失敗時 Dialog 保留當次同源 Journal 快照及原選項粗體，不重送 CHOOSE。
 快照與排序契約不變；見 [重大抉擇與恢復](DECISION_DIALOG.md)。

@@ -81,10 +81,43 @@ export function createRunContent(state: GameState): ContentPack {
 // A saved checkpoint must retain the outstanding edge, never silently rebuild it.
 export function validatePreviewProgress(state: GameState, content: ContentPack): void {
   const ids = new Set(content.events.map(event => event.id));
+  const stages = new Set(content.ageStages.map(stage => stage.id));
+  const stageReferences = [state.currentAgeStageId, ...state.history.map(row => row.ageStageId),
+    ...state.choiceHistory.map(row => row.ageStageId), ...(state.reactionHistory ?? []).map(row => row.ageStageId),
+    ...state.scheduledFollowUps.map(row => row.targetAgeStageId), ...(state.completedAgeStages ?? []).map(row => row.ageStageId)];
+  if (stageReferences.some(id => !stages.has(id))) throw new Error("Unavailable stage reference");
   const references = [...state.completedEventIds, ...state.choiceHistory.map(row => row.eventId),
+    ...(state.reactionHistory ?? []).map(row => row.eventId), ...(state.turn?.processedEventIds ?? []),
     ...state.scheduledFollowUps.map(row => row.eventId), ...state.history.flatMap(row => row.resolvedEventId ? [row.resolvedEventId] : []),
     ...(state.eventProgress ? [state.eventProgress.eventId] : [])];
   if (references.some(id => !ids.has(id))) throw new Error("Unavailable story reference");
+  const anchors = state.history.filter(row => row.resolvedEventId !== undefined);
+  if (state.eventProgress && state.eventProgress.eventId !== content.fallbackEventId &&
+      content.events.find(event => event.id === state.eventProgress!.eventId)!.ageStageId !== state.currentAgeStageId)
+    throw new Error("Pending event belongs to another stage");
+  if (state.turn && state.turn.nodeCount !== anchors.filter(row => row.turnId === state.currentTurnId).length ||
+      state.ageStageProgress && state.ageStageProgress.nodeCount !== anchors.filter(row => row.ageStageId === state.currentAgeStageId).length ||
+      state.completedAgeStages?.some(stage => stage.nodeCount !== anchors.filter(row => row.ageStageId === stage.ageStageId).length))
+    throw new Error("Inconsistent resolved node counts");
+  const resolvedIds = new Set(anchors.map(row => row.resolvedEventId!));
+  if (new Set(state.completedEventIds).size !== state.completedEventIds.length || resolvedIds.size !== state.completedEventIds.length ||
+      state.completedEventIds.some(id => !resolvedIds.has(id))) throw new Error("Inconsistent completed events and history");
+  for (const anchor of anchors) {
+    const event = content.events.find(event => event.id === anchor.resolvedEventId)!;
+    if (event.id !== content.fallbackEventId && event.ageStageId !== anchor.ageStageId) throw new Error("Wrong event stage");
+    if (event.kind === "choice" && state.choiceHistory.filter(choice => choice.eventId === event.id &&
+        choice.turnId === anchor.turnId && choice.ageStageId === anchor.ageStageId).length !== 1)
+      throw new Error("Missing resolved choice");
+  }
+  for (const choice of state.choiceHistory) {
+    if (anchors.filter(row => row.resolvedEventId === choice.eventId && row.turnId === choice.turnId && row.ageStageId === choice.ageStageId).length !== 1 ||
+        !content.events.find(event => event.id === choice.eventId)!.choices.some(option => option.id === choice.choiceId))
+      throw new Error("Choice without matching event occurrence");
+  }
+  for (const scheduled of state.scheduledFollowUps) {
+    if (content.events.find(event => event.id === scheduled.eventId)!.ageStageId !== scheduled.targetAgeStageId)
+      throw new Error("Wrong scheduled stage");
+  }
   const check = (path: readonly string[], crossesTurn = true) => {
     if (!state.completedEventIds.includes(path[0]!)) return;
     for (let i = 1; i < path.length; i++) {

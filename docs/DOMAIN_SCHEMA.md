@@ -1,5 +1,14 @@
 # Domain Schema and Content Validation
 
+Issue #42 preview adds content schema v2 ordinary `narrative` effects/history,
+projected as sourced Journal `result` snapshots. They are not resolved EventNodes
+and do not count as planning/support/repair. The v1 content validator rejects
+narrative effects; frozen legacy save schemas reject this new kind and binding.
+New preview states use GameState v2 with a required, content-aware v8 save
+contract (`contentBinding`, saved replay actors/profiles); legacy runtime states
+remain v1 and save as v7. See [persistence](PERSISTENCE.md) and the
+[pilot guarantees](implementation/ISSUE-42-08A-SLICE.md).
+
 UX v2 T2 (#36): [Actor profiles](ACTOR_PROFILES.md) defines the versioned
 identity/relationship/habit contract, opening replay snapshot and actor-bound
 text templates. [Save v7](PERSISTENCE.md) validates identity references and

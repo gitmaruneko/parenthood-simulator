@@ -1,5 +1,34 @@
 # Save and restore (issue #9)
 
+## Issue #42 08A preview compatibility
+
+New UI stories use the immutable `family-events-08a-v1` release: save envelope
+v8, GameState v2, required `contentBinding` (`releaseId`, `assemblyVersion: 2`,
+SHA-256 `familyKey`) and complete saved replay actors/profiles. Ordinary results
+may have history kind `narrative`, projecting to the existing Journal `result`.
+They do not add EventNodes, planning evidence or support/repair classifications.
+
+`serializeGame` writes **v8 for bound preview states and v7 for legacy states**.
+The v1–v7 reader/writer is frozen in `legacy-save-format.ts`; the existing
+migrations still target legacy v7 and preserve original bytes. Loading a v7
+story never upgrades its content. The following historical format table and
+v7 API examples describe that legacy path, not all current writes.
+
+Preview restore validates the binding against the installed release and saved
+family/actors, known stages/event references, completed IDs against event/choice
+history, node counts, sourced narrative snapshots and outstanding guaranteed
+continuations (including the stage-6 support). Missing queues or inconsistent
+history are rejected without synthesizing follow-ups. Unknown releases or
+assembly versions report incompatibility; corrupt data retains raw bytes.
+Reload and Replay rebuild entries from the saved binding, never new randomness.
+The core selection and Scheduler remain unchanged.
+
+v8 files cannot be opened by the old v7 bundle. Reverting the UI alone cannot
+continue new preview saves; retain this reader/release or deploy a compatible
+reader. Legacy stories remain on the original path. See the
+[slice scope and guarantees](implementation/ISSUE-42-08A-SLICE.md) for the
+37-node pilot and deferred full expansion.
+
 UX v2 T5 (#39) keeps Save v7 unchanged. Session retains the accepted decision
 and its Journal records until persistence succeeds; retry saves the same state,
 without another CHOOSE or PRNG draw. Conflicts offer a warned return to the
@@ -27,6 +56,7 @@ boundary rather than implement storage or migration rules.
 | 5 | `{ schemaVersion: 5, state: GameState }` with direction and supported actor profiles | Strictly validate old history without journal fields, preserve data and migrate to v7; report `migratedFrom: 5` |
 | 6 | `{ schemaVersion: 6, state: GameState }` with optional choice/result journal snapshots | Strictly validate the v6 contract, preserve all history and migrate to v7; report `migratedFrom: 6` |
 | 7 | `{ schemaVersion: 7, state: GameState }` with optional choice/result/daily snapshots | Validate sources, ordering, choice/reaction indices, daily completion keys and child binding; report `migratedFrom: null` |
+| 8 | `{ schemaVersion: 8, state: GameState v2 }` with a required preview binding | Validate release, family key, replay actors/profiles, narrative snapshots, catalogue references and outstanding story obligations; report `migratedFrom: null` |
 | Other | Unknown save or nested state version | Return `incompatible-version`, preserving the original bytes |
 
 The save version is independent of the domain's `GameState.schemaVersion`,
@@ -52,7 +82,7 @@ pending-input consistency. Required PRNG state cannot be substituted with seed.
 
 ## Public operations
 
-- `serializeGame(state)` returns a version-7 JSON string. Invalid state throws a
+- `serializeGame(state)` returns v8 for bound previews and v7 for legacy states. Invalid state throws a
   validation error; store operations convert that into a readable result.
 - `restoreGame(rawData)` returns `restored` with state and migration information,
   or `error` with a stable code, Traditional Chinese message, and exact raw data.

@@ -4,6 +4,20 @@ import { bindPreviewRun, createRunContent } from "../../src/content/releases.js"
 import { serializeGame } from "../../src/persistence/index.js";
 import { TOY_CAR_ROOT } from "../../src/content/toy-car-story.js";
 
+test("isolated 08A shortcut preserves the original story and resumes only its own playtest", async ({ page }) => {
+  const original = serializeGame(createFamilyRun({ seed: 2 }).state);
+  await page.addInitScript(raw => localStorage.setItem("parenthood-simulator.save", raw), original);
+  await page.goto("/preview-08a.html");
+  await expect(page.getByRole("dialog", { name: "搶回來的那台小車", exact: true })).toBeVisible();
+  await page.getByRole("dialog").getByRole("button").first().click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  const checkpoint = await page.evaluate(() => Object.fromEntries(Object.keys(sessionStorage).map(key => [key, sessionStorage.getItem(key)])));
+  await page.reload();
+  await expect(page.getByRole("list", { name: "已發生的事件" })).toContainText("你把兩台小車放到桌邊");
+  expect(await page.evaluate(() => localStorage.getItem("parenthood-simulator.save"))).toBe(original);
+  expect(await page.evaluate(() => Object.fromEntries(Object.keys(sessionStorage).map(key => [key, sessionStorage.getItem(key)])))).toEqual(checkpoint);
+});
+
 test("08A: reload pending and across turns, render independent narrative results and finish the complete story", async ({ page, isMobile }) => {
   const run = bindPreviewRun(createFamilyRun({ seed: 9, firstAgeStageId: "age-stage-8" }));
   const content = createRunContent(run.state);

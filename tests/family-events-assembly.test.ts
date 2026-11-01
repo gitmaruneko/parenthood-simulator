@@ -75,6 +75,7 @@ it("keeps current bytes on unknown releases, assembly mismatches, wrong profiles
     (save: typeof data) => { save.state.contentBinding.releaseId = "future-release"; },
     (save: typeof data) => { save.state.contentBinding.assemblyVersion = 3; },
     (save: typeof data) => { delete save.state.replayOrigin; },
+    (save: typeof data) => { save.state.currentAgeStageId = "missing-stage"; },
     (save: typeof data) => { save.state.family.workArrangement = "unstable"; },
     (save: typeof data) => { save.state.history.push({ id: "fake", resolvedEventId: "toy-car-story-choice",
       kind: "narrative", text: "Not a node", turnId: "age-stage-1-turn-1", ageStageId: "age-stage-1" }); },

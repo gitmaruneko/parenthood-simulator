@@ -75,6 +75,10 @@ it("rejects a removed guaranteed queue and never accepts preview results disguis
   const missing = JSON.parse(serializeGame(chosen));
   missing.state.scheduledFollowUps = [];
   expect(restoreGame(JSON.stringify(missing))).toMatchObject({ status: "error" });
+  const bypass = JSON.parse(serializeGame(chosen));
+  bypass.state.completedEventIds = [];
+  bypass.state.scheduledFollowUps = [];
+  expect(restoreGame(JSON.stringify(bypass))).toMatchObject({ status: "error" });
   for (const version of [1,2,3,4,5,6,7]) {
     const fake = structuredClone(chosen);
     delete fake.contentBinding; fake.schemaVersion = 1;
