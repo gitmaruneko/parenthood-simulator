@@ -24,3 +24,20 @@
 ## 驗證範圍
 
 既定公開邊界：內容schema／組裝、transitionGame、serialize／restore、Family Review，以及Session／瀏覽器試玩。逐項覆蓋所有08A根與後續選項、none及具體回應、4／6預算、每局支持／planning／修復、固定語料分布、資料重排、逐checkpoint續玩、Replay、舊格式拒收新資料與保存失敗重試。對缺queue／未知release／不符familyKey／來源錯掛必須拒收，不重建虛構歷史。
+
+## 試玩與證據
+
+執行`npm run dev`，開啟`http://127.0.0.1:5173/preview-08a.html`可直接試玩08A。
+此開發捷徑使用獨立sessionStorage，不寫原localStorage；重新整理接續本次試玩，
+「重新體驗這段故事」另開新的試玩記錄。它釘選入口以方便試讀，**不作抽選證據**，
+也不包進預設production build。正常首頁的新局仍自然抽選第8階段E／08A。
+
+- [桌機截圖](../examples/ISSUE-42-08A-DESKTOP.png)、[手機截圖](../examples/ISSUE-42-08A-MOBILE.png)：實際瀏覽器結果，已視覺檢查；只有選項加粗、結果各顯示一次。
+- [真實Journal輸出](../examples/ISSUE-42-08A-JOURNAL.json)、[待選checkpoint](../examples/ISSUE-42-08A-PENDING.json)：seed9、釘選08A、enact／invite，實際引擎產生；6節點／2 Turn。不是全局覆蓋證據。
+- [自然入口統計](../examples/ISSUE-42-DISTRIBUTION.json)：核准4096 seed語料×6方向。一般方向08A為2042／4096（49.8535%，期望50%）；親子方向1952／4096（47.6563%，期望47.9167%）；全部在事前容差內。這是隔離第8階段固定家庭的24,576次抽選，不冒稱全48家庭／12階段的大樣本分布已完成。
+- [兩路Review](ISSUE-42-REVIEW.md)：Standards首次2項、Spec首次1項，修正及複審後各0 open。
+
+最終驗證：`npm test` 25檔／323測試全部通過；`npm run typecheck`及`npm run build`通過；
+`npm run test:e2e`桌機／手機56項全部通過。既有golden、v1–v7歷史fixture未改寫。
+
+回滾注意：舊bundle不能讀新preview v8；若回退UI仍須保留此reader及release。舊局v7路徑與原始備份繼續保留。本PR不合併、不發布正式內容，也不關閉#42；先由使用者試玩確認再批次擴充。
