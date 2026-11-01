@@ -519,6 +519,12 @@ export const validateContentPack = (input: unknown): ContentValidationResult => 
   }
 
   const issues = validateCrossReferences(parsed.data);
+  const sources = [...parsed.data.events.flatMap(event => [event, ...event.choices]),
+    ...parsed.data.reactionPools.flatMap(pool => pool.entries)];
+  if (![1, 2].includes(parsed.data.schemaVersion) || (parsed.data.schemaVersion === 1 &&
+      sources.some(source => source.storyEntries?.some(entry => entry.kind === "narrative")))) {
+    addIssue(issues, "SCHEMA_INVALID", "schemaVersion", "narrative results require content schema version 2");
+  }
   if (issues.length > 0) {
     return { success: false, issues };
   }

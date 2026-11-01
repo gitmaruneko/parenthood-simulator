@@ -1,4 +1,4 @@
-import type { ContentPack } from "../domain/schemas.js";
+import type { ContentPack, GameState } from "../domain/schemas.js";
 import { profileMatchesActorRole } from "../domain/actor-profiles.js";
 import { getPlayerView } from "../engine/index.js";
 import type { LoadResult, LocalSaveStore } from "./local-save-store.js";
@@ -28,7 +28,7 @@ export const checkingSave: HomeSaveView = {
 // Classify only validated persistence results; raw data never reaches React.
 export const inspectPlayerSave = (
   store: LocalSaveStore,
-  content: ContentPack,
+  contentSource: ContentPack | ((state: GameState) => ContentPack),
 ): {
   load: LoadResult;
   view: HomeSaveView;
@@ -36,6 +36,7 @@ export const inspectPlayerSave = (
   let load = store.load();
   if (load.status === "restored") {
     try {
+      const content = typeof contentSource === "function" ? contentSource(load.state) : contentSource;
       // The save schema cannot know which actor IDs the installed content supports.
       const { family, actorProfiles } = load.state;
       const ids = [family.childId, ...family.persistentActorIds];
@@ -97,7 +98,7 @@ export const inspectPlayerSave = (
         canStartNew: true,
       },
     };
-  const game = getPlayerView(load.state, content);
+  const game = getPlayerView(load.state, typeof contentSource === "function" ? contentSource(load.state) : contentSource);
   return {
     load,
     view: game.completed

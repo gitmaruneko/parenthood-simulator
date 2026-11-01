@@ -143,7 +143,7 @@ export const narrativeEffectsSchema = z.object({
     createdAtAgeStageId: true, createdAtTurn: true,
   })).optional(),
   storyEntries: z.array(z.object({
-    kind: z.enum(["planning", "support", "repair"]),
+    kind: z.enum(["planning", "support", "repair", "narrative"]),
     text: z.string().min(1),
     actorText: actorTextSchema.optional(),
   }).strict()).optional(),
@@ -416,7 +416,7 @@ export const storyEntrySchema = z
     resolvedEventId: identifierSchema.optional(),
     ageStageId: identifierSchema,
     turnId: identifierSchema,
-    kind: z.enum(["event", "reaction", "support", "repair", "planning"]),
+    kind: z.enum(["event", "reaction", "support", "repair", "planning", "narrative"]),
     text: z.string().min(1),
     journal: z.array(journalEntrySchema).optional(),
   })
@@ -477,8 +477,14 @@ export const reactionHistoryEntrySchema = observedReactionSchema.extend({
   turnId: identifierSchema,
 });
 
+export const contentBindingSchema = z.object({
+  releaseId: identifierSchema, assemblyVersion: z.number().int().positive(),
+  familyKey: z.string().regex(/^[a-f0-9]{64}$/),
+}).strict();
+
 export const gameStateSchema = z
   .object({
+    contentBinding: contentBindingSchema.optional(),
     activeFamilyLifeDirectionId: familyLifeDirectionIdSchema.default("flexible"),
     schemaVersion: z.number().int().positive(),
     seed: z.number().int().min(0).max(0xffffffff),
