@@ -86,11 +86,13 @@ export function ReviewScreen({ game, blocked, onSelect, onReplay, onNew }: {
         catch { setCopyStatus("無法自動複製，請選取上方文字自行複製。"); }
       }}>複製分享文字</button>
       <p role="status">{copyStatus}</p>
+      <p id="replay-context">開始前會確認替換紀錄。{game.openingResources
+        ? "相同種子保留開場處境，新的選擇仍可能改變故事。"
+        : "這份舊故事缺少開場快照；相同種子將使用預設開場，無法還原原本的測驗答案與人物細節。"}</p>
       <div className="opening-actions">
-        <button disabled={blocked} onClick={onReplay}>相同種子，再走一次</button>
+        <button disabled={blocked} aria-describedby="replay-context" onClick={onReplay}>相同種子，再走一次</button>
         <button disabled={blocked} onClick={onNew}>認識新的家庭</button>
       </div>
-      <p>開始前會確認替換紀錄。相同種子保留開場處境，新的選擇仍可能改變故事。</p>
     </section>
   </main>;
 }

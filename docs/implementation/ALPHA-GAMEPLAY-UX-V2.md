@@ -1,5 +1,9 @@
 # Alpha Gameplay UX Redesign v2：影響分析與 Ticket 計畫
 
+2026-11-01 T6 補註：本文件保留 2026-10-25 的影響分析與版本提案；現行正式格式已為
+Save envelope v7／GameState v1（T4 升版、T5 沿用）。T6 的相容驗收擴至 v1–v7；
+執行證據與未完成人工項目見 [UX v2 整合驗收](../UX_V2_ACCEPTANCE.md)。
+
 日期：2026-10-25（Asia/Taipei）。狀態：使用者已確認，授權建票並先實作 T1。目標行為的單一來源為 [UI/UX §11](../UI_UX_SPEC.md#11-alpha-gameplay-ux-redesign-v2)。本計畫採專案 to-spec／to-tickets 的可驗收垂直切片方式；每票獨立驗收、Review、PR 與合併，不一次實作全案。
 
 ## 1. 分析基準與進行中工作的邊界
