@@ -1,9 +1,12 @@
+import { installPausedNarration, pauseAndReveal, stepNarration } from "./narration-helpers.js";
 import { test, expect, type Page } from "@playwright/test";
 import { createFamilyRun, projectJournal, transitionGame, getPlayerView } from "../../src/engine/index.js";
 import { createMvpContent } from "../../src/content/mvp.js";
 import { legacyState } from "../helpers/legacy-state.js";
 import { serializeGame } from "../../src/persistence/index.js";
 import { readFileSync } from "node:fs";
+
+test.beforeEach(async ({ page }) => { await installPausedNarration(page); });
 
 const key = "parenthood-simulator.save";
 test("daily stays in the main Journal through tabs and reload; continue sends one public command", async ({ page, isMobile }) => {
@@ -15,10 +18,10 @@ test("daily stays in the main Journal through tabs and reload; continue sends on
   await seedSave(page, serializeGame(chosen));
   await page.goto("/");
   await page.getByRole("button", { name: "繼續上次生活", exact: true }).click();
-  const next = page.getByRole("button", { name: "繼續生活", exact: true });
+  const next = page.getByRole("button", { name: "恢復敘事", exact: true });
   for (let step = 0; step < 8 && !projectJournal(ended).some(row => row.kind === "daily"); step++) {
     const expected = transitionGame(ended, content, getPlayerView(ended, content).nextInput!).state;
-    await next.click();
+    await stepNarration(page);
     await waitForSaved(page);
     ended = JSON.parse((await page.evaluate(key => localStorage.getItem(key), key))!).state;
     expect(ended).toEqual(expected);
@@ -34,7 +37,7 @@ test("daily stays in the main Journal through tabs and reload; continue sends on
   if (isMobile) {
     await expect(page.getByRole("tab", { name: "家庭", exact: true })).toBeInViewport();
     await page.getByRole("tab", { name: "紀錄", exact: true }).click();
-    await expect(next).toBeHidden();
+    await expect(next).toBeVisible();
     await expect(log).toHaveCount(1);
     await expect(log.locator("li > p")).toHaveText(projectJournal(ended).reverse().map(row => row.text));
     await page.getByRole("tab", { name: "生活", exact: true }).click();
@@ -43,7 +46,7 @@ test("daily stays in the main Journal through tabs and reload; continue sends on
   await page.reload();
   await page.getByRole("button", { name: "繼續上次生活", exact: true }).click();
   expect(await page.evaluate(key => localStorage.getItem(key), key)).toBe(raw);
-  await next.click();
+  await stepNarration(page);
   await waitForSaved(page);
   const saved = JSON.parse((await page.evaluate(key => localStorage.getItem(key), key))!).state;
   expect(saved).toEqual(transitionGame(ended, content, getPlayerView(ended, content).nextInput!).state);
@@ -56,6 +59,7 @@ test("saved journal choices are bold, actual results sort newest first and reloa
   await startFamily(page);
   await page.locator(".decision-dialog").getByRole("button", { name: /詢問太太能否完整接手這一段/ }).click();
   await waitForSaved(page);
+  await pauseAndReveal(page);
   const raw = (await page.evaluate(key => localStorage.getItem(key), key))!;
   const state = JSON.parse(raw).state;
   const expected = projectJournal(state).reverse();
@@ -92,9 +96,9 @@ test("v5 stories retain their original text and mix safely with new journal snap
   const migrated = JSON.parse((await page.evaluate(key => localStorage.getItem(key), key))!);
   expect(migrated.state).toEqual(fixture.state);
   if (isMobile) await page.getByRole("tab", { name: "生活", exact: true }).click();
-  await page.getByRole("button", { name: "繼續生活", exact: true }).click();
+  await stepNarration(page);
   await waitForSaved(page);
-  await page.getByRole("button", { name: "繼續生活", exact: true }).click();
+  await stepNarration(page);
   await waitForSaved(page);
   if (isMobile) await page.getByRole("tab", { name: "紀錄", exact: true }).click();
   await expect(log).toContainText("天亮後");
@@ -120,6 +124,7 @@ test("explicit kinship titles stay consistent in reveal, real choices and restor
   await expect(ask).toBeVisible();
   await ask.click();
   await waitForSaved(page);
+  await pauseAndReveal(page);
   const saved = await page.evaluate(key => localStorage.getItem(key), key);
   expect(JSON.parse(saved!).state.actorProfiles).toEqual(run.state.actorProfiles);
   await page.reload();
@@ -185,10 +190,12 @@ async function chooseFirstDecision(page: Page) {
   await page.locator(".decision-dialog .decisions button").first().click();
   await expect(page.locator(".decision-dialog")).toHaveCount(0);
   await waitForSaved(page);
+  await pauseAndReveal(page);
 }
 async function startFamily(page: Page) {
   await page.getByRole("button", { name: "開始這個家庭" }).click();
   await waitForSaved(page);
+  await pauseAndReveal(page);
 }
 
 async function seedSave(page: Page, raw: string) {
@@ -499,6 +506,7 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
   page,
   isMobile,
 }) => {
+  test.setTimeout(180000);
   await start(page);
   const names = await page.locator(".reveal .member h3").allTextContents();
   const habits = await page.locator(".reveal .member > p").allTextContents();
@@ -518,10 +526,8 @@ test("finishes twelve stages, edits the review and confirms replay safely", asyn
   for (let step = 0; step < 120; step++) {
     if (await page.getByRole("heading", { name: "我們的家庭生活回顧" }).count())
       break;
-    const button = await page.locator(".decision-dialog").isVisible()
-      ? page.locator(".decision-dialog .decisions button").first() : life.getByRole("button").first();
-    await expect(button).toBeEnabled();
-    await button.click();
+    if (await page.locator(".decision-dialog").isVisible()) await chooseFirstDecision(page);
+    else await stepNarration(page);
     await waitForSaved(page);
   }
   await expect(

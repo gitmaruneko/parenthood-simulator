@@ -1,0 +1,1794 @@
+﻿[
+    {
+        "case":  "ux-v2-acceptance-multigene-25162-urnal-and-both-replay-modes-desktop",
+        "evidence":  {
+                         "scenario":  {
+                                          "name":  "multigenerational",
+                                          "seed":  2,
+                                          "household":  "multigenerational",
+                                          "care":  "uneven",
+                                          "path":  "coordinate"
+                                      },
+                         "stages":  12,
+                         "records":  55,
+                         "daily":  4,
+                         "choices":  14,
+                         "events":  [
+                                        "night-handoff-choice",
+                                        "night-handoff-reflection",
+                                        "mvp-breathing-space",
+                                        "night-handoff-support",
+                                        "night-handoff-reconnect",
+                                        "night-handoff-repair",
+                                        "meal-preparation-choice",
+                                        "meal-preparation-reflection",
+                                        "backup-contact-choice",
+                                        "backup-contact-reflection",
+                                        "grandparent-boundary-choice",
+                                        "grandparent-boundary-reflection",
+                                        "leaving-playground-choice",
+                                        "leaving-playground-reflection",
+                                        "shared-ownership-choice",
+                                        "shared-ownership-reflection",
+                                        "rainy-pickup-choice",
+                                        "rainy-pickup-reflection",
+                                        "preschool-handoff-choice",
+                                        "preschool-handoff-reflection",
+                                        "preschool-handoff-support",
+                                        "preschool-handoff-reconnect",
+                                        "preschool-handoff-repair",
+                                        "school-notice-choice",
+                                        "school-notice-reflection",
+                                        "quiet-time-choice",
+                                        "quiet-time-reflection",
+                                        "family-ritual-choice",
+                                        "family-ritual-reflection",
+                                        "school-transition-choice",
+                                        "school-transition-reflection"
+                                    ],
+                         "schedules":  [
+                                           {
+                                               "eventId":  "night-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-1",
+                                               "id":  "scheduled-age-stage-1-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-support",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-1-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "meal-preparation-reflection",
+                                               "targetAgeStageId":  "age-stage-2",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-2-turn-1",
+                                               "id":  "scheduled-age-stage-2-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "backup-contact-reflection",
+                                               "targetAgeStageId":  "age-stage-3",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-3-turn-1",
+                                               "id":  "scheduled-age-stage-3-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "grandparent-boundary-reflection",
+                                               "targetAgeStageId":  "age-stage-4",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-4-turn-1",
+                                               "id":  "scheduled-age-stage-4-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "leaving-playground-reflection",
+                                               "targetAgeStageId":  "age-stage-5",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-5-turn-1",
+                                               "id":  "scheduled-age-stage-5-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "shared-ownership-reflection",
+                                               "targetAgeStageId":  "age-stage-6",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-6-turn-1",
+                                               "id":  "scheduled-age-stage-6-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "rainy-pickup-reflection",
+                                               "targetAgeStageId":  "age-stage-7",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-7-turn-1",
+                                               "id":  "scheduled-age-stage-7-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-1",
+                                               "id":  "scheduled-age-stage-8-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-support",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-8-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-notice-reflection",
+                                               "targetAgeStageId":  "age-stage-9",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-9-turn-1",
+                                               "id":  "scheduled-age-stage-9-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "quiet-time-reflection",
+                                               "targetAgeStageId":  "age-stage-10",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-10-turn-1",
+                                               "id":  "scheduled-age-stage-10-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "family-ritual-reflection",
+                                               "targetAgeStageId":  "age-stage-11",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-11-turn-1",
+                                               "id":  "scheduled-age-stage-11-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-transition-reflection",
+                                               "targetAgeStageId":  "age-stage-12",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-12-turn-1",
+                                               "id":  "scheduled-age-stage-12-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           }
+                                       ],
+                         "selectedMoments":  [
+                                                 "story-age-stage-7-turn-1-1",
+                                                 "story-age-stage-12-turn-1-1",
+                                                 "story-age-stage-11-turn-1-1"
+                                             ],
+                         "finalRngState":  2895837264,
+                         "finalResources":  {
+                                                "finances":  79,
+                                                "energy":  14,
+                                                "support":  83,
+                                                "timeFlexibility":  0,
+                                                "connection":  33
+                                            }
+                     }
+    },
+    {
+        "case":  "ux-v2-acceptance-multigene-25162-urnal-and-both-replay-modes-mobile",
+        "evidence":  {
+                         "scenario":  {
+                                          "name":  "multigenerational",
+                                          "seed":  2,
+                                          "household":  "multigenerational",
+                                          "care":  "uneven",
+                                          "path":  "coordinate"
+                                      },
+                         "stages":  12,
+                         "records":  55,
+                         "daily":  4,
+                         "choices":  14,
+                         "events":  [
+                                        "night-handoff-choice",
+                                        "night-handoff-reflection",
+                                        "mvp-breathing-space",
+                                        "night-handoff-support",
+                                        "night-handoff-reconnect",
+                                        "night-handoff-repair",
+                                        "meal-preparation-choice",
+                                        "meal-preparation-reflection",
+                                        "backup-contact-choice",
+                                        "backup-contact-reflection",
+                                        "grandparent-boundary-choice",
+                                        "grandparent-boundary-reflection",
+                                        "leaving-playground-choice",
+                                        "leaving-playground-reflection",
+                                        "shared-ownership-choice",
+                                        "shared-ownership-reflection",
+                                        "rainy-pickup-choice",
+                                        "rainy-pickup-reflection",
+                                        "preschool-handoff-choice",
+                                        "preschool-handoff-reflection",
+                                        "preschool-handoff-support",
+                                        "preschool-handoff-reconnect",
+                                        "preschool-handoff-repair",
+                                        "school-notice-choice",
+                                        "school-notice-reflection",
+                                        "quiet-time-choice",
+                                        "quiet-time-reflection",
+                                        "family-ritual-choice",
+                                        "family-ritual-reflection",
+                                        "school-transition-choice",
+                                        "school-transition-reflection"
+                                    ],
+                         "schedules":  [
+                                           {
+                                               "eventId":  "night-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-1",
+                                               "id":  "scheduled-age-stage-1-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-support",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-1-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "meal-preparation-reflection",
+                                               "targetAgeStageId":  "age-stage-2",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-2-turn-1",
+                                               "id":  "scheduled-age-stage-2-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "backup-contact-reflection",
+                                               "targetAgeStageId":  "age-stage-3",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-3-turn-1",
+                                               "id":  "scheduled-age-stage-3-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "grandparent-boundary-reflection",
+                                               "targetAgeStageId":  "age-stage-4",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-4-turn-1",
+                                               "id":  "scheduled-age-stage-4-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "leaving-playground-reflection",
+                                               "targetAgeStageId":  "age-stage-5",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-5-turn-1",
+                                               "id":  "scheduled-age-stage-5-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "shared-ownership-reflection",
+                                               "targetAgeStageId":  "age-stage-6",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-6-turn-1",
+                                               "id":  "scheduled-age-stage-6-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "rainy-pickup-reflection",
+                                               "targetAgeStageId":  "age-stage-7",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-7-turn-1",
+                                               "id":  "scheduled-age-stage-7-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-1",
+                                               "id":  "scheduled-age-stage-8-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-support",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-8-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-notice-reflection",
+                                               "targetAgeStageId":  "age-stage-9",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-9-turn-1",
+                                               "id":  "scheduled-age-stage-9-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "quiet-time-reflection",
+                                               "targetAgeStageId":  "age-stage-10",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-10-turn-1",
+                                               "id":  "scheduled-age-stage-10-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "family-ritual-reflection",
+                                               "targetAgeStageId":  "age-stage-11",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-11-turn-1",
+                                               "id":  "scheduled-age-stage-11-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-transition-reflection",
+                                               "targetAgeStageId":  "age-stage-12",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-12-turn-1",
+                                               "id":  "scheduled-age-stage-12-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           }
+                                       ],
+                         "selectedMoments":  [
+                                                 "story-age-stage-7-turn-1-1",
+                                                 "story-age-stage-12-turn-1-1",
+                                                 "story-age-stage-11-turn-1-1"
+                                             ],
+                         "finalRngState":  2895837264,
+                         "finalResources":  {
+                                                "finances":  79,
+                                                "energy":  14,
+                                                "support":  83,
+                                                "timeFlexibility":  0,
+                                                "connection":  33
+                                            }
+                     }
+    },
+    {
+        "case":  "ux-v2-acceptance-pseudo-si-d8cae-urnal-and-both-replay-modes-desktop",
+        "evidence":  {
+                         "scenario":  {
+                                          "name":  "pseudo-single",
+                                          "seed":  11,
+                                          "household":  "twoCaregivers",
+                                          "care":  "pseudoSingle",
+                                          "path":  "carry"
+                                      },
+                         "stages":  12,
+                         "records":  57,
+                         "daily":  4,
+                         "choices":  14,
+                         "events":  [
+                                        "night-handoff-choice",
+                                        "night-handoff-reflection",
+                                        "mvp-breathing-space",
+                                        "night-handoff-strain",
+                                        "night-handoff-reconnect",
+                                        "night-handoff-repair",
+                                        "meal-preparation-choice",
+                                        "meal-preparation-reflection",
+                                        "backup-contact-choice",
+                                        "backup-contact-reflection",
+                                        "grandparent-boundary-choice",
+                                        "grandparent-boundary-reflection",
+                                        "leaving-playground-choice",
+                                        "leaving-playground-reflection",
+                                        "shared-ownership-choice",
+                                        "shared-ownership-reflection",
+                                        "rainy-pickup-choice",
+                                        "rainy-pickup-reflection",
+                                        "preschool-handoff-choice",
+                                        "preschool-handoff-reflection",
+                                        "preschool-handoff-strain",
+                                        "preschool-handoff-reconnect",
+                                        "preschool-handoff-repair",
+                                        "school-notice-choice",
+                                        "school-notice-reflection",
+                                        "quiet-time-choice",
+                                        "quiet-time-reflection",
+                                        "family-ritual-choice",
+                                        "family-ritual-reflection",
+                                        "school-transition-choice",
+                                        "school-transition-reflection"
+                                    ],
+                         "schedules":  [
+                                           {
+                                               "eventId":  "night-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-1",
+                                               "id":  "scheduled-age-stage-1-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-strain",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-1-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "meal-preparation-reflection",
+                                               "targetAgeStageId":  "age-stage-2",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-2-turn-1",
+                                               "id":  "scheduled-age-stage-2-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "backup-contact-reflection",
+                                               "targetAgeStageId":  "age-stage-3",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-3-turn-1",
+                                               "id":  "scheduled-age-stage-3-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "grandparent-boundary-reflection",
+                                               "targetAgeStageId":  "age-stage-4",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-4-turn-1",
+                                               "id":  "scheduled-age-stage-4-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "leaving-playground-reflection",
+                                               "targetAgeStageId":  "age-stage-5",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-5-turn-1",
+                                               "id":  "scheduled-age-stage-5-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "shared-ownership-reflection",
+                                               "targetAgeStageId":  "age-stage-6",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-6-turn-1",
+                                               "id":  "scheduled-age-stage-6-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "rainy-pickup-reflection",
+                                               "targetAgeStageId":  "age-stage-7",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-7-turn-1",
+                                               "id":  "scheduled-age-stage-7-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-1",
+                                               "id":  "scheduled-age-stage-8-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-strain",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-8-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-notice-reflection",
+                                               "targetAgeStageId":  "age-stage-9",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-9-turn-1",
+                                               "id":  "scheduled-age-stage-9-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "quiet-time-reflection",
+                                               "targetAgeStageId":  "age-stage-10",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-10-turn-1",
+                                               "id":  "scheduled-age-stage-10-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "family-ritual-reflection",
+                                               "targetAgeStageId":  "age-stage-11",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-11-turn-1",
+                                               "id":  "scheduled-age-stage-11-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-transition-reflection",
+                                               "targetAgeStageId":  "age-stage-12",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-12-turn-1",
+                                               "id":  "scheduled-age-stage-12-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           }
+                                       ],
+                         "selectedMoments":  [
+                                                 "story-age-stage-7-turn-1-1",
+                                                 "story-age-stage-12-turn-1-1",
+                                                 "story-age-stage-11-turn-1-1"
+                                             ],
+                         "finalRngState":  1823989524,
+                         "finalResources":  {
+                                                "finances":  60,
+                                                "energy":  11,
+                                                "support":  29,
+                                                "timeFlexibility":  42,
+                                                "connection":  42
+                                            }
+                     }
+    },
+    {
+        "case":  "ux-v2-acceptance-pseudo-si-d8cae-urnal-and-both-replay-modes-mobile",
+        "evidence":  {
+                         "scenario":  {
+                                          "name":  "pseudo-single",
+                                          "seed":  11,
+                                          "household":  "twoCaregivers",
+                                          "care":  "pseudoSingle",
+                                          "path":  "carry"
+                                      },
+                         "stages":  12,
+                         "records":  57,
+                         "daily":  4,
+                         "choices":  14,
+                         "events":  [
+                                        "night-handoff-choice",
+                                        "night-handoff-reflection",
+                                        "mvp-breathing-space",
+                                        "night-handoff-strain",
+                                        "night-handoff-reconnect",
+                                        "night-handoff-repair",
+                                        "meal-preparation-choice",
+                                        "meal-preparation-reflection",
+                                        "backup-contact-choice",
+                                        "backup-contact-reflection",
+                                        "grandparent-boundary-choice",
+                                        "grandparent-boundary-reflection",
+                                        "leaving-playground-choice",
+                                        "leaving-playground-reflection",
+                                        "shared-ownership-choice",
+                                        "shared-ownership-reflection",
+                                        "rainy-pickup-choice",
+                                        "rainy-pickup-reflection",
+                                        "preschool-handoff-choice",
+                                        "preschool-handoff-reflection",
+                                        "preschool-handoff-strain",
+                                        "preschool-handoff-reconnect",
+                                        "preschool-handoff-repair",
+                                        "school-notice-choice",
+                                        "school-notice-reflection",
+                                        "quiet-time-choice",
+                                        "quiet-time-reflection",
+                                        "family-ritual-choice",
+                                        "family-ritual-reflection",
+                                        "school-transition-choice",
+                                        "school-transition-reflection"
+                                    ],
+                         "schedules":  [
+                                           {
+                                               "eventId":  "night-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-1",
+                                               "id":  "scheduled-age-stage-1-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-strain",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-1-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "meal-preparation-reflection",
+                                               "targetAgeStageId":  "age-stage-2",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-2-turn-1",
+                                               "id":  "scheduled-age-stage-2-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "backup-contact-reflection",
+                                               "targetAgeStageId":  "age-stage-3",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-3-turn-1",
+                                               "id":  "scheduled-age-stage-3-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "grandparent-boundary-reflection",
+                                               "targetAgeStageId":  "age-stage-4",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-4-turn-1",
+                                               "id":  "scheduled-age-stage-4-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "leaving-playground-reflection",
+                                               "targetAgeStageId":  "age-stage-5",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-5-turn-1",
+                                               "id":  "scheduled-age-stage-5-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "shared-ownership-reflection",
+                                               "targetAgeStageId":  "age-stage-6",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-6-turn-1",
+                                               "id":  "scheduled-age-stage-6-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "rainy-pickup-reflection",
+                                               "targetAgeStageId":  "age-stage-7",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-7-turn-1",
+                                               "id":  "scheduled-age-stage-7-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-1",
+                                               "id":  "scheduled-age-stage-8-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-strain",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-8-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-notice-reflection",
+                                               "targetAgeStageId":  "age-stage-9",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-9-turn-1",
+                                               "id":  "scheduled-age-stage-9-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "quiet-time-reflection",
+                                               "targetAgeStageId":  "age-stage-10",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-10-turn-1",
+                                               "id":  "scheduled-age-stage-10-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "family-ritual-reflection",
+                                               "targetAgeStageId":  "age-stage-11",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-11-turn-1",
+                                               "id":  "scheduled-age-stage-11-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-transition-reflection",
+                                               "targetAgeStageId":  "age-stage-12",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-12-turn-1",
+                                               "id":  "scheduled-age-stage-12-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           }
+                                       ],
+                         "selectedMoments":  [
+                                                 "story-age-stage-7-turn-1-1",
+                                                 "story-age-stage-12-turn-1-1",
+                                                 "story-age-stage-11-turn-1-1"
+                                             ],
+                         "finalRngState":  1823989524,
+                         "finalResources":  {
+                                                "finances":  60,
+                                                "energy":  11,
+                                                "support":  29,
+                                                "timeFlexibility":  42,
+                                                "connection":  42
+                                            }
+                     }
+    },
+    {
+        "case":  "ux-v2-acceptance-shared-ca-078c8-urnal-and-both-replay-modes-desktop",
+        "evidence":  {
+                         "scenario":  {
+                                          "name":  "shared-care",
+                                          "seed":  1,
+                                          "household":  "twoCaregivers",
+                                          "care":  "shared",
+                                          "path":  "coordinate"
+                                      },
+                         "stages":  12,
+                         "records":  57,
+                         "daily":  4,
+                         "choices":  14,
+                         "events":  [
+                                        "night-handoff-choice",
+                                        "night-handoff-reflection",
+                                        "mvp-breathing-space",
+                                        "night-handoff-support",
+                                        "night-handoff-reconnect",
+                                        "night-handoff-repair",
+                                        "meal-preparation-choice",
+                                        "meal-preparation-reflection",
+                                        "backup-contact-choice",
+                                        "backup-contact-reflection",
+                                        "grandparent-boundary-choice",
+                                        "grandparent-boundary-reflection",
+                                        "leaving-playground-choice",
+                                        "leaving-playground-reflection",
+                                        "shared-ownership-choice",
+                                        "shared-ownership-reflection",
+                                        "rainy-pickup-choice",
+                                        "rainy-pickup-reflection",
+                                        "preschool-handoff-choice",
+                                        "preschool-handoff-reflection",
+                                        "preschool-handoff-support",
+                                        "preschool-handoff-reconnect",
+                                        "preschool-handoff-repair",
+                                        "school-notice-choice",
+                                        "school-notice-reflection",
+                                        "quiet-time-choice",
+                                        "quiet-time-reflection",
+                                        "family-ritual-choice",
+                                        "family-ritual-reflection",
+                                        "school-transition-choice",
+                                        "school-transition-reflection"
+                                    ],
+                         "schedules":  [
+                                           {
+                                               "eventId":  "night-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-1",
+                                               "id":  "scheduled-age-stage-1-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-support",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-1-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "meal-preparation-reflection",
+                                               "targetAgeStageId":  "age-stage-2",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-2-turn-1",
+                                               "id":  "scheduled-age-stage-2-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "backup-contact-reflection",
+                                               "targetAgeStageId":  "age-stage-3",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-3-turn-1",
+                                               "id":  "scheduled-age-stage-3-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "grandparent-boundary-reflection",
+                                               "targetAgeStageId":  "age-stage-4",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-4-turn-1",
+                                               "id":  "scheduled-age-stage-4-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "leaving-playground-reflection",
+                                               "targetAgeStageId":  "age-stage-5",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-5-turn-1",
+                                               "id":  "scheduled-age-stage-5-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "shared-ownership-reflection",
+                                               "targetAgeStageId":  "age-stage-6",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-6-turn-1",
+                                               "id":  "scheduled-age-stage-6-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "rainy-pickup-reflection",
+                                               "targetAgeStageId":  "age-stage-7",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-7-turn-1",
+                                               "id":  "scheduled-age-stage-7-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-1",
+                                               "id":  "scheduled-age-stage-8-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-support",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-8-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-notice-reflection",
+                                               "targetAgeStageId":  "age-stage-9",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-9-turn-1",
+                                               "id":  "scheduled-age-stage-9-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "quiet-time-reflection",
+                                               "targetAgeStageId":  "age-stage-10",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-10-turn-1",
+                                               "id":  "scheduled-age-stage-10-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "family-ritual-reflection",
+                                               "targetAgeStageId":  "age-stage-11",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-11-turn-1",
+                                               "id":  "scheduled-age-stage-11-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-transition-reflection",
+                                               "targetAgeStageId":  "age-stage-12",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-12-turn-1",
+                                               "id":  "scheduled-age-stage-12-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           }
+                                       ],
+                         "selectedMoments":  [
+                                                 "story-age-stage-7-turn-1-1",
+                                                 "story-age-stage-12-turn-1-1",
+                                                 "story-age-stage-11-turn-1-1"
+                                             ],
+                         "finalRngState":  1823989514,
+                         "finalResources":  {
+                                                "finances":  44,
+                                                "energy":  27,
+                                                "support":  37,
+                                                "timeFlexibility":  25,
+                                                "connection":  30
+                                            }
+                     }
+    },
+    {
+        "case":  "ux-v2-acceptance-shared-ca-078c8-urnal-and-both-replay-modes-mobile",
+        "evidence":  {
+                         "scenario":  {
+                                          "name":  "shared-care",
+                                          "seed":  1,
+                                          "household":  "twoCaregivers",
+                                          "care":  "shared",
+                                          "path":  "coordinate"
+                                      },
+                         "stages":  12,
+                         "records":  57,
+                         "daily":  4,
+                         "choices":  14,
+                         "events":  [
+                                        "night-handoff-choice",
+                                        "night-handoff-reflection",
+                                        "mvp-breathing-space",
+                                        "night-handoff-support",
+                                        "night-handoff-reconnect",
+                                        "night-handoff-repair",
+                                        "meal-preparation-choice",
+                                        "meal-preparation-reflection",
+                                        "backup-contact-choice",
+                                        "backup-contact-reflection",
+                                        "grandparent-boundary-choice",
+                                        "grandparent-boundary-reflection",
+                                        "leaving-playground-choice",
+                                        "leaving-playground-reflection",
+                                        "shared-ownership-choice",
+                                        "shared-ownership-reflection",
+                                        "rainy-pickup-choice",
+                                        "rainy-pickup-reflection",
+                                        "preschool-handoff-choice",
+                                        "preschool-handoff-reflection",
+                                        "preschool-handoff-support",
+                                        "preschool-handoff-reconnect",
+                                        "preschool-handoff-repair",
+                                        "school-notice-choice",
+                                        "school-notice-reflection",
+                                        "quiet-time-choice",
+                                        "quiet-time-reflection",
+                                        "family-ritual-choice",
+                                        "family-ritual-reflection",
+                                        "school-transition-choice",
+                                        "school-transition-reflection"
+                                    ],
+                         "schedules":  [
+                                           {
+                                               "eventId":  "night-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-1",
+                                               "id":  "scheduled-age-stage-1-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-support",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-1-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "meal-preparation-reflection",
+                                               "targetAgeStageId":  "age-stage-2",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-2-turn-1",
+                                               "id":  "scheduled-age-stage-2-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "backup-contact-reflection",
+                                               "targetAgeStageId":  "age-stage-3",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-3-turn-1",
+                                               "id":  "scheduled-age-stage-3-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "grandparent-boundary-reflection",
+                                               "targetAgeStageId":  "age-stage-4",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-4-turn-1",
+                                               "id":  "scheduled-age-stage-4-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "leaving-playground-reflection",
+                                               "targetAgeStageId":  "age-stage-5",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-5-turn-1",
+                                               "id":  "scheduled-age-stage-5-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "shared-ownership-reflection",
+                                               "targetAgeStageId":  "age-stage-6",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-6-turn-1",
+                                               "id":  "scheduled-age-stage-6-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "rainy-pickup-reflection",
+                                               "targetAgeStageId":  "age-stage-7",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-7-turn-1",
+                                               "id":  "scheduled-age-stage-7-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-1",
+                                               "id":  "scheduled-age-stage-8-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-support",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-8-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-notice-reflection",
+                                               "targetAgeStageId":  "age-stage-9",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-9-turn-1",
+                                               "id":  "scheduled-age-stage-9-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "quiet-time-reflection",
+                                               "targetAgeStageId":  "age-stage-10",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-10-turn-1",
+                                               "id":  "scheduled-age-stage-10-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "family-ritual-reflection",
+                                               "targetAgeStageId":  "age-stage-11",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-11-turn-1",
+                                               "id":  "scheduled-age-stage-11-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-transition-reflection",
+                                               "targetAgeStageId":  "age-stage-12",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-12-turn-1",
+                                               "id":  "scheduled-age-stage-12-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           }
+                                       ],
+                         "selectedMoments":  [
+                                                 "story-age-stage-7-turn-1-1",
+                                                 "story-age-stage-12-turn-1-1",
+                                                 "story-age-stage-11-turn-1-1"
+                                             ],
+                         "finalRngState":  1823989514,
+                         "finalResources":  {
+                                                "finances":  44,
+                                                "energy":  27,
+                                                "support":  37,
+                                                "timeFlexibility":  25,
+                                                "connection":  30
+                                            }
+                     }
+    },
+    {
+        "case":  "ux-v2-acceptance-single-ba-c9ff6-urnal-and-both-replay-modes-desktop",
+        "evidence":  {
+                         "scenario":  {
+                                          "name":  "single-backup",
+                                          "seed":  9,
+                                          "household":  "singleCaregiver",
+                                          "care":  "primaryAndBackup",
+                                          "path":  "carry"
+                                      },
+                         "stages":  12,
+                         "records":  52,
+                         "daily":  4,
+                         "choices":  14,
+                         "events":  [
+                                        "night-handoff-choice",
+                                        "night-handoff-reflection",
+                                        "mvp-breathing-space",
+                                        "night-handoff-strain",
+                                        "night-handoff-reconnect",
+                                        "night-handoff-repair",
+                                        "meal-preparation-choice",
+                                        "meal-preparation-reflection",
+                                        "backup-contact-choice",
+                                        "backup-contact-reflection",
+                                        "grandparent-boundary-choice",
+                                        "grandparent-boundary-reflection",
+                                        "leaving-playground-choice",
+                                        "leaving-playground-reflection",
+                                        "shared-ownership-choice",
+                                        "shared-ownership-reflection",
+                                        "rainy-pickup-choice",
+                                        "rainy-pickup-reflection",
+                                        "preschool-handoff-choice",
+                                        "preschool-handoff-reflection",
+                                        "preschool-handoff-strain",
+                                        "preschool-handoff-reconnect",
+                                        "preschool-handoff-repair",
+                                        "school-notice-choice",
+                                        "school-notice-reflection",
+                                        "quiet-time-choice",
+                                        "quiet-time-reflection",
+                                        "family-ritual-choice",
+                                        "family-ritual-reflection",
+                                        "school-transition-choice",
+                                        "school-transition-reflection"
+                                    ],
+                         "schedules":  [
+                                           {
+                                               "eventId":  "night-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-1",
+                                               "id":  "scheduled-age-stage-1-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-strain",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-1-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "meal-preparation-reflection",
+                                               "targetAgeStageId":  "age-stage-2",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-2-turn-1",
+                                               "id":  "scheduled-age-stage-2-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "backup-contact-reflection",
+                                               "targetAgeStageId":  "age-stage-3",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-3-turn-1",
+                                               "id":  "scheduled-age-stage-3-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "grandparent-boundary-reflection",
+                                               "targetAgeStageId":  "age-stage-4",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-4-turn-1",
+                                               "id":  "scheduled-age-stage-4-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "leaving-playground-reflection",
+                                               "targetAgeStageId":  "age-stage-5",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-5-turn-1",
+                                               "id":  "scheduled-age-stage-5-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "shared-ownership-reflection",
+                                               "targetAgeStageId":  "age-stage-6",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-6-turn-1",
+                                               "id":  "scheduled-age-stage-6-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "rainy-pickup-reflection",
+                                               "targetAgeStageId":  "age-stage-7",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-7-turn-1",
+                                               "id":  "scheduled-age-stage-7-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-1",
+                                               "id":  "scheduled-age-stage-8-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-strain",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-8-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-notice-reflection",
+                                               "targetAgeStageId":  "age-stage-9",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-9-turn-1",
+                                               "id":  "scheduled-age-stage-9-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "quiet-time-reflection",
+                                               "targetAgeStageId":  "age-stage-10",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-10-turn-1",
+                                               "id":  "scheduled-age-stage-10-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "family-ritual-reflection",
+                                               "targetAgeStageId":  "age-stage-11",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-11-turn-1",
+                                               "id":  "scheduled-age-stage-11-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-transition-reflection",
+                                               "targetAgeStageId":  "age-stage-12",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-12-turn-1",
+                                               "id":  "scheduled-age-stage-12-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           }
+                                       ],
+                         "selectedMoments":  [
+                                                 "story-age-stage-7-turn-1-1",
+                                                 "story-age-stage-12-turn-1-1",
+                                                 "story-age-stage-11-turn-1-1"
+                                             ],
+                         "finalRngState":  1823989522,
+                         "finalResources":  {
+                                                "finances":  77,
+                                                "energy":  0,
+                                                "support":  64,
+                                                "timeFlexibility":  71,
+                                                "connection":  48
+                                            }
+                     }
+    },
+    {
+        "case":  "ux-v2-acceptance-single-ba-c9ff6-urnal-and-both-replay-modes-mobile",
+        "evidence":  {
+                         "scenario":  {
+                                          "name":  "single-backup",
+                                          "seed":  9,
+                                          "household":  "singleCaregiver",
+                                          "care":  "primaryAndBackup",
+                                          "path":  "carry"
+                                      },
+                         "stages":  12,
+                         "records":  52,
+                         "daily":  4,
+                         "choices":  14,
+                         "events":  [
+                                        "night-handoff-choice",
+                                        "night-handoff-reflection",
+                                        "mvp-breathing-space",
+                                        "night-handoff-strain",
+                                        "night-handoff-reconnect",
+                                        "night-handoff-repair",
+                                        "meal-preparation-choice",
+                                        "meal-preparation-reflection",
+                                        "backup-contact-choice",
+                                        "backup-contact-reflection",
+                                        "grandparent-boundary-choice",
+                                        "grandparent-boundary-reflection",
+                                        "leaving-playground-choice",
+                                        "leaving-playground-reflection",
+                                        "shared-ownership-choice",
+                                        "shared-ownership-reflection",
+                                        "rainy-pickup-choice",
+                                        "rainy-pickup-reflection",
+                                        "preschool-handoff-choice",
+                                        "preschool-handoff-reflection",
+                                        "preschool-handoff-strain",
+                                        "preschool-handoff-reconnect",
+                                        "preschool-handoff-repair",
+                                        "school-notice-choice",
+                                        "school-notice-reflection",
+                                        "quiet-time-choice",
+                                        "quiet-time-reflection",
+                                        "family-ritual-choice",
+                                        "family-ritual-reflection",
+                                        "school-transition-choice",
+                                        "school-transition-reflection"
+                                    ],
+                         "schedules":  [
+                                           {
+                                               "eventId":  "night-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-1",
+                                               "id":  "scheduled-age-stage-1-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-strain",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-1-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "night-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-1",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-1-turn-2",
+                                               "id":  "scheduled-age-stage-1-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "meal-preparation-reflection",
+                                               "targetAgeStageId":  "age-stage-2",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-2-turn-1",
+                                               "id":  "scheduled-age-stage-2-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "backup-contact-reflection",
+                                               "targetAgeStageId":  "age-stage-3",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-3-turn-1",
+                                               "id":  "scheduled-age-stage-3-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "grandparent-boundary-reflection",
+                                               "targetAgeStageId":  "age-stage-4",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-4-turn-1",
+                                               "id":  "scheduled-age-stage-4-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "leaving-playground-reflection",
+                                               "targetAgeStageId":  "age-stage-5",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-5-turn-1",
+                                               "id":  "scheduled-age-stage-5-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "shared-ownership-reflection",
+                                               "targetAgeStageId":  "age-stage-6",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-6-turn-1",
+                                               "id":  "scheduled-age-stage-6-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "rainy-pickup-reflection",
+                                               "targetAgeStageId":  "age-stage-7",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-7-turn-1",
+                                               "id":  "scheduled-age-stage-7-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reflection",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-1",
+                                               "id":  "scheduled-age-stage-8-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-strain",
+                                               "priority":  10,
+                                               "id":  "scheduled-age-stage-8-turn-1-1-1",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-reconnect",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-1-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "preschool-handoff-repair",
+                                               "targetAgeStageId":  "age-stage-8",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-8-turn-2",
+                                               "id":  "scheduled-age-stage-8-turn-2-2-0",
+                                               "dueAfterTurns":  1,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-notice-reflection",
+                                               "targetAgeStageId":  "age-stage-9",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-9-turn-1",
+                                               "id":  "scheduled-age-stage-9-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "quiet-time-reflection",
+                                               "targetAgeStageId":  "age-stage-10",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-10-turn-1",
+                                               "id":  "scheduled-age-stage-10-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "family-ritual-reflection",
+                                               "targetAgeStageId":  "age-stage-11",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-11-turn-1",
+                                               "id":  "scheduled-age-stage-11-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           },
+                                           {
+                                               "eventId":  "school-transition-reflection",
+                                               "targetAgeStageId":  "age-stage-12",
+                                               "priority":  0,
+                                               "immediateTurnId":  "age-stage-12-turn-1",
+                                               "id":  "scheduled-age-stage-12-turn-1-1-0",
+                                               "dueAfterTurns":  0,
+                                               "status":  "consumed"
+                                           }
+                                       ],
+                         "selectedMoments":  [
+                                                 "story-age-stage-7-turn-1-1",
+                                                 "story-age-stage-12-turn-1-1",
+                                                 "story-age-stage-11-turn-1-1"
+                                             ],
+                         "finalRngState":  1823989522,
+                         "finalResources":  {
+                                                "finances":  77,
+                                                "energy":  0,
+                                                "support":  64,
+                                                "timeFlexibility":  71,
+                                                "connection":  48
+                                            }
+                     }
+    }
+]

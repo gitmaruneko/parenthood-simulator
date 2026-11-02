@@ -1,5 +1,6 @@
 import { projectJournal, type JournalRecord } from "../engine/journal.js";
 import type { PlayerSession } from "./player-session.js";
+import { createNarrationPreference, type NarrationPreference } from "./narration-preference.js";
 
 export interface StorySnapshot {
   readonly records: readonly JournalRecord[];
@@ -10,6 +11,7 @@ export interface StorySnapshot {
   readonly displaying: boolean;
   readonly stageNotice: string | null;
   readonly fault: string | null;
+  readonly preferenceError: string | null;
 }
 
 // One controller belongs to one Session, surviving React effect restarts.
@@ -20,13 +22,15 @@ export function getStoryProgression(session: PlayerSession) {
   return story;
 }
 
-export function createStoryProgression(session: PlayerSession) {
+export function createStoryProgression(session: PlayerSession, preference: NarrationPreference = createNarrationPreference()) {
   let records: readonly JournalRecord[] = [];
   let all: readonly JournalRecord[] = [];
   let generation = -1;
   let stage: string | null = null;
   let notice: string | null = null;
-  let paused = false;
+  const initialPreference = preference.read();
+  let paused = initialPreference.paused;
+  let preferenceError = initialPreference.error;
   let readingOlder = false;
   let surface = true;
   let visible = true;
@@ -37,15 +41,19 @@ export function createStoryProgression(session: PlayerSession) {
   let fault: string | null = null;
   let wait = 0;
   let timer: ReturnType<typeof setTimeout> | null = null;
+  let timerPurpose: "reading" | "reveal" | "command" = "command";
   let due = 0;
   let epoch = 0;
   let openedDecision: string | null = null;
   const listeners = new Set<() => void>();
   let snapshot: StorySnapshot = { records, paused, readingOlder, pending: false,
-    dialogReady: false, displaying: false, stageNotice: null, fault };
+    dialogReady: false, displaying: false, stageNotice: null, fault, preferenceError };
   const cancel = () => {
     epoch++;
-    if (timer !== null) { clearTimeout(timer); timer = null; wait = Math.max(0, due - Date.now()); }
+    if (timer !== null) {
+      clearTimeout(timer); timer = null;
+      wait = timerPurpose === "reading" ? Math.max(0, due - Date.now()) : 0;
+    }
   };
   const update = () => {
     const current = session.getSnapshot();
@@ -66,14 +74,15 @@ export function createStoryProgression(session: PlayerSession) {
       }
     }
     if (current.decision) commands = 0;
-    const blocked = !owner || !visible || !surface || paused || readingOlder || current.page !== "game" ||
+    const contextBlocked = !owner || !visible || !surface || readingOlder || current.page !== "game" ||
       current.busy || current.dialog !== null || current.error !== null || current.hasUnsavedChanges || !!fault;
+    const blocked = contextBlocked || paused;
     const displaying = records.length < all.length || wait > 0;
     const recovery = !!current.decision && (current.hasUnsavedChanges || !!current.error || current.decision.status === "submitting");
     const dialogReady = !!current.decision && (recovery || openedDecision === current.decision.key ||
-      (!blocked && !displaying));
+      (!contextBlocked && !displaying));
     const next: StorySnapshot = { records, paused, readingOlder, pending: !!current.decision,
-      dialogReady, displaying, stageNotice: notice, fault };
+      dialogReady, displaying, stageNotice: notice, fault, preferenceError };
     if (Object.keys(next).some(key => next[key as keyof StorySnapshot] !== snapshot[key as keyof StorySnapshot])) {
       snapshot = next; listeners.forEach(listener => listener());
     }
@@ -82,6 +91,7 @@ export function createStoryProgression(session: PlayerSession) {
     if (!displaying && (current.decision || game?.completed || !game?.nextInput)) return;
     const token = ++epoch;
     const purpose = wait > 0 ? "reading" : records.length < all.length ? "reveal" : "command";
+    timerPurpose = purpose;
     const delay = wait || (records.length < all.length ? 0 : 250);
     due = Date.now() + delay;
     timer = setTimeout(async () => {
@@ -129,8 +139,8 @@ export function createStoryProgression(session: PlayerSession) {
     setVisible: (value: boolean) => { visible = value; update(); },
     setSurface: (value: boolean) => { surface = value; update(); },
     setReadingOlder: (value: boolean) => { readingOlder = value; update(); },
-    pause: () => { paused = true; update(); },
-    resume: () => { paused = false; update(); },
+    pause: () => { paused = true; preferenceError = preference.write(true); update(); },
+    resume: () => { paused = false; preferenceError = preference.write(false); update(); },
     showDecision: () => { openedDecision = session.getSnapshot().decision?.key ?? null; update(); },
     fastForward: () => {
       cancel(); records = all; wait = 0; notice = null; update();

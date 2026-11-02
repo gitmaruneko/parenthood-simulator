@@ -1,5 +1,27 @@
 # 玩家流程 UI（Issue #11）
 
+## 自動生活敘事（#52–#55）
+
+主敘事移除大型「繼續生活」。開始／繼續家庭後由每 Session 唯一控制器呼叫公開
+advance，依 nextInput 接續 Turn／AgeStage；一般事件直接進 Journal。每筆已保存文字
+依長度保留約 2–8 秒，新成長提示約 2 秒，不影響 GameState、PRNG 或保存內容。
+第一版提供暫停／恢復與快速顯示；快速顯示只揭露本次已保存結果，不執行事件、不代選，
+也不增加額外 3 秒等待。沒有速度選單或必要的閱讀確認。
+
+必要 pending 抉擇停止後續命令；前文呈現後才開唯一 Dialog。手動暫停只阻止後續命令，
+已存在且在最新區的必要抉擇仍可操作。選後保存成功，結果呈現完再自動繼續。
+保存失敗立即停止並沿用同結果重試；離頁、hidden、卸載與完成也停止，沒有離線追趕。
+
+閱讀舊紀錄時 context pause，pending 只顯示固定提示與入口；不強開 Dialog、不搶焦點。
+新內容與版面改變保留可見紀錄及 offset。回最新可恢復 context pause；手動暫停透過
+獨立 UI key `parenthood-simulator.ui.story-paused` 跨重新整理保留，只能由玩家恢復。
+手機生活／紀錄共用一個 Journal 與控制器；非敘事視圖／資訊抽屜暫停後續推進。
+
+規格見 [已核准規格](specs/AUTOMATIC-STORY-PROGRESSION.md)。
+`npm run dev` 的 [獨立 Preview](http://127.0.0.1:5173/preview-automatic-story.html)
+使用分頁 sessionStorage 專屬空間與固定家庭，不改原本遊戲存檔；不包含於正式 index 建置。
+以下 UX v2 T4／T5 的手動入口及一律定位最新描述保留作歷史背景，以本節為目前行為。
+
 ## UX v2 T5（Issue #39）
 
 所有必要選擇改用唯一 Modal，移除主畫面內嵌選項。保存成功才關閉並定位最新紀錄；

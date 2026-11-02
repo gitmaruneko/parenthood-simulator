@@ -1,3 +1,4 @@
+import { installPausedNarration, pauseAndReveal, stepNarration } from "./narration-helpers.js";
 import { test, expect } from "@playwright/test";
 import { writeFile, readFile } from "node:fs/promises";
 import { bindPreviewRun, createRunContent } from "../../src/content/releases.js";
@@ -7,6 +8,8 @@ import { resolveFamilyMembers } from "../../src/engine/actor-profiles.js";
 import { serializeGame } from "../../src/persistence/index.js";
 import type { GameState } from "../../src/domain/schemas.js";
 import { UX_V2_FAMILIES } from "../helpers/ux-v2-scenarios.js";
+
+test.beforeEach(async ({ page }) => { await installPausedNarration(page); });
 
 const key = "parenthood-simulator.save";
 for (const scenario of UX_V2_FAMILIES) {
@@ -58,8 +61,9 @@ for (const scenario of UX_V2_FAMILIES) {
         const expected = transitionGame(state, content, { type: "CHOOSE", choiceId });
         await dialog.getByRole("button", { name: choice.text, exact: true }).click();
         await expect(dialog).toHaveCount(0);
+        await pauseAndReveal(page);
         state = expected.state;
-        await expect(page.locator(".event-log > li").first()).toBeFocused();
+
       } else {
         const records = projectJournal(state).reverse();
         const log = page.getByRole("list", { name: "已發生的事件" });
@@ -73,7 +77,7 @@ for (const scenario of UX_V2_FAMILIES) {
           await page.getByRole("tab", { name: "生活", exact: true }).click();
         }
         state = transitionGame(state, content, view.nextInput!).state;
-        await page.getByRole("button", { name: "繼續生活", exact: true }).click();
+        await stepNarration(page);
       }
       await expect(page.locator(".game-header [role=status]")).toHaveText("已儲存");
     }

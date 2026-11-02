@@ -189,6 +189,7 @@ export interface GameScreenProps {
   onFastForward?: () => void;
   onShowDecision?: () => void;
   onSurface?: (active: boolean) => void;
+  onLatest?: () => void;
   onDirection?: (id: FamilyLifeDirectionId) => void;
   initialTab?: "life" | "records";
 }
@@ -202,6 +203,7 @@ export function GameScreen({
   onFastForward,
   onShowDecision,
   onSurface,
+  onLatest,
   onDirection,
   initialTab = "life",
 }: GameScreenProps) {
@@ -211,10 +213,11 @@ export function GameScreen({
   const journal = projectJournal({ history: game.history, choiceHistory: game.choices, reactionHistory: game.reactions });
   const event = game.pendingEvent;
   useEffect(() => {
+    if (story?.readingOlder) return;
     if (initialTab === "records") document.getElementById("log-title")?.focus();
     else document.getElementById("log-title")?.focus();
   }, [initialTab]);
-  useEffect(() => { onSurface?.(tab === "life" || tab === "records"); }, [tab, onSurface]);
+  useEffect(() => { onSurface?.((tab === "life" || tab === "records") && !drawer); }, [tab, drawer, onSurface]);
   const recentThoughts = game.history
     .filter((entry) => ["planning", "support", "repair"].includes(entry.kind))
     .slice(-4);
@@ -297,18 +300,21 @@ export function GameScreen({
               </p>
               {story?.stageNotice && <p role="status">{story.stageNotice}</p>}
               {story?.fault && <p role="alert">{story.fault}</p>}
+              {story?.preferenceError && <p role="alert">{story.preferenceError}</p>}
               {event && !story?.dialogReady && <p role="status">有一個重大抉擇等待你。<button onClick={onShowDecision}>查看待選抉擇</button></p>}
-              {game.completed ? (
+              {game.completed && (
                 <p>
                   十二個階段告一段落。這些紀錄留下眼前的生活，不預測未來。你可以查看家庭生活紀錄，或回首頁開始新的故事。
                 </p>
-              ) : (
+              )}
+              {(!game.completed || story?.displaying) && (
                 <>
                   <span role="status">{story?.paused ? "敘事已暫停" : story?.readingOlder ? "正在閱讀舊紀錄" : event ? "等待你的選擇" : "生活正在繼續"}</span>
                   <button onClick={story?.paused ? onResume : onPause}>{story?.paused ? "恢復敘事" : "暫停敘事"}</button>
                 </>
               )}
               <button disabled={!story?.displaying || blocked} onClick={onFastForward}>快速顯示</button>
+              {story?.readingOlder && <button onClick={onLatest}>回到最新紀錄</button>}
             </section>
           </FamilyLog>
           <div className="mobile-growth"><Growth game={game} /></div>
@@ -391,6 +397,11 @@ export function GameScreen({
           </button>
         ))}
       </nav>
+      {story?.readingOlder && (tab === "life" || tab === "records") && !drawer && <aside className="reading-notice" aria-label="閱讀中的敘事狀態">
+        <span role="status">{story.pending ? "有重大抉擇等待你" : "閱讀舊紀錄中，後續敘事已暫停"}</span>
+        {story.pending && <button onClick={onShowDecision}>查看待選抉擇</button>}
+        <button onClick={onLatest}>回到最新紀錄</button>
+      </aside>}
     </main>
   );
 }

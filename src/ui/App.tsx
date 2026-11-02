@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { getAssessmentQuestions } from "../engine/index.js";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
+import { getAssessmentQuestions, projectJournal } from "../engine/index.js";
 import { createPlayerSession, type PlayerSession } from "./player-session.js";
 import { HomePage } from "./HomePage.js";
 import { FamilyDetails, GameScreen } from "./GameScreen.js";
@@ -9,6 +9,7 @@ import { ReviewScreen } from "./ReviewScreen.js";
 import { FamilyMemberCard } from "./FamilyMemberCard.js";
 import { DecisionDialog } from "./DecisionDialog.js";
 import { getStoryProgression } from "./story-progression.js";
+import { useJournalReading } from "./use-journal-reading.js";
 
 const questions = getAssessmentQuestions();
 export function Assessment({ session }: { session: PlayerSession }) {
@@ -58,7 +59,11 @@ export function App({ session: provided }: { session?: PlayerSession }) {
   const [progression] = useState(() => getStoryProgression(session));
   const story = useSyncExternalStore(progression.subscribe, progression.getSnapshot);
   const snapshot = useSyncExternalStore(session.subscribe, session.getSnapshot);
+  const reviewReady = snapshot.game?.review && !snapshot.hasUnsavedChanges && !story.displaying &&
+    story.records.length === projectJournal({ history: snapshot.game.history,
+      choiceHistory: snapshot.game.choices, reactionHistory: snapshot.game.reactions }).length;
   const shownDecision = story.dialogReady ? snapshot.decision : null;
+  useJournalReading(story, progression, snapshot.page === "game");
   useEffect(() => {
     progression.setVisible(document.visibilityState !== "hidden");
     const detach = progression.attach();
@@ -76,23 +81,41 @@ export function App({ session: provided }: { session?: PlayerSession }) {
   const cancel = useRef<HTMLButtonElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const previousDecision = useRef<string | null>(null);
+  const decisionReturn = useRef<{ focus: HTMLElement | null; row: HTMLElement | null; top: number } | null>(null);
   useEffect(() => {
     if (!snapshot.hasUnsavedChanges) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [snapshot.hasUnsavedChanges]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const previous = previousDecision.current;
     previousDecision.current = shownDecision?.key ?? null;
+    if (!previous && shownDecision) {
+      const row = [...document.querySelectorAll<HTMLElement>(".event-log > li")].find(row =>
+        row.getBoundingClientRect().bottom > 80 && row.getBoundingClientRect().top < window.innerHeight) ??
+        document.querySelector<HTMLElement>(".event-log > li");
+      decisionReturn.current = {
+        focus: document.activeElement instanceof HTMLElement ? document.activeElement : null,
+        row, top: row?.getBoundingClientRect().top ?? 0,
+      };
+    }
     if (previous && !shownDecision && snapshot.page === "game") {
       requestAnimationFrame(() => {
         const current = session.getSnapshot();
         if (current.decision || current.game !== snapshot.game || current.page !== "game") return;
-        (document.querySelector<HTMLElement>(".event-log > li") ?? document.getElementById("log-title"))?.focus();
+        if (progression.getSnapshot().readingOlder) {
+          const saved = decisionReturn.current;
+          const target = saved?.focus?.isConnected ? saved.focus : saved?.row?.isConnected ? saved.row : document.getElementById("log-title");
+          target?.focus({ preventScroll: true });
+          if (saved?.row?.isConnected) {
+            const delta = saved.row.getBoundingClientRect().top - saved.top;
+            if (Math.abs(delta) > 0.5) window.scrollBy({ top: delta, behavior: "instant" });
+          }
+        } else (document.querySelector<HTMLElement>(".event-log > li") ?? document.getElementById("log-title"))?.focus();
       });
     }
-  }, [shownDecision, snapshot.page, snapshot.game, session]);
+  }, [shownDecision, snapshot.page, snapshot.game, session, progression]);
   useEffect(() => {
     void session.check();
     const recheck = () => {
@@ -229,7 +252,7 @@ export function App({ session: provided }: { session?: PlayerSession }) {
               </section>
             </main>
           )}
-          {snapshot.page === "game" && snapshot.game && (snapshot.game.review && !story.displaying ? (
+          {snapshot.page === "game" && snapshot.game && (reviewReady ? (
             <ReviewScreen game={snapshot.game} blocked={snapshot.busy || snapshot.error !== null}
               onSelect={(ids) => void session.selectMoments(ids)} onReplay={() => {
                 previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -249,6 +272,10 @@ export function App({ session: provided }: { session?: PlayerSession }) {
               onPause={progression.pause} onResume={progression.resume}
               onFastForward={progression.fastForward} onShowDecision={progression.showDecision}
               onSurface={progression.setSurface}
+              onLatest={() => {
+                progression.setReadingOlder(false);
+                document.getElementById("log-title")?.focus();
+              }}
               onDirection={(id) => void session.setDirection(id)}
             />
           ))}
