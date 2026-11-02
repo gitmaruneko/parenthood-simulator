@@ -1,6 +1,6 @@
 # #55 — 自動敘事整合驗收與 Preview
 
-來源：#52 已核准修正版；基準：#54 `a149d8c`，PR 依賴 #56 → #57 → 本票。每票獨立 review／驗收，不自行 Merge 或部署正式站。
+來源：#52 已核准修正版；本票差異基準：#54 `a149d8c`。#56／#57 保留為 Draft 單票 Review 切片；最終交付為以 main 為基準的完整整合 PR，包含全部三票與更新後瀏覽器驗收。每票獨立 review／驗收，不自行 Merge 或部署正式站。
 
 ## Preview
 
@@ -22,14 +22,19 @@ UI 暫停偏好沿用獨立 key；已暫停時請按恢復。關閉分頁可能�
 - StrictMode／重掛載、舊 owner／timer、換頁／讀檔、手動暫停跨重新整理及偏好失敗有 Session／React 回歸。
 - 原有精確 checkpoint 瀏覽器案例改用實際暫停／恢復／快速顯示及瀏覽器時鐘；不再按已移除的「繼續生活」。另有自然自動節奏測試，直接檢查 2 秒內不連發、快速顯示不改 state、下個命令只接續一次、待選停住及 hidden 無離線追趕。
 - 舊紀錄 pending 入口、焦點／offset、Dialog 中字級變動、獨立 Preview、v7／v8 續玩及四家庭完整回顧／重玩以桌面與手機 Playwright 驗證。
-- 完整 npm test／typecheck／build／test:e2e 的最終結果與獨立 Review 於驗證完成後補在本節。
+- 完整 npm scripts 的最終結果如下；驗證 source revision 為 `0c6c16d`，後續只補驗收文件／證據。
 
 已完成最終固定來源驗證：`npm.cmd test -- --maxWorkers=2`：28 files／346 tests 通過；
-`npm.cmd run typecheck`、`npm.cmd run build` 通過。完整 66 項 Playwright 正在固定來源上驗收，
-最終結果待補。既有 5 秒測試曾在同時執行 build／E2E 的負載下超時；依序重跑完整套件通過，未放寬測試時限。
+`npm.cmd run typecheck`、`npm.cmd run build` 通過；`npm.cmd run test:e2e -- --workers=2`：
+66/66 通過（桌面／手機，4.0 分鐘）。既有 5 秒測試曾在同時執行 build／E2E 的負載下超時；依序重跑完整套件通過，未放寬測試時限。
 
 獨立 Review：Standards 0 項，Spec 0 項。整合測試補正 ReviewScreen 忙碌操作的焦點穩定性，
 以及隱藏 Journal 不參與閱讀判斷／不在家庭視圖顯示閱讀提示；新增回歸通過。
+
+GitHub 切片 #56／#57 的 Node 22／24 verify 成功；browser CI 使用更新前的手動按鈕斷言而失敗，故保留 Draft 作差異審閱，不作可單獨合併的交付。完整整合 PR 帶入新版 browser tests，以其最終 CI 為準。
+
+四家庭桌面／手機完整執行資料：[驗收 JSON](../examples/AUTOMATIC-STORY-RUNS.json)。
+工作目錄對 main 的 engine／content／domain／persistence diff 為空；所有遊戲核心與存檔契約保持不變。
 
 整合修正：取消 command timer 後不把其剩餘時間誤認為閱讀間隔；手動暫停僅停止後續命令，最新區既有 pending 仍可操作；最後命令 busy／未保存期間不提前顯示回顧。
 
