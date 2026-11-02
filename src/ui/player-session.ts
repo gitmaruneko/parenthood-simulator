@@ -124,6 +124,7 @@ export const createPlayerSession = (
   let directionQueue: Promise<void> = Promise.resolve();
   let pendingDirections = 0;
   let storyGeneration = 0;
+  let progressRevision = 0;
   const pendingDecision = (): DecisionPresentation | null => {
     if (!state) return null;
     const event = getPlayerView(state, content).pendingEvent;
@@ -279,6 +280,7 @@ export const createPlayerSession = (
     gameTab: "life" | "records" = "life",
   ) => {
     storyGeneration++;
+    progressRevision++;
     state = loaded;
     // Recreate only the seeded actor catalogue through the family-generation boundary.
     const generated = createFamilyRun({ seed: state.seed });
@@ -309,6 +311,7 @@ export const createPlayerSession = (
     });
   };
   const execute = (input: EngineInput) => {
+    const previousState = state;
     const previousHistoryLength = state!.history.length;
     const submitted = snapshot.decision;
     const result = transitionAndSave(
@@ -319,6 +322,7 @@ export const createPlayerSession = (
       expectedRaw,
     );
     state = result.transition.state;
+    if (state !== previousState) progressRevision++;
     savingResult(result.save);
     // A command commits only its actual results. Continue submits the nextInput;
     // traversal and safety boundaries remain owned by the engine.
@@ -331,6 +335,9 @@ export const createPlayerSession = (
     publish({ game: presentGame(), decision });
   };
   const session = {
+    getStoryIdentity: () => storyGeneration,
+    getProgressRevision: () => progressRevision,
+    hasQueuedCommands: () => pendingDirections > 0,
     getSnapshot: () => snapshot,
     subscribe: (listener: () => void) => {
       listeners.add(listener);

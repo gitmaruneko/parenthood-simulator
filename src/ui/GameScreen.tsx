@@ -6,6 +6,8 @@ import { FamilyMemberCard } from "./FamilyMemberCard.js";
 import { projectJournal } from "../engine/index.js";
 import { JournalText } from "./JournalText.js";
 import type { FamilyLifeDirectionId } from "../domain/family-life-direction.js";
+import type { JournalRecord } from "../engine/journal.js";
+import type { StorySnapshot } from "./story-progression.js";
 
 export function FamilyDetails({
   family,
@@ -106,8 +108,8 @@ const storyNames = {
   repair: "重新連結",
 };
 
-export function FamilyLog({ game, children }: { game: GamePresentation; children?: ReactNode }) {
-  const events = projectJournal({ history: game.history, choiceHistory: game.choices, reactionHistory: game.reactions }).reverse();
+export function FamilyLog({ game, records, children }: { game: GamePresentation; records?: readonly JournalRecord[]; children?: ReactNode }) {
+  const events = [...(records ?? projectJournal({ history: game.history, choiceHistory: game.choices, reactionHistory: game.reactions }))].reverse();
   return (
     <section aria-labelledby="log-title">
       <h2 id="log-title" tabIndex={-1}>
@@ -181,7 +183,13 @@ export interface GameScreenProps {
   game: GamePresentation;
   busy: boolean;
   blocked: boolean;
-  onAdvance: () => void;
+  onAdvance?: () => void;
+  story?: StorySnapshot;
+  onPause?: () => void;
+  onResume?: () => void;
+  onFastForward?: () => void;
+  onShowDecision?: () => void;
+  onSurface?: (active: boolean) => void;
   onDirection?: (id: FamilyLifeDirectionId) => void;
   initialTab?: "life" | "records";
 }
@@ -189,21 +197,25 @@ export function GameScreen({
   game,
   busy,
   blocked,
-  onAdvance,
+  story,
+  onPause,
+  onResume,
+  onFastForward,
+  onShowDecision,
+  onSurface,
   onDirection,
   initialTab = "life",
 }: GameScreenProps) {
   const [tab, setTab] = useState<string>(initialTab);
   const [drawer, setDrawer] = useState(false);
-  const title = useRef<HTMLHeadingElement>(null);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const journal = projectJournal({ history: game.history, choiceHistory: game.choices, reactionHistory: game.reactions });
   const event = game.pendingEvent;
-  const focusKey = event?.id ?? `${game.currentTurnId}-${game.history.length}`;
   useEffect(() => {
     if (initialTab === "records") document.getElementById("log-title")?.focus();
-    else title.current?.focus();
-  }, [focusKey, initialTab]);
+    else document.getElementById("log-title")?.focus();
+  }, [initialTab]);
+  useEffect(() => { onSurface?.(tab === "life" || tab === "records"); }, [tab, onSurface]);
   const recentThoughts = game.history
     .filter((entry) => ["planning", "support", "repair"].includes(entry.kind))
     .slice(-4);
@@ -279,29 +291,25 @@ export function GameScreen({
           </details>
         </section>
         <div className="records-column panel" id="panel-records" role="tabpanel" aria-label="紀錄">
-          <FamilyLog game={game}>
-            <section className="event-panel" aria-labelledby="event-title" aria-busy={busy}>
+          <FamilyLog game={game} {...(story ? { records: story.records } : {})}>
+            <section className="event-panel narration-controls" id="game-actions" aria-label="敘事控制" aria-busy={busy}>
               <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
                 {event ? `新的事件：${event.title}。等待你的選擇。` : game.nextLabel}
               </p>
-              <h2 id="event-title" tabIndex={-1} ref={title}>
-                {game.completed ? game.nextLabel : "繼續生活"}
-              </h2>
-              {event ? (
-                <p>請先完成目前的重大抉擇。</p>
-              ) : game.completed ? (
+              {story?.stageNotice && <p role="status">{story.stageNotice}</p>}
+              {story?.fault && <p role="alert">{story.fault}</p>}
+              {event && !story?.dialogReady && <p role="status">有一個重大抉擇等待你。<button onClick={onShowDecision}>查看待選抉擇</button></p>}
+              {game.completed ? (
                 <p>
                   十二個階段告一段落。這些紀錄留下眼前的生活，不預測未來。你可以查看家庭生活紀錄，或回首頁開始新的故事。
                 </p>
               ) : (
-                <button
-                  className="primary"
-                  disabled={busy || blocked || !game.nextInput}
-                  onClick={onAdvance}
-                >
-                  繼續生活
-                </button>
+                <>
+                  <span role="status">{story?.paused ? "敘事已暫停" : story?.readingOlder ? "正在閱讀舊紀錄" : event ? "等待你的選擇" : "生活正在繼續"}</span>
+                  <button onClick={story?.paused ? onResume : onPause}>{story?.paused ? "恢復敘事" : "暫停敘事"}</button>
+                </>
               )}
+              <button disabled={!story?.displaying || blocked} onClick={onFastForward}>快速顯示</button>
             </section>
           </FamilyLog>
           <div className="mobile-growth"><Growth game={game} /></div>

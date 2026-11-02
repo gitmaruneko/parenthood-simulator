@@ -1021,6 +1021,8 @@ dialog h2 {
 @media (max-width: 767px) {
   .game-shell[data-tab="life"] .mobile-growth { display: none; }
   .game-shell[data-tab="records"] > .story-column { display: block; }
-  .game-shell[data-tab="records"] .life-details,
-  .game-shell[data-tab="records"] .event-panel { display: none; }
+  .game-shell[data-tab="records"] .life-details { display: none; }
 }
+.narration-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.narration-controls > p { flex-basis: 100%; margin: 0; }
+.narration-controls button { min-height: 44px; }

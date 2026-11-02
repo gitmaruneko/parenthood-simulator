@@ -28,13 +28,11 @@ afterEach(cleanup);
 it.each([
   { busy: true, blocked: false }, { busy: false, blocked: true },
   { busy: false, blocked: false, nextInput: null },
-])("disables continue when unavailable: %j", async flags => {
+])("has no manual continue action even when unavailable: %j", async flags => {
   const advance = vi.fn();
   render(<GameScreen game={{ ...game, ...(flags.nextInput === null ? { nextInput: null } : {}) }}
     busy={flags.busy} blocked={flags.blocked} onAdvance={advance} />);
-  const button = screen.getByRole("button", { name: "繼續生活" }) as HTMLButtonElement;
-  expect(button.disabled).toBe(true);
-  await userEvent.click(button);
+  expect(screen.queryByRole("button", { name: "繼續生活" })).toBeNull();
   expect(advance).not.toHaveBeenCalled();
 });
 it("introduces the saved family without displaying assessment tendencies", async () => {
@@ -372,8 +370,7 @@ it("shows the latest story first and offers continuation without a Turn-ended no
   expect(stories[1]!.textContent).toContain("較早發生的故事。");
   expect(life.queryByText(/這個 Turn 已結束/)).toBeNull();
   expect(advance).not.toHaveBeenCalled();
-  await userEvent.click(life.getByRole("button", { name: "繼續生活" }));
-  expect(advance).toHaveBeenCalledOnce();
+  expect(life.queryByRole("button", { name: "繼續生活" })).toBeNull();
   expect(history).toEqual(original);
 });
 it("keeps AUTO_ADVANCE reading and mobile tabs separate from simulation commands", async () => {
@@ -397,8 +394,7 @@ it("keeps AUTO_ADVANCE reading and mobile tabs separate from simulation commands
       "有人接下一段工作。",
     ),
   ).toBeTruthy();
-  await userEvent.click(screen.getByRole("button", { name: "繼續生活" }));
-  expect(advance).toHaveBeenCalledOnce();
+  expect(screen.queryByRole("button", { name: "繼續生活" })).toBeNull();
 });
 
 it.each<{
@@ -518,7 +514,7 @@ it("keeps pending context and options out of the main Journal", async () => {
   expect(screen.queryByText("心裡預期：也許對方正忙")).toBeNull();
   expect(screen.queryByRole("button", { name: /一起確認可以接手的事/ })).toBeNull();
   expect(screen.queryByText(pendingEvent.text)).toBeNull();
-  expect(screen.getByText("請先完成目前的重大抉擇。")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "查看待選抉擇" })).toBeTruthy();
   expect(choose).not.toHaveBeenCalled();
   expect(advance).not.toHaveBeenCalled();
 });
