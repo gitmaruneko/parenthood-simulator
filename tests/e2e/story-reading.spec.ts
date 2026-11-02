@@ -49,6 +49,7 @@ test("old-record pending protects viewport and focus until explicit entry", asyn
   expect(await page.evaluate(key => localStorage.getItem(key), key)).toBe(pendingRaw);
   await notice.getByRole("button", { name: "查看待選抉擇" }).click();
   await expect(page.getByRole("dialog")).toHaveCount(1);
+  await page.evaluate(() => { document.documentElement.style.fontSize = "20px"; });
   await page.getByRole("dialog").locator(".decisions button").first().click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(row).toBeFocused();

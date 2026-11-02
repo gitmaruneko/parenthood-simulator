@@ -78,7 +78,7 @@ export function App({ session: provided }: { session?: PlayerSession }) {
   const cancel = useRef<HTMLButtonElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const previousDecision = useRef<string | null>(null);
-  const decisionReturn = useRef<{ focus: HTMLElement | null; row: HTMLElement | null; scrollY: number } | null>(null);
+  const decisionReturn = useRef<{ focus: HTMLElement | null; row: HTMLElement | null; top: number } | null>(null);
   useEffect(() => {
     if (!snapshot.hasUnsavedChanges) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
@@ -88,13 +88,15 @@ export function App({ session: provided }: { session?: PlayerSession }) {
   useLayoutEffect(() => {
     const previous = previousDecision.current;
     previousDecision.current = shownDecision?.key ?? null;
-    if (!previous && shownDecision) decisionReturn.current = {
-      focus: document.activeElement instanceof HTMLElement ? document.activeElement : null,
-      row: [...document.querySelectorAll<HTMLElement>(".event-log > li")].find(row =>
+    if (!previous && shownDecision) {
+      const row = [...document.querySelectorAll<HTMLElement>(".event-log > li")].find(row =>
         row.getBoundingClientRect().bottom > 80 && row.getBoundingClientRect().top < window.innerHeight) ??
-        document.querySelector<HTMLElement>(".event-log > li"),
-      scrollY: window.scrollY,
-    };
+        document.querySelector<HTMLElement>(".event-log > li");
+      decisionReturn.current = {
+        focus: document.activeElement instanceof HTMLElement ? document.activeElement : null,
+        row, top: row?.getBoundingClientRect().top ?? 0,
+      };
+    }
     if (previous && !shownDecision && snapshot.page === "game") {
       requestAnimationFrame(() => {
         const current = session.getSnapshot();
@@ -103,7 +105,10 @@ export function App({ session: provided }: { session?: PlayerSession }) {
           const saved = decisionReturn.current;
           const target = saved?.focus?.isConnected ? saved.focus : saved?.row?.isConnected ? saved.row : document.getElementById("log-title");
           target?.focus({ preventScroll: true });
-          if (saved && window.scrollY !== saved.scrollY) window.scrollTo({ top: saved.scrollY, behavior: "instant" });
+          if (saved?.row?.isConnected) {
+            const delta = saved.row.getBoundingClientRect().top - saved.top;
+            if (Math.abs(delta) > 0.5) window.scrollBy({ top: delta, behavior: "instant" });
+          }
         } else (document.querySelector<HTMLElement>(".event-log > li") ?? document.getElementById("log-title"))?.focus();
       });
     }
