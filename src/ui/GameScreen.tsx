@@ -183,7 +183,6 @@ export interface GameScreenProps {
   game: GamePresentation;
   busy: boolean;
   blocked: boolean;
-  onAdvance?: () => void;
   story?: StorySnapshot;
   onPause?: () => void;
   onResume?: () => void;

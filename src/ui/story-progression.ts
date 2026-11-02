@@ -69,7 +69,7 @@ export function createStoryProgression(session: PlayerSession) {
     const blocked = !owner || !visible || !surface || paused || readingOlder || current.page !== "game" ||
       current.busy || current.dialog !== null || current.error !== null || current.hasUnsavedChanges || !!fault;
     const displaying = records.length < all.length || wait > 0;
-    const recovery = !!current.decision && (current.hasUnsavedChanges || current.decision.status === "submitting");
+    const recovery = !!current.decision && (current.hasUnsavedChanges || !!current.error || current.decision.status === "submitting");
     const dialogReady = !!current.decision && (recovery || openedDecision === current.decision.key ||
       (!blocked && !displaying));
     const next: StorySnapshot = { records, paused, readingOlder, pending: !!current.decision,
@@ -81,6 +81,7 @@ export function createStoryProgression(session: PlayerSession) {
     if (timer !== null) return;
     if (!displaying && (current.decision || game?.completed || !game?.nextInput)) return;
     const token = ++epoch;
+    const purpose = wait > 0 ? "reading" : records.length < all.length ? "reveal" : "command";
     const delay = wait || (records.length < all.length ? 0 : 250);
     due = Date.now() + delay;
     timer = setTimeout(async () => {
@@ -96,7 +97,7 @@ export function createStoryProgression(session: PlayerSession) {
         wait = Math.min(8000, Math.max(2000, [...record.text].length / 12 * 1000));
         update(); return;
       }
-      if (delay !== 250) { update(); return; }
+      if (purpose !== "command") { update(); return; }
       if (latest.decision || latest.game?.completed || !latest.game?.nextInput) { update(); return; }
       if (session.hasQueuedCommands()) { update(); return; }
       if (++commands > 64) { fault = "自動敘事已安全停止，請返回首頁重新讀取。"; update(); return; }
