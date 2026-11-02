@@ -1026,3 +1026,6 @@ dialog h2 {
 .narration-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .narration-controls > p { flex-basis: 100%; margin: 0; }
 .narration-controls button { min-height: 44px; }
+.reading-notice { position: fixed; bottom: 80px; right: 16px; left: 16px; width: fit-content; max-width: calc(100vw - 32px); margin-left: auto; z-index: 20; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px; background: #fffaf0; border: 1px solid #d7cfc1; border-radius: 12px; box-shadow: 0 3px 16px #0002; }
+.reading-notice button { min-height: 44px; }
+.event-log { overflow-anchor: none; }
