@@ -14,6 +14,15 @@ GitHub Issue：[規格 #52](https://github.com/gitmaruneko/parenthood-simulator/
 - 真實 Session／SaveStorage／可控時鐘與可見性為主要 seam；補強同 seed 確定性、第 N checkpoint 失敗、跨重新整理暫停、舊紀錄 pending、StrictMode／重掛載／換頁／舊 timer。
 - 保留 v7 legacy 與 v8 bound 回歸，不改引擎、Scheduler、PRNG、事件內容或存檔契約。
 
+## Delivery / Review
+
+- 整合交付：[PR #58](https://github.com/gitmaruneko/parenthood-simulator/pull/58)，以 main 為基準；未 Merge、未正式部署。
+- 子票 #53／#54／#55 已依序完成實作、獨立 Standards／Spec Review 與自動驗收。#56／#57 為 Draft 差異審閱切片，舊手動操作 E2E 的整合更新納入 #58，不能單獨視為完整可合併交付。
+- 最終本機驗證：28 files／346 tests、typecheck、build、桌面／手機 Playwright 66/66 通過。
+- 本機 Preview：http://127.0.0.1:5173/preview-automatic-story.html；獨立試玩儲存，原家庭存檔不變。
+- 證據與人工清單：docs/implementation/AUTOMATIC-STORY-T3.md；真實手機／螢幕閱讀器及主觀節奏待人工簽核。
+- 下列 AC 已完成實作及自動驗證；狀態為 ready-for-human（審閱／人工驗收），不再等待規格確認。
+
 ## Problem Statement
 
 《今天也在養小孩》目前雖以 Journal 作為主畫面，玩家仍須反覆按「繼續生活」才能遇到日常。這個操作打斷生活自然發生的感受。直接連發現有命令則可能一次出現大量文字、連續開啟重大抉擇，或在讀取舊紀錄時搶走焦點。
@@ -110,23 +119,23 @@ GitHub Issue：[規格 #52](https://github.com/gitmaruneko/parenthood-simulator/
 
 ## Acceptance Criteria
 
-- [ ] AC1 主敘事移除大型「繼續生活」標題與按鈕；開始／繼續家庭生活後，自動看見一般事件，不需確認。
-- [ ] AC2 自動流程只呼叫公開 Session 命令；nextInput 決定 ADVANCE / START_TURN / NEXT_AGE_STAGE；UI 不修改 GameState、不自行判定結果。
-- [ ] AC3 新紀錄依來源順序逐筆出現並最新置頂；choiceText 粗體，其餘結果一般字重，文字來自已發生 Journal。
-- [ ] AC4 只有 PLAYER_INPUT_REQUIRED 觸發抉擇 Dialog；待選時零額外自動命令、不代選；任一時點最多一個抉擇 Dialog。
-- [ ] AC5 選擇保存成功後返回 Journal，顯示選擇及實際結果，經閱讀間隔自動恢復；快速顯示可略過剩餘間隔，無額外 3 秒等待。
-- [ ] AC6 多節點命令的文字分批顯示，佇列完成前不執行下一命令；閱讀間隔、快速顯示與減少動態效果遵守已核准規則（每筆 2–8 秒、Stage 約 2 秒，無速度選單）。
-- [ ] AC7 AgeStage 轉換有無須確認的時間／成長提示；Turn、4 / 6 預算、安全終止與 completed 依既有語義處理；結尾紀錄可讀完。
-- [ ] AC8 暫停、頁面 hidden、離開／卸載、資訊視圖切換、閱讀舊紀錄都可停止後續推進；安全恢復不補算離線事件；手動暫停跨重新整理保留。
-- [ ] AC9 重繪、StrictMode effect 重啟、同 Session 重掛載、快速暫停恢復、舊 timer、讀檔或換局，不重複命令／事件／Journal／Dialog；最多一個命令在執行。
-- [ ] AC10 所有已確認變化沿用現有 checkpoint 保存規則；任何保存失敗或命令錯誤立即停止後續自動命令，復原介面不受動畫阻擋。
-- [ ] AC11 pending checkpoint、已接受 CHOOSE、多 checkpoint 中途保存失敗均保留既有重試；重試不重新抽選、不重送命令。衝突不覆寫他人存檔。
-- [ ] AC12 讀檔恢復 pending occurrence、Turn 中途／結束、AgeStage 邊界與已完成狀態正確；只顯示已存歷史，不補造／重執行事件。
-- [ ] AC13 閱讀舊紀錄時自動新增不強制變更可見 record 及 viewport offset、不搶焦點；Dialog 返回尊重原閱讀位置；舊紀錄 pending 僅提示入口、不強開。
-- [ ] AC14 手機／桌面共用敘事資料、Session、顯示佇列與進度規則；鍵盤、長 Dialog、短螢幕與減少動態效果可用。
-- [ ] AC15 同初始 state、內容版本、seed、選擇與方向命令順序下，手動與自動流程的 PRNG、資源、事件／反應／排程、預算、Journal 與回顧一致；改顯示速度不改結果。
-- [ ] AC16 無進度與 watchdog 測試可有限停止；四種固定家庭完整 12 階段不漏必要選擇、不誤觸 watchdog。
-- [ ] AC17 依核准規格拆票／實作；每票獨立 Review／驗收及 PR，完成時更新相關 UX／Journal／Dialog 文件並提供適用 npm 驗證證據；不自行 Merge 或部署。
+- [x] AC1 主敘事移除大型「繼續生活」標題與按鈕；開始／繼續家庭生活後，自動看見一般事件，不需確認。
+- [x] AC2 自動流程只呼叫公開 Session 命令；nextInput 決定 ADVANCE / START_TURN / NEXT_AGE_STAGE；UI 不修改 GameState、不自行判定結果。
+- [x] AC3 新紀錄依來源順序逐筆出現並最新置頂；choiceText 粗體，其餘結果一般字重，文字來自已發生 Journal。
+- [x] AC4 只有 PLAYER_INPUT_REQUIRED 觸發抉擇 Dialog；待選時零額外自動命令、不代選；任一時點最多一個抉擇 Dialog。
+- [x] AC5 選擇保存成功後返回 Journal，顯示選擇及實際結果，經閱讀間隔自動恢復；快速顯示可略過剩餘間隔，無額外 3 秒等待。
+- [x] AC6 多節點命令的文字分批顯示，佇列完成前不執行下一命令；閱讀間隔、快速顯示與減少動態效果遵守已核准規則（每筆 2–8 秒、Stage 約 2 秒，無速度選單）。
+- [x] AC7 AgeStage 轉換有無須確認的時間／成長提示；Turn、4 / 6 預算、安全終止與 completed 依既有語義處理；結尾紀錄可讀完。
+- [x] AC8 暫停、頁面 hidden、離開／卸載、資訊視圖切換、閱讀舊紀錄都可停止後續推進；安全恢復不補算離線事件；手動暫停跨重新整理保留。
+- [x] AC9 重繪、StrictMode effect 重啟、同 Session 重掛載、快速暫停恢復、舊 timer、讀檔或換局，不重複命令／事件／Journal／Dialog；最多一個命令在執行。
+- [x] AC10 所有已確認變化沿用現有 checkpoint 保存規則；任何保存失敗或命令錯誤立即停止後續自動命令，復原介面不受動畫阻擋。
+- [x] AC11 pending checkpoint、已接受 CHOOSE、多 checkpoint 中途保存失敗均保留既有重試；重試不重新抽選、不重送命令。衝突不覆寫他人存檔。
+- [x] AC12 讀檔恢復 pending occurrence、Turn 中途／結束、AgeStage 邊界與已完成狀態正確；只顯示已存歷史，不補造／重執行事件。
+- [x] AC13 閱讀舊紀錄時自動新增不強制變更可見 record 及 viewport offset、不搶焦點；Dialog 返回尊重原閱讀位置；舊紀錄 pending 僅提示入口、不強開。
+- [x] AC14 手機／桌面共用敘事資料、Session、顯示佇列與進度規則；鍵盤、長 Dialog、短螢幕與減少動態效果可用。
+- [x] AC15 同初始 state、內容版本、seed、選擇與方向命令順序下，手動與自動流程的 PRNG、資源、事件／反應／排程、預算、Journal 與回顧一致；改顯示速度不改結果。
+- [x] AC16 無進度與 watchdog 測試可有限停止；四種固定家庭完整 12 階段不漏必要選擇、不誤觸 watchdog。
+- [x] AC17 依核准規格拆票／實作；每票獨立 Review／驗收及 PR，完成時更新相關 UX／Journal／Dialog 文件並提供適用 npm 驗證證據；不自行 Merge 或部署。
 
 ## Dependencies
 
