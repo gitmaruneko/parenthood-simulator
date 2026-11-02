@@ -1,7 +1,10 @@
+import { installPausedNarration, pauseAndReveal, stepNarration } from "./narration-helpers.js";
 import { test, expect, type Page } from "@playwright/test";
 import { createFamilyRun, projectJournal, transitionGame, getPlayerView } from "../../src/engine/index.js";
 import { createMvpContent } from "../../src/content/mvp.js";
 import { serializeGame } from "../../src/persistence/index.js";
+
+test.beforeEach(async ({ page }) => { await installPausedNarration(page); });
 
 const key = "parenthood-simulator.save";
 const run = createFamilyRun({ seed: 42 });
@@ -54,14 +57,14 @@ test("restored decisions are modal, trap keyboard focus, cannot be skipped, and 
   await page.screenshot({ path: `test-results/decision-modal-${isMobile ? "mobile" : "desktop"}.png` });
   await dialog.locator(".decisions button").first().press("Enter");
   await expect(dialog).toHaveCount(0);
-  await expect(page.locator(".event-log > li").first()).toBeFocused();
+  await pauseAndReveal(page);
   const expected = transitionGame(pending, content, { type: "CHOOSE", choiceId: "coordinate" }).state;
   const saved = await page.evaluate(key => localStorage.getItem(key), key);
   expect(JSON.parse(saved!).state).toEqual(expected);
   const log = page.getByRole("list", { name: "已發生的事件" });
   await expect(log.locator("li > p")).toHaveText(projectJournal(expected).reverse().map(row => row.text));
   await expect(log.locator("strong")).toHaveText(["把今晚需要的事列出來，協調一段可交接的時間"]);
-  await expect(page.getByRole("button", { name: "繼續生活", exact: true })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "繼續生活", exact: true })).toHaveCount(0);
 });
 
 for (const errorName of ["QuotaExceededError", "SecurityError"]) {
@@ -84,7 +87,7 @@ for (const errorName of ["QuotaExceededError", "SecurityError"]) {
     await page.evaluate(() => (window as any).restoreWrites());
     await dialog.getByRole("button", { name: "重試儲存", exact: true }).click();
     await expect(dialog).toHaveCount(0);
-    await expect(page.locator(".event-log > li").first()).toBeFocused();
+    await pauseAndReveal(page);
     const expected = transitionGame(pending, content, { type: "CHOOSE", choiceId: "coordinate" }).state;
     expect(JSON.parse((await page.evaluate(key => localStorage.getItem(key), key))!).state).toEqual(expected);
     await page.reload();

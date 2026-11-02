@@ -6,6 +6,7 @@ import { createFamilyRun, transitionGame } from "../src/engine/index.js";
 import { createMvpContent } from "../src/content/mvp.js";
 import { bindPreviewRun, createRunContent } from "../src/content/releases.js";
 import { getPlayerView } from "../src/engine/index.js";
+import { UX_V2_FAMILIES } from "./helpers/ux-v2-scenarios.js";
 
 afterEach(() => vi.useRealTimers());
 
@@ -78,8 +79,8 @@ it.each([1, 2])("stops at failed checkpoint %i and retries the exact accepted tr
   detach();
 });
 
-it.each([false, true])("keeps a complete manual and automatic run deterministic (bound=%s)", async bound => {
-  let run = createFamilyRun({ seed: 42 }); if (bound) run = bindPreviewRun(run);
+it.each([false, true].flatMap(bound => UX_V2_FAMILIES.map(family => ({ bound, ...family }))))("keeps manual and automatic runs deterministic: $name bound=$bound", async ({ bound, seed }) => {
+  let run = createFamilyRun({ seed }); if (bound) run = bindPreviewRun(run);
   const content = bound ? createRunContent(run.state) : createMvpContent(run.actors);
   const pending = transitionGame(run.state, content, { type: "ADVANCE" }).state;
   const make = () => {
@@ -109,3 +110,34 @@ it.each([false, true])("keeps a complete manual and automatic run deterministic 
   await vi.advanceTimersByTimeAsync(60000); expect(auto.values.get(LOCAL_SAVE_KEY)).toBe(final);
   detach();
 }, 30000);
+
+it("stops a non-progressing public Session instead of rescheduling indefinitely", async () => {
+  const run = createFamilyRun({ seed: 42 }); const content = createMvpContent(run.actors);
+  const pending = transitionGame(run.state, content, { type: "ADVANCE" }).state;
+  const resolved = transitionGame(pending, content, { type: "CHOOSE", choiceId: "coordinate" }).state;
+  const values = new Map([[LOCAL_SAVE_KEY, serializeGame(resolved)]]);
+  const real = createPlayerSession(createLocalSaveStore({ getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => { values.set(key, value); } }));
+  await real.resume(); vi.useFakeTimers();
+  // A pathological public command boundary; the real engine is never mocked.
+  const story = createStoryProgression({ ...real, advance: async () => {} }); const detach = story.attach();
+  await vi.advanceTimersByTimeAsync(1000000);
+  expect(story.getSnapshot().fault).toContain("故事暫時無法繼續");
+  expect(values.get(LOCAL_SAVE_KEY)).toBe(serializeGame(resolved));
+  detach();
+});
+
+it("caps pathological same-stage commands even when a command reports changing revisions", async () => {
+  const run = createFamilyRun({ seed: 42 }); const content = createMvpContent(run.actors);
+  const pending = transitionGame(run.state, content, { type: "ADVANCE" }).state;
+  const resolved = transitionGame(pending, content, { type: "CHOOSE", choiceId: "coordinate" }).state;
+  const values = new Map([[LOCAL_SAVE_KEY, serializeGame(resolved)]]);
+  const real = createPlayerSession(createLocalSaveStore({ getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => { values.set(key, value); } }));
+  await real.resume(); vi.useFakeTimers(); let revision = 0;
+  const story = createStoryProgression({ ...real, advance: async () => { revision++; }, getProgressRevision: () => revision });
+  const detach = story.attach(); await vi.advanceTimersByTimeAsync(1000000);
+  expect(story.getSnapshot().fault).toContain("自動敘事已安全停止");
+  expect(revision).toBe(64);
+  detach();
+});

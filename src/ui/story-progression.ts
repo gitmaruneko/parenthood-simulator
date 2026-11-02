@@ -41,6 +41,7 @@ export function createStoryProgression(session: PlayerSession, preference: Narra
   let fault: string | null = null;
   let wait = 0;
   let timer: ReturnType<typeof setTimeout> | null = null;
+  let timerPurpose: "reading" | "reveal" | "command" = "command";
   let due = 0;
   let epoch = 0;
   let openedDecision: string | null = null;
@@ -49,7 +50,10 @@ export function createStoryProgression(session: PlayerSession, preference: Narra
     dialogReady: false, displaying: false, stageNotice: null, fault, preferenceError };
   const cancel = () => {
     epoch++;
-    if (timer !== null) { clearTimeout(timer); timer = null; wait = Math.max(0, due - Date.now()); }
+    if (timer !== null) {
+      clearTimeout(timer); timer = null;
+      wait = timerPurpose === "reading" ? Math.max(0, due - Date.now()) : 0;
+    }
   };
   const update = () => {
     const current = session.getSnapshot();
@@ -70,12 +74,13 @@ export function createStoryProgression(session: PlayerSession, preference: Narra
       }
     }
     if (current.decision) commands = 0;
-    const blocked = !owner || !visible || !surface || paused || readingOlder || current.page !== "game" ||
+    const contextBlocked = !owner || !visible || !surface || readingOlder || current.page !== "game" ||
       current.busy || current.dialog !== null || current.error !== null || current.hasUnsavedChanges || !!fault;
+    const blocked = contextBlocked || paused;
     const displaying = records.length < all.length || wait > 0;
     const recovery = !!current.decision && (current.hasUnsavedChanges || !!current.error || current.decision.status === "submitting");
     const dialogReady = !!current.decision && (recovery || openedDecision === current.decision.key ||
-      (!blocked && !displaying));
+      (!contextBlocked && !displaying));
     const next: StorySnapshot = { records, paused, readingOlder, pending: !!current.decision,
       dialogReady, displaying, stageNotice: notice, fault, preferenceError };
     if (Object.keys(next).some(key => next[key as keyof StorySnapshot] !== snapshot[key as keyof StorySnapshot])) {
@@ -86,6 +91,7 @@ export function createStoryProgression(session: PlayerSession, preference: Narra
     if (!displaying && (current.decision || game?.completed || !game?.nextInput)) return;
     const token = ++epoch;
     const purpose = wait > 0 ? "reading" : records.length < all.length ? "reveal" : "command";
+    timerPurpose = purpose;
     const delay = wait || (records.length < all.length ? 0 : 250);
     due = Date.now() + delay;
     timer = setTimeout(async () => {

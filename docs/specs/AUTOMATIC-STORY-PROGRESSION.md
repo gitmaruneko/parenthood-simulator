@@ -65,6 +65,7 @@ GitHub Issue：[規格 #52](https://github.com/gitmaruneko/parenthood-simulator/
 - 一次最多一個 in-flight command、一個待觸發 timer。命令前再次讀取最新 snapshot 並驗證 run / revision 與可推進條件。await 後檢查 error、hasUnsavedChanges、decision 與 completed，而非只看 Promise。
 - 家庭生活方向命令與自動推進序列化；已排隊的玩家方向更新先保存，再抽選下一個尚未選取的事件。方向更新本身不新增 Journal，也不觸發重複顯示。
 - busy 或已接受命令無法回滾；暫停只禁止後續命令。這次命令的保存仍依原契約完成。
+- 手動暫停只阻止後續 Session 命令；最新閱讀區已存在的必要抉擇仍可顯示與選擇。舊紀錄的 pending 則遵守提示／主動入口規則。
 
 ### 2. 閱讀節奏與多筆結果
 

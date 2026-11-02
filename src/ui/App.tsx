@@ -249,7 +249,7 @@ export function App({ session: provided }: { session?: PlayerSession }) {
               </section>
             </main>
           )}
-          {snapshot.page === "game" && snapshot.game && (snapshot.game.review && !story.displaying ? (
+          {snapshot.page === "game" && snapshot.game && (snapshot.game.review && !snapshot.busy && !snapshot.hasUnsavedChanges && !story.displaying ? (
             <ReviewScreen game={snapshot.game} blocked={snapshot.busy || snapshot.error !== null}
               onSelect={(ids) => void session.selectMoments(ids)} onReplay={() => {
                 previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;

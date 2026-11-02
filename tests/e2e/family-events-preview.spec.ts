@@ -1,8 +1,11 @@
+import { installPausedNarration, pauseAndReveal, stepNarration } from "./narration-helpers.js";
 import { test, expect } from "@playwright/test";
 import { createFamilyRun, getPlayerView, projectJournal, transitionGame } from "../../src/engine/index.js";
 import { bindPreviewRun, createRunContent } from "../../src/content/releases.js";
 import { serializeGame } from "../../src/persistence/index.js";
 import { TOY_CAR_ROOT } from "../../src/content/toy-car-story.js";
+
+test.beforeEach(async ({ page }) => { await installPausedNarration(page); });
 
 test("isolated 08A shortcut preserves the original story and resumes only its own playtest", async ({ page }) => {
   const original = serializeGame(createFamilyRun({ seed: 2 }).state);
@@ -11,6 +14,7 @@ test("isolated 08A shortcut preserves the original story and resumes only its ow
   await expect(page.getByRole("dialog", { name: "搶回來的那台小車", exact: true })).toBeVisible();
   await page.getByRole("dialog").getByRole("button").first().click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
+  await pauseAndReveal(page);
   const checkpoint = await page.evaluate(() => Object.fromEntries(Object.keys(sessionStorage).map(key => [key, sessionStorage.getItem(key)])));
   await page.reload();
   await expect(page.getByRole("list", { name: "已發生的事件" })).toContainText("你把兩台小車放到桌邊");
@@ -37,8 +41,10 @@ test("08A: reload pending and across turns, render independent narrative results
     if (view.pendingEvent) {
       await page.getByRole("dialog").getByRole("button", { name: view.pendingEvent.choices[0]!.text, exact: true }).click();
       state = transitionGame(state, content, { type: "CHOOSE", choiceId: view.pendingEvent.choices[0]!.id }).state;
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+      await pauseAndReveal(page);
     } else {
-      await page.getByRole("button", { name: "繼續生活", exact: true }).click();
+      await stepNarration(page);
       state = transitionGame(state, content, view.nextInput!).state;
     }
     await expect.poll(async () => JSON.parse((await page.evaluate(() => localStorage.getItem("parenthood-simulator.save")))!).state).toEqual(state);
@@ -54,5 +60,5 @@ test("08A: reload pending and across turns, render independent narrative results
   await expect(log).toContainText("是否繼續說由孩子決定");
   await expect(log.locator("strong")).toHaveCount(2);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.screenshot({ path: `docs/examples/ISSUE-42-08A-${isMobile ? "MOBILE" : "DESKTOP"}.png`, fullPage: true });
+  await page.screenshot({ path: `test-results/ISSUE-42-08A-${isMobile ? "MOBILE" : "DESKTOP"}.png`, fullPage: true });
 });
