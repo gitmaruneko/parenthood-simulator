@@ -28,13 +28,11 @@ afterEach(cleanup);
 it.each([
   { busy: true, blocked: false }, { busy: false, blocked: true },
   { busy: false, blocked: false, nextInput: null },
-])("disables continue when unavailable: %j", async flags => {
+])("has no manual continue action even when unavailable: %j", async flags => {
   const advance = vi.fn();
   render(<GameScreen game={{ ...game, ...(flags.nextInput === null ? { nextInput: null } : {}) }}
-    busy={flags.busy} blocked={flags.blocked} onAdvance={advance} />);
-  const button = screen.getByRole("button", { name: "繼續生活" }) as HTMLButtonElement;
-  expect(button.disabled).toBe(true);
-  await userEvent.click(button);
+    busy={flags.busy} blocked={flags.blocked} />);
+  expect(screen.queryByRole("button", { name: "繼續生活" })).toBeNull();
   expect(advance).not.toHaveBeenCalled();
 });
 it("introduces the saved family without displaying assessment tendencies", async () => {
@@ -99,7 +97,7 @@ it("shows compact member relationships and expands household context without sim
     id: "support", displayName: "支持家人（不同住）", relationship: "不同住的支持家人",
     ageLabel: null, context: ["家庭照顧安排：目前會先確認彼此能接手的時間。"], recent: null,
     recentTimeLabel: null, memories: [],
-  }] }, busy: false, blocked: false, onAdvance: advance };
+  }] }, busy: false, blocked: false, };
   const view = render(<GameScreen {...props} />);
   const family = within(screen.getByRole("tabpanel", { name: "家庭" }));
   expect(family.getByText("你的孩子 · 2 個月")).toBeTruthy();
@@ -119,7 +117,7 @@ it("shows household summaries, dates recorded reactions and reveals only stored 
     careParticipation: "shared", workArrangement: "flexible" });
   render(<GameScreen game={{ ...game, family: familySummary, members: [{ ...game.members[0]!,
     recent: "孩子拉著你的手。", recentTimeLabel: "2 個月 1 天", memories: ["你陪孩子一起緩了下來。"],
-  }] }} busy={false} blocked={false} onAdvance={vi.fn()} />);
+  }] }} busy={false} blocked={false} />);
   const family = within(screen.getByRole("tabpanel", { name: "家庭" }));
   expect(family.getByText("照顧安排").tagName).toBe("DT");
   expect(within(family.getByText("照顧安排").closest("dl")!).getAllByRole("definition").map((item) => item.textContent))
@@ -135,7 +133,7 @@ it("shows household summaries, dates recorded reactions and reveals only stored 
 });
 it("renders all directions as one accessible group and retains focus when the selection updates", async () => {
   const onDirection = vi.fn();
-  const props = { game, busy: false, blocked: false, onAdvance: vi.fn(), onDirection };
+  const props = { game, busy: false, blocked: false, onDirection };
   const view = render(<GameScreen {...props} />);
   const group = screen.getByRole("group", { name: "家庭生活方向" });
   expect(within(group).getAllByRole("radio")).toHaveLength(6);
@@ -155,7 +153,7 @@ it("keeps direction explanations in an optional disclosure without advancing", a
   const choose = vi.fn();
   const advance = vi.fn();
   const direction = vi.fn();
-  render(<GameScreen game={game} busy={false} blocked={false} onAdvance={advance} onDirection={direction} />);
+  render(<GameScreen game={game} busy={false} blocked={false} onDirection={direction} />);
   const disclosure = screen.getByText("方向說明");
   const details = disclosure.closest("details")!;
   expect(details.open).toBe(false);
@@ -235,7 +233,7 @@ it("bolds only the saved choice and shows each actual consequence once beside Co
   await session.choose("coordinate", session.getSnapshot().decision!.key);
   await session.advance();
   const saved = session.getSnapshot().game!;
-  render(<GameScreen game={saved} busy={false} blocked={false} onAdvance={vi.fn()} />);
+  render(<GameScreen game={saved} busy={false} blocked={false} />);
   const log = screen.getByRole("list", { name: "已發生的事件" });
   expect([...log.querySelectorAll("strong")].map(item => item.textContent))
     .toEqual(["把今晚需要的事列出來，協調一段可交接的時間"]);
@@ -363,7 +361,7 @@ it("shows the latest story first and offers continuation without a Turn-ended no
       game={{ ...game, history }}
       busy={false}
       blocked={false}
-      onAdvance={advance}
+     
     />,
   );
   const life = within(screen.getByRole("tabpanel", { name: "生活" }));
@@ -372,8 +370,7 @@ it("shows the latest story first and offers continuation without a Turn-ended no
   expect(stories[1]!.textContent).toContain("較早發生的故事。");
   expect(life.queryByText(/這個 Turn 已結束/)).toBeNull();
   expect(advance).not.toHaveBeenCalled();
-  await userEvent.click(life.getByRole("button", { name: "繼續生活" }));
-  expect(advance).toHaveBeenCalledOnce();
+  expect(life.queryByRole("button", { name: "繼續生活" })).toBeNull();
   expect(history).toEqual(original);
 });
 it("keeps AUTO_ADVANCE reading and mobile tabs separate from simulation commands", async () => {
@@ -384,7 +381,7 @@ it("keeps AUTO_ADVANCE reading and mobile tabs separate from simulation commands
       game={game}
       busy={false}
       blocked={false}
-      onAdvance={advance}
+     
     />,
   );
   expect(screen.queryByText("故事正在發展")).toBeNull();
@@ -397,8 +394,7 @@ it("keeps AUTO_ADVANCE reading and mobile tabs separate from simulation commands
       "有人接下一段工作。",
     ),
   ).toBeTruthy();
-  await userEvent.click(screen.getByRole("button", { name: "繼續生活" }));
-  expect(advance).toHaveBeenCalledOnce();
+  expect(screen.queryByRole("button", { name: "繼續生活" })).toBeNull();
 });
 
 it.each<{
@@ -512,13 +508,13 @@ it("keeps pending context and options out of the main Journal", async () => {
       }}
       busy={false}
       blocked={false}
-      onAdvance={advance}
+     
     />,
   );
   expect(screen.queryByText("心裡預期：也許對方正忙")).toBeNull();
   expect(screen.queryByRole("button", { name: /一起確認可以接手的事/ })).toBeNull();
   expect(screen.queryByText(pendingEvent.text)).toBeNull();
-  expect(screen.getByText("請先完成目前的重大抉擇。")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "查看待選抉擇" })).toBeTruthy();
   expect(choose).not.toHaveBeenCalled();
   expect(advance).not.toHaveBeenCalled();
 });
@@ -572,7 +568,7 @@ it("opens completed family records directly and focuses their title", () => {
       initialTab="records"
       busy={false}
       blocked={false}
-      onAdvance={vi.fn()}
+     
     />,
   );
   expect(

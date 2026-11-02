@@ -8,6 +8,7 @@ import { SaveNotice } from "./SaveNotice.js";
 import { ReviewScreen } from "./ReviewScreen.js";
 import { FamilyMemberCard } from "./FamilyMemberCard.js";
 import { DecisionDialog } from "./DecisionDialog.js";
+import { getStoryProgression } from "./story-progression.js";
 
 const questions = getAssessmentQuestions();
 export function Assessment({ session }: { session: PlayerSession }) {
@@ -54,7 +55,23 @@ export function Assessment({ session }: { session: PlayerSession }) {
 }
 export function App({ session: provided }: { session?: PlayerSession }) {
   const [session] = useState(() => provided ?? createPlayerSession());
+  const [progression] = useState(() => getStoryProgression(session));
+  const story = useSyncExternalStore(progression.subscribe, progression.getSnapshot);
   const snapshot = useSyncExternalStore(session.subscribe, session.getSnapshot);
+  const shownDecision = story.dialogReady ? snapshot.decision : null;
+  useEffect(() => {
+    progression.setVisible(document.visibilityState !== "hidden");
+    const detach = progression.attach();
+    const visibility = () => progression.setVisible(document.visibilityState !== "hidden");
+    const hide = () => progression.setVisible(false);
+    document.addEventListener("visibilitychange", visibility);
+    window.addEventListener("pagehide", hide);
+    window.addEventListener("pageshow", visibility);
+    return () => {
+      detach(); document.removeEventListener("visibilitychange", visibility);
+      window.removeEventListener("pagehide", hide); window.removeEventListener("pageshow", visibility);
+    };
+  }, [progression]);
   const dialog = useRef<HTMLDialogElement>(null);
   const cancel = useRef<HTMLButtonElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
@@ -67,15 +84,15 @@ export function App({ session: provided }: { session?: PlayerSession }) {
   }, [snapshot.hasUnsavedChanges]);
   useEffect(() => {
     const previous = previousDecision.current;
-    previousDecision.current = snapshot.decision?.key ?? null;
-    if (previous && !snapshot.decision && snapshot.page === "game") {
+    previousDecision.current = shownDecision?.key ?? null;
+    if (previous && !shownDecision && snapshot.page === "game") {
       requestAnimationFrame(() => {
         const current = session.getSnapshot();
         if (current.decision || current.game !== snapshot.game || current.page !== "game") return;
         (document.querySelector<HTMLElement>(".event-log > li") ?? document.getElementById("log-title"))?.focus();
       });
     }
-  }, [snapshot.decision, snapshot.page, snapshot.game, session]);
+  }, [shownDecision, snapshot.page, snapshot.game, session]);
   useEffect(() => {
     void session.check();
     const recheck = () => {
@@ -136,7 +153,7 @@ export function App({ session: provided }: { session?: PlayerSession }) {
   };
   return (
     <>
-      <div className="game-background" inert={snapshot.decision !== null}>
+      <div className="game-background" inert={shownDecision !== null}>
       {snapshot.page === "home" ? (
         <HomePage
           save={snapshot.home}
@@ -212,7 +229,7 @@ export function App({ session: provided }: { session?: PlayerSession }) {
               </section>
             </main>
           )}
-          {snapshot.page === "game" && snapshot.game && (snapshot.game.review ? (
+          {snapshot.page === "game" && snapshot.game && (snapshot.game.review && !story.displaying ? (
             <ReviewScreen game={snapshot.game} blocked={snapshot.busy || snapshot.error !== null}
               onSelect={(ids) => void session.selectMoments(ids)} onReplay={() => {
                 previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -228,7 +245,10 @@ export function App({ session: provided }: { session?: PlayerSession }) {
               busy={snapshot.busy}
               blocked={snapshot.error !== null}
               initialTab={snapshot.gameTab}
-              onAdvance={() => void session.advance()}
+              story={story}
+              onPause={progression.pause} onResume={progression.resume}
+              onFastForward={progression.fastForward} onShowDecision={progression.showDecision}
+              onSurface={progression.setSurface}
               onDirection={(id) => void session.setDirection(id)}
             />
           ))}
@@ -322,7 +342,7 @@ export function App({ session: provided }: { session?: PlayerSession }) {
         </div>
       </dialog>
       </div>
-      {snapshot.decision && <DecisionDialog decision={snapshot.decision} busy={snapshot.busy}
+      {shownDecision && <DecisionDialog decision={shownDecision} busy={snapshot.busy}
         error={snapshot.error} hasUnsavedChanges={snapshot.hasUnsavedChanges} canRetry={snapshot.canRetrySave}
         onChoose={(id, key) => void session.choose(id, key)}
         onRetry={key => void session.retryDecisionSave(key)} onReload={session.reloadDecision} />}
