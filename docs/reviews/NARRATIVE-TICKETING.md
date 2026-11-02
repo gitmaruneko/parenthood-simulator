@@ -1,6 +1,6 @@
 # Narrative Quality：正式建票決議
 
-版本：v1，2026-11-03（Asia/Taipei）。使用者已核准既有事件整修與 #42 分工、三票拆分及發布；本輪只建立文件 PR 與 Issues，不實作、Merge 或部署。下列 NQ-A1／A2／A3 是工作代號；發布後於本節記錄實際編號。
+版本：v1，2026-11-03（Asia/Taipei）。使用者已核准既有事件整修與 #42 分工、三票拆分及發布；本輪只建立文件 PR 與 Issues，不實作、Merge 或部署。NQ-A1／A2／A3 已分別發布為 #60／#61／#62，連結見發布索引。
 
 ## 文件與來源核對
 
@@ -176,4 +176,13 @@ NQ-A1 的不可變目錄／版本路由與舊包相容邊界通過驗收。不�
 
 ## 發布索引與本輪驗證
 
-文件 PR 與三張 Issues 的實際連結於建立後記錄於此。本輪只做文件／建票驗證：三份來源路徑、37 唯一 ID、N01–N16 覆蓋、相對連結、三票責任不重疊、依賴無環與遠端文件一致性；沒有執行尚未實作內容的功能測試，也未改正式事件。
+| 交付 | GitHub | 依賴與狀態 |
+| --- | --- | --- |
+| 文件 PR | [#59](https://github.com/gitmaruneko/parenthood-simulator/pull/59) | 獨立 docs 分支，以已合併 #52 的 main 為基準；未 Merge |
+| NQ-A1 | [#60](https://github.com/gitmaruneko/parenthood-simulator/issues/60) | ready-for-agent；無阻擋票；先驗收四個 choice 樣本與相依完整鏈 |
+| NQ-A2 | [#61](https://github.com/gitmaruneko/parenthood-simulator/issues/61) | ready-for-agent；Blocked by #60 的新版路由／相容基礎；不依賴 #62 |
+| NQ-A3 | [#62](https://github.com/gitmaruneko/parenthood-simulator/issues/62) | ready-for-agent；Blocked by #60 的新版路由／相容基礎；不依賴 #61 |
+
+Issues 使用本 PR 初始 commit `dcd6b39b0792123ffbcbc737322945d8e69a7553` 的永久文件連結，PR 未 Merge 時仍可閱讀；本索引補記發布結果，未更改該規格內容。現有連接器沒有原生 blocking-edge 寫入能力，依賴明載在各 Issue 的 Blocked by 欄位；未以提及 #42 偽裝父子或阻擋關係。
+
+本輪文件檢查通過：4 份 Markdown、37 個唯一 Event ID、N01–N16 無遺漏、相對連結零失效；12＋10＋10 的 legacy 節點責任不重疊，A1→A2／A3 依賴無環；六個來源與遠端 main 一致，GitHub 正文回讀與本機一致。沒有執行尚未實作內容的功能測試，也未改正式事件、#42／#52 Issue 或任何程式碼。
