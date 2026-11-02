@@ -10,7 +10,7 @@ const v4 = JSON.parse(readFileSync(new URL("./helpers/v4-family-saves.json", imp
 const v5 = JSON.parse(readFileSync(new URL("./helpers/v5-journal-saves.json", import.meta.url), "utf8"));
 
 it.each([1, 2, 3, 4, 5, 6, 7])("validates version %s using its own contract and preserves source bytes, facts, checkpoints and review choices", version => {
-  expect(SAVE_SCHEMA_VERSION).toBe(7);
+  expect(SAVE_SCHEMA_VERSION).toBe(8);
   const saves = version <= 3 ? historical.filter((row: any) => row.save.schemaVersion === 3).map((row: any) => {
     const source = structuredClone(row.save.state);
     if (version < 3) delete source.activeFamilyLifeDirectionId;

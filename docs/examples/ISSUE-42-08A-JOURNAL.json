@@ -1,0 +1,118 @@
+{
+  "scope": "pinned 08A entry, seed 9, enact/invite; actual engine output, not natural selection evidence",
+  "records": [
+    {
+      "id": "story-age-stage-8-turn-1-1-journal-0",
+      "sourceHistoryId": "story-age-stage-8-turn-1-1",
+      "eventHistoryId": "story-age-stage-8-turn-1-1",
+      "eventId": "toy-car-story-choice",
+      "sequence": 0,
+      "actorIds": [],
+      "kind": "choice",
+      "text": "搶回來的那台小車：孩子拿著小車說起今天和別人都想玩的那一台。你沒在現場，桌上剛好還有另一台玩具車。\n你選擇：用玩具演一遍，讓孩子改正你的猜想",
+      "choiceText": "用玩具演一遍，讓孩子改正你的猜想",
+      "choiceHistoryIndex": 0,
+      "ageStageId": "age-stage-8",
+      "turnId": "age-stage-8-turn-1",
+      "legacy": false
+    },
+    {
+      "id": "choice-effect-age-stage-8-turn-1-1-0-journal-0",
+      "sourceHistoryId": "choice-effect-age-stage-8-turn-1-1-0",
+      "eventHistoryId": "story-age-stage-8-turn-1-1",
+      "eventId": "toy-car-story-choice",
+      "sequence": 0,
+      "actorIds": [],
+      "kind": "result",
+      "text": "搶回來的那台小車：你把兩台小車放到桌邊，先用自己的那台演出猜想，把不知道的部分留給他說。你還沒有判定事情是怎麼發生的。",
+      "ageStageId": "age-stage-8",
+      "turnId": "age-stage-8-turn-1",
+      "legacy": false
+    },
+    {
+      "id": "age-stage-8-turn-1-completion-daily-v1-young-drawing-journal-0",
+      "sourceHistoryId": "age-stage-8-turn-1-completion-daily-v1-young-drawing",
+      "sequence": 0,
+      "kind": "daily",
+      "templateId": "daily-v1-young-drawing",
+      "text": "你在紙上畫了一個圓，讓孩子看，再在旁邊添上一個小圓。",
+      "actorIds": [
+        "child-1"
+      ],
+      "eventHistoryId": "age-stage-8-turn-1-completion-daily-v1-young-drawing",
+      "ageStageId": "age-stage-8",
+      "turnId": "age-stage-8-turn-1",
+      "legacy": false
+    },
+    {
+      "id": "story-age-stage-8-turn-2-1-journal-0",
+      "sourceHistoryId": "story-age-stage-8-turn-2-1",
+      "eventHistoryId": "story-age-stage-8-turn-2-1",
+      "eventId": "toy-car-story-revisit",
+      "sequence": 0,
+      "actorIds": [],
+      "kind": "result",
+      "text": "小車故事還沒說完：你想到自己剛才多想直接給出答案。回想那段小車故事，你想把不知道的那一段重新留出來。",
+      "ageStageId": "age-stage-8",
+      "turnId": "age-stage-8-turn-2",
+      "legacy": false
+    },
+    {
+      "id": "story-age-stage-8-turn-2-2-journal-0",
+      "sourceHistoryId": "story-age-stage-8-turn-2-2",
+      "eventHistoryId": "story-age-stage-8-turn-2-2",
+      "eventId": "toy-car-story-listen",
+      "sequence": 0,
+      "actorIds": [],
+      "kind": "choice",
+      "text": "把沒聽懂的部分接回來：有些事情還沒有聽明白。你可以再邀他補充，也可以先說清楚自己沒有看見現場。\n你選擇：邀他補充你剛才沒聽懂的那一段",
+      "choiceText": "邀他補充你剛才沒聽懂的那一段",
+      "choiceHistoryIndex": 1,
+      "ageStageId": "age-stage-8",
+      "turnId": "age-stage-8-turn-2",
+      "legacy": false
+    },
+    {
+      "id": "choice-effect-age-stage-8-turn-2-2-0-journal-0",
+      "sourceHistoryId": "choice-effect-age-stage-8-turn-2-2-0",
+      "eventHistoryId": "story-age-stage-8-turn-2-2",
+      "eventId": "toy-car-story-listen",
+      "sequence": 0,
+      "actorIds": [],
+      "kind": "result",
+      "text": "把沒聽懂的部分接回來：你問「你最想讓我知道哪一段」，不替另一個孩子猜理由。這次的邀請已說出口，是否繼續說由孩子決定。",
+      "ageStageId": "age-stage-8",
+      "turnId": "age-stage-8-turn-2",
+      "legacy": false
+    },
+    {
+      "id": "reaction-age-stage-8-turn-2-2-0-journal-0",
+      "sourceHistoryId": "reaction-age-stage-8-turn-2-2-0",
+      "eventHistoryId": "story-age-stage-8-turn-2-2",
+      "eventId": "toy-car-story-listen",
+      "sequence": 0,
+      "actorIds": [
+        "child-1"
+      ],
+      "kind": "result",
+      "reactionHistoryIndex": 1,
+      "text": "把沒聽懂的部分接回來時，孩子（小晴）：指著車輪說：「我本來只是想讓他看這裡。」",
+      "ageStageId": "age-stage-8",
+      "turnId": "age-stage-8-turn-2",
+      "legacy": false
+    },
+    {
+      "id": "story-age-stage-8-turn-2-3-journal-0",
+      "sourceHistoryId": "story-age-stage-8-turn-2-3",
+      "eventHistoryId": "story-age-stage-8-turn-2-3",
+      "eventId": "toy-car-story-close",
+      "sequence": 0,
+      "actorIds": [],
+      "kind": "result",
+      "text": "留一個可以再說的位置：你把自己沒看見的部分留作不知道。這一段先停在這裡，不用現在就替故事判輸贏。",
+      "ageStageId": "age-stage-8",
+      "turnId": "age-stage-8-turn-2",
+      "legacy": false
+    }
+  ]
+}

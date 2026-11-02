@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { writeFile, readFile } from "node:fs/promises";
+import { bindPreviewRun, createRunContent } from "../../src/content/releases.js";
 import { createMvpContent } from "../../src/content/mvp.js";
 import { createFamilyRun, createFamilyReview, getPlayerView, projectJournal, replayFamilyRun, transitionGame } from "../../src/engine/index.js";
 import { resolveFamilyMembers } from "../../src/engine/actor-profiles.js";
@@ -132,8 +133,8 @@ for (const scenario of UX_V2_FAMILIES) {
     expect(await page.evaluate(key => localStorage.getItem(key), key)).toBe(selectedRaw);
     await page.getByRole("button", { name: "開始這個家庭", exact: true }).click();
     await expect(page.locator(".game-header [role=status]")).toHaveText("已儲存");
-    const next = createFamilyRun({ seed: nextSeed });
-    const nextContent = createMvpContent(next.actors);
+    const next = bindPreviewRun(createFamilyRun({ seed: nextSeed }));
+    const nextContent = createRunContent(next.state);
     const saved = (await page.evaluate(key => localStorage.getItem(key), key))!;
     expect(JSON.parse(saved).state).toEqual(transitionGame(next.state, nextContent, { type: "ADVANCE" }).state);
     expect(await page.evaluate(({ key, raw }) => Object.keys(localStorage).some(name => name.startsWith(`${key}.preserved.`) && localStorage.getItem(name) === raw), { key, raw: selectedRaw })).toBe(true);

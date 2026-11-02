@@ -1,6 +1,7 @@
 import type { ContentPack, EventNode, GameState } from "../domain/schemas.js";
 import { projectJournal, type JournalRecord } from "../engine/journal.js";
 import type { FamilyLifeDirectionId } from "../domain/family-life-direction.js";
+import { bindPreviewRun, createRunContent } from "../content/releases.js";
 import { createMvpContent } from "../content/mvp.js";
 import { resolveFamilyMembers, resolveEventIdentity } from "../engine/actor-profiles.js";
 import {
@@ -142,7 +143,7 @@ export const createPlayerSession = (
     ready();
   });
   const inspect = () => {
-    const result = inspectPlayerSave(store, content);
+    const result = inspectPlayerSave(store, createRunContent);
     publish({ home: result.view });
     return result.load;
   };
@@ -281,7 +282,7 @@ export const createPlayerSession = (
     state = loaded;
     // Recreate only the seeded actor catalogue through the family-generation boundary.
     const generated = createFamilyRun({ seed: state.seed });
-    content = createMvpContent(state.replayOrigin?.actors ?? generated.actors);
+    content = state.contentBinding ? createRunContent(state) : createMvpContent(state.replayOrigin?.actors ?? generated.actors);
     run = {
       ...generated,
       actors: state.replayOrigin?.actors ?? generated.actors,
@@ -432,10 +433,10 @@ export const createPlayerSession = (
       }),
     reveal: (answers?: readonly string[]) => {
       if (snapshot.busy || snapshot.page !== "assessment") return;
-      run = createFamilyRun({
+      run = bindPreviewRun(createFamilyRun({
         seed: seedSource(),
         ...(answers ? { answers } : {}),
-      });
+      }));
       publish({
         page: "reveal",
         reveal: presentReveal(run),
@@ -444,9 +445,9 @@ export const createPlayerSession = (
     reroll: () => {
       if (snapshot.busy || snapshot.page !== "reveal" || !run) return;
       const seed = seedSource();
-      run = rerollFamilyRun(run, {
+      run = bindPreviewRun(rerollFamilyRun(run, {
         seed: seed === run.state.seed ? (seed + 1) >>> 0 : seed,
-      });
+      }));
       publish({
         reveal: presentReveal(run),
       });
@@ -468,7 +469,7 @@ export const createPlayerSession = (
           return;
         }
         state = run.state;
-        content = createMvpContent(run.actors);
+        content = createRunContent(state);
         const saved =
           confirmedRaw === null
             ? store.save(state, null)

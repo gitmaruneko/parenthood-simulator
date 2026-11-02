@@ -98,6 +98,7 @@ function Resources({
   );
 }
 const storyNames = {
+  narrative: "生活片段",
   event: "生活片段",
   reaction: "實際觀察",
   planning: "記得與安排",

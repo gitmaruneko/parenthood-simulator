@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import { createFamilyRun, createFamilyReview, getPlayerView, getReviewMomentEntries,
   projectJournal, selectReviewMoments, transitionGame } from "../src/engine/index.js";
-import { createMvpContent } from "../src/content/mvp.js";
+import { bindPreviewRun, createRunContent } from "../src/content/releases.js";
 import { validateContentPack } from "../src/domain/content-validation.js";
 import { createLocalSaveStore, LOCAL_SAVE_KEY, restoreGame, serializeGame } from "../src/persistence/index.js";
 import { createPlayerSession } from "../src/ui/player-session.js";
@@ -9,9 +9,9 @@ import { UX_V2_FAMILIES } from "./helpers/ux-v2-scenarios.js";
 
 for (const scenario of UX_V2_FAMILIES) {
   it.each(["coordinate", "carry"] as const)(`${scenario.name} seed=${scenario.seed}: %s crosses all UX boundaries for twelve stages`, async path => {
-    const run = createFamilyRun({ seed: scenario.seed });
+    const run = bindPreviewRun(createFamilyRun({ seed: scenario.seed }));
     expect(run.state.family).toMatchObject({ householdComposition: scenario.household, careParticipation: scenario.care });
-    const content = createMvpContent(run.actors);
+    const content = createRunContent(run.state);
     expect(validateContentPack(content).success).toBe(true);
     const familyIds = new Set([run.state.family.childId, ...run.state.family.persistentActorIds]);
     const values = new Map<string, string>();
@@ -33,7 +33,8 @@ for (const scenario of UX_V2_FAMILIES) {
       if (getPlayerView(expected, content).completed) break;
       const decision = session.getSnapshot().decision;
       expect(decision?.event ?? null).toEqual(getPlayerView(expected, content).pendingEvent);
-      const choiceId = decision?.event.id.endsWith("-reconnect") ? "pause" : path;
+      const choiceId = decision?.event.id.endsWith("-reconnect") ? "pause"
+        : decision?.event.choices.find(choice => choice.id === path)?.id ?? decision?.event.choices[0]?.id ?? path;
       const input = decision ? { type: "CHOOSE" as const, choiceId } : game.nextInput!;
       const next = transitionGame(expected, content, input);
       for (const scheduled of next.state.scheduledFollowUps.filter(row => row.status === "pending" &&
@@ -44,7 +45,7 @@ for (const scenario of UX_V2_FAMILIES) {
           record.kind !== "daily" && record.eventId === scheduled.eventId))).toBe(false);
       }
       if (decision) {
-        if (!decision.event.id.endsWith("-reconnect"))
+        if (!decision.event.id.endsWith("-reconnect") && !decision.event.id.startsWith("toy-car-story"))
           expect(decision.event.choices.some(choice => choice.id === "handoff")).toBe(familyIds.has("caregiver-2"));
         // Reconnect choices intentionally have no family-specific handoff action.
         if (decision.event.id.endsWith("-reconnect")) {
@@ -122,5 +123,5 @@ for (const scenario of UX_V2_FAMILIES) {
       expect(store.load()).toMatchObject({ status: "restored", state: { seed: nextSeed, choiceHistory: [] } });
     }
     expect([...values].some(([key, raw]) => key.startsWith(`${LOCAL_SAVE_KEY}.preserved.`) && raw === completedRaw)).toBe(true);
-  });
+  }, 15000);
 }

@@ -85,7 +85,7 @@ export function replayFamilyRun(state: GameState): FamilyRun {
       replayOrigin: { ...run.state.replayOrigin!, actorProfiles: structuredClone(actorProfiles) } } };
   }
   return { ...run, actors: structuredClone(origin.actors),
-    state: { ...run.state, family: structuredClone(state.family), resources: { ...origin.resources },
+    state: { ...run.state, ...(state.contentBinding ? { schemaVersion: 2, contentBinding: structuredClone(state.contentBinding) } : {}), family: structuredClone(state.family), resources: { ...origin.resources },
       actorProfiles: structuredClone(origin.actorProfiles ?? unknownActorProfiles(state.family)),
       tendencies: { ...origin.tendencies }, rngState: origin.rngState,
       replayOrigin: { ...structuredClone(origin), actorProfiles: structuredClone(origin.actorProfiles ?? unknownActorProfiles(state.family)) } },
