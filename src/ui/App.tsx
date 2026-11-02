@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { getAssessmentQuestions } from "../engine/index.js";
 import { createPlayerSession, type PlayerSession } from "./player-session.js";
 import { HomePage } from "./HomePage.js";
@@ -9,6 +9,7 @@ import { ReviewScreen } from "./ReviewScreen.js";
 import { FamilyMemberCard } from "./FamilyMemberCard.js";
 import { DecisionDialog } from "./DecisionDialog.js";
 import { getStoryProgression } from "./story-progression.js";
+import { useJournalReading } from "./use-journal-reading.js";
 
 const questions = getAssessmentQuestions();
 export function Assessment({ session }: { session: PlayerSession }) {
@@ -59,6 +60,7 @@ export function App({ session: provided }: { session?: PlayerSession }) {
   const story = useSyncExternalStore(progression.subscribe, progression.getSnapshot);
   const snapshot = useSyncExternalStore(session.subscribe, session.getSnapshot);
   const shownDecision = story.dialogReady ? snapshot.decision : null;
+  useJournalReading(story, progression, snapshot.page === "game");
   useEffect(() => {
     progression.setVisible(document.visibilityState !== "hidden");
     const detach = progression.attach();
@@ -76,23 +78,36 @@ export function App({ session: provided }: { session?: PlayerSession }) {
   const cancel = useRef<HTMLButtonElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const previousDecision = useRef<string | null>(null);
+  const decisionReturn = useRef<{ focus: HTMLElement | null; row: HTMLElement | null; scrollY: number } | null>(null);
   useEffect(() => {
     if (!snapshot.hasUnsavedChanges) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [snapshot.hasUnsavedChanges]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const previous = previousDecision.current;
     previousDecision.current = shownDecision?.key ?? null;
+    if (!previous && shownDecision) decisionReturn.current = {
+      focus: document.activeElement instanceof HTMLElement ? document.activeElement : null,
+      row: [...document.querySelectorAll<HTMLElement>(".event-log > li")].find(row =>
+        row.getBoundingClientRect().bottom > 80 && row.getBoundingClientRect().top < window.innerHeight) ??
+        document.querySelector<HTMLElement>(".event-log > li"),
+      scrollY: window.scrollY,
+    };
     if (previous && !shownDecision && snapshot.page === "game") {
       requestAnimationFrame(() => {
         const current = session.getSnapshot();
         if (current.decision || current.game !== snapshot.game || current.page !== "game") return;
-        (document.querySelector<HTMLElement>(".event-log > li") ?? document.getElementById("log-title"))?.focus();
+        if (progression.getSnapshot().readingOlder) {
+          const saved = decisionReturn.current;
+          const target = saved?.focus?.isConnected ? saved.focus : saved?.row?.isConnected ? saved.row : document.getElementById("log-title");
+          target?.focus({ preventScroll: true });
+          if (saved && window.scrollY !== saved.scrollY) window.scrollTo({ top: saved.scrollY, behavior: "instant" });
+        } else (document.querySelector<HTMLElement>(".event-log > li") ?? document.getElementById("log-title"))?.focus();
       });
     }
-  }, [shownDecision, snapshot.page, snapshot.game, session]);
+  }, [shownDecision, snapshot.page, snapshot.game, session, progression]);
   useEffect(() => {
     void session.check();
     const recheck = () => {
@@ -249,6 +264,10 @@ export function App({ session: provided }: { session?: PlayerSession }) {
               onPause={progression.pause} onResume={progression.resume}
               onFastForward={progression.fastForward} onShowDecision={progression.showDecision}
               onSurface={progression.setSurface}
+              onLatest={() => {
+                progression.setReadingOlder(false);
+                document.getElementById("log-title")?.focus();
+              }}
               onDirection={(id) => void session.setDirection(id)}
             />
           ))}
