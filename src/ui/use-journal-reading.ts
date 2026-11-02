@@ -11,7 +11,7 @@ export function useJournalReading(story: StorySnapshot, progression: StoryProgre
   const restore = () => {
     if (!older.current || !anchor.current) return;
     const element = document.getElementById(anchor.current.id);
-    if (element) {
+    if (element && element.getClientRects().length > 0) {
       const delta = element.getBoundingClientRect().top - anchor.current.top;
       if (Math.abs(delta) > 0.5) window.scrollBy({ top: delta, behavior: "instant" });
     }
@@ -23,7 +23,7 @@ export function useJournalReading(story: StorySnapshot, progression: StoryProgre
       if (document.querySelector(".decision-dialog[open]")) return;
       const rows = [...document.querySelectorAll<HTMLElement>(".event-log > li")];
       const first = rows[0];
-      if (!first) return;
+      if (!first || first.getClientRects().length === 0) return;
       const reading = first.getBoundingClientRect().bottom < 80;
       const current = rows.find(row => row.getBoundingClientRect().bottom > 80 && row.getBoundingClientRect().top < window.innerHeight);
       anchor.current = current ? { id: current.id, top: current.getBoundingClientRect().top } : null;

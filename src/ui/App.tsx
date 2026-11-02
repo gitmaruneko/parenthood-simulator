@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
-import { getAssessmentQuestions } from "../engine/index.js";
+import { getAssessmentQuestions, projectJournal } from "../engine/index.js";
 import { createPlayerSession, type PlayerSession } from "./player-session.js";
 import { HomePage } from "./HomePage.js";
 import { FamilyDetails, GameScreen } from "./GameScreen.js";
@@ -59,6 +59,9 @@ export function App({ session: provided }: { session?: PlayerSession }) {
   const [progression] = useState(() => getStoryProgression(session));
   const story = useSyncExternalStore(progression.subscribe, progression.getSnapshot);
   const snapshot = useSyncExternalStore(session.subscribe, session.getSnapshot);
+  const reviewReady = snapshot.game?.review && !snapshot.hasUnsavedChanges && !story.displaying &&
+    story.records.length === projectJournal({ history: snapshot.game.history,
+      choiceHistory: snapshot.game.choices, reactionHistory: snapshot.game.reactions }).length;
   const shownDecision = story.dialogReady ? snapshot.decision : null;
   useJournalReading(story, progression, snapshot.page === "game");
   useEffect(() => {
@@ -249,7 +252,7 @@ export function App({ session: provided }: { session?: PlayerSession }) {
               </section>
             </main>
           )}
-          {snapshot.page === "game" && snapshot.game && (snapshot.game.review && !snapshot.busy && !snapshot.hasUnsavedChanges && !story.displaying ? (
+          {snapshot.page === "game" && snapshot.game && (reviewReady ? (
             <ReviewScreen game={snapshot.game} blocked={snapshot.busy || snapshot.error !== null}
               onSelect={(ids) => void session.selectMoments(ids)} onReplay={() => {
                 previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;

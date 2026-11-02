@@ -24,6 +24,13 @@ UI 暫停偏好沿用獨立 key；已暫停時請按恢復。關閉分頁可能�
 - 舊紀錄 pending 入口、焦點／offset、Dialog 中字級變動、獨立 Preview、v7／v8 續玩及四家庭完整回顧／重玩以桌面與手機 Playwright 驗證。
 - 完整 npm test／typecheck／build／test:e2e 的最終結果與獨立 Review 於驗證完成後補在本節。
 
+已完成最終固定來源驗證：`npm.cmd test -- --maxWorkers=2`：28 files／346 tests 通過；
+`npm.cmd run typecheck`、`npm.cmd run build` 通過。完整 66 項 Playwright 正在固定來源上驗收，
+最終結果待補。既有 5 秒測試曾在同時執行 build／E2E 的負載下超時；依序重跑完整套件通過，未放寬測試時限。
+
+獨立 Review：Standards 0 項，Spec 0 項。整合測試補正 ReviewScreen 忙碌操作的焦點穩定性，
+以及隱藏 Journal 不參與閱讀判斷／不在家庭視圖顯示閱讀提示；新增回歸通過。
+
 整合修正：取消 command timer 後不把其剩餘時間誤認為閱讀間隔；手動暫停僅停止後續命令，最新區既有 pending 仍可操作；最後命令 busy／未保存期間不提前顯示回顧。
 
 ## 人工驗收清單（待人工簽核）

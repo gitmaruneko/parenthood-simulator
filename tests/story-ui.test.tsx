@@ -4,6 +4,7 @@ import { act, cleanup, render, screen, within, fireEvent, waitFor } from "@testi
 import { StrictMode } from "react";
 import { getStoryProgression } from "../src/ui/story-progression.js";
 import { NARRATION_PAUSE_KEY } from "../src/ui/narration-preference.js";
+import { completedStory } from "./helpers/completed-story.js";
 import { App } from "../src/ui/App.js";
 import { createPlayerSession } from "../src/ui/player-session.js";
 import { createLocalSaveStore, LOCAL_SAVE_KEY, serializeGame } from "../src/persistence/index.js";
@@ -53,6 +54,9 @@ it("keeps old-record focus when a pending choice appears in StrictMode and after
   view.unmount(); render(<StrictMode><App session={session} /></StrictMode>);
   expect(story.getSnapshot().paused).toBe(true);
   expect(window.localStorage.getItem(NARRATION_PAUSE_KEY)).toBe("true");
+  fireEvent.click(screen.getByRole("tab", { name: "家庭" }));
+  expect(screen.queryByRole("complementary", { name: "閱讀中的敘事狀態" })).toBeNull();
+  expect(story.getSnapshot().paused).toBe(true);
 });
 
 it("keeps a rejected choice visible with its error and retryable options", async () => {
@@ -69,4 +73,19 @@ it("keeps a rejected choice visible with its error and retryable options", async
   expect(within(dialog).getByRole("alert").textContent).toBe(session.getSnapshot().error);
   expect(within(dialog).getAllByRole("button").every(button => !(button as HTMLButtonElement).disabled)).toBe(true);
   expect(values.get(LOCAL_SAVE_KEY)).toBe(serializeGame(pending));
+});
+
+it("preserves the review and its replay focus across busy confirmation commands", async () => {
+  const { state } = completedStory();
+  const values = new Map([[LOCAL_SAVE_KEY, serializeGame(state)]]);
+  const session = createPlayerSession(createLocalSaveStore({ getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => { values.set(key, value); } }));
+  await session.resume(); render(<App session={session} />);
+  const replay = screen.getByRole("button", { name: "相同種子，再走一次" });
+  replay.focus();
+  await act(async () => { fireEvent.click(replay); });
+  expect(screen.getByRole("button", { name: "相同種子，再走一次" })).toBe(replay);
+  await waitFor(() => expect(screen.getByRole("button", { name: "保留原本的故事" })).toBeTruthy());
+  fireEvent.click(screen.getByRole("button", { name: "保留原本的故事" }));
+  await waitFor(() => expect(document.activeElement).toBe(replay));
 });

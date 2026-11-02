@@ -302,11 +302,12 @@ export function GameScreen({
               {story?.fault && <p role="alert">{story.fault}</p>}
               {story?.preferenceError && <p role="alert">{story.preferenceError}</p>}
               {event && !story?.dialogReady && <p role="status">有一個重大抉擇等待你。<button onClick={onShowDecision}>查看待選抉擇</button></p>}
-              {game.completed ? (
+              {game.completed && (
                 <p>
                   十二個階段告一段落。這些紀錄留下眼前的生活，不預測未來。你可以查看家庭生活紀錄，或回首頁開始新的故事。
                 </p>
-              ) : (
+              )}
+              {(!game.completed || story?.displaying) && (
                 <>
                   <span role="status">{story?.paused ? "敘事已暫停" : story?.readingOlder ? "正在閱讀舊紀錄" : event ? "等待你的選擇" : "生活正在繼續"}</span>
                   <button onClick={story?.paused ? onResume : onPause}>{story?.paused ? "恢復敘事" : "暫停敘事"}</button>
@@ -396,7 +397,7 @@ export function GameScreen({
           </button>
         ))}
       </nav>
-      {story?.readingOlder && <aside className="reading-notice" aria-label="閱讀中的敘事狀態">
+      {story?.readingOlder && (tab === "life" || tab === "records") && !drawer && <aside className="reading-notice" aria-label="閱讀中的敘事狀態">
         <span role="status">{story.pending ? "有重大抉擇等待你" : "閱讀舊紀錄中，後續敘事已暫停"}</span>
         {story.pending && <button onClick={onShowDecision}>查看待選抉擇</button>}
         <button onClick={onLatest}>回到最新紀錄</button>
