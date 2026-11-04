@@ -25,4 +25,4 @@ for (const row of report.rows.filter(row => row.forcedRngState)) {
     reaction.text, "", "該次完整 Journal：", "",
     ...row.journal.map(entry => `- ${entry.text.replaceAll("\n", " / ")}`), "");
 }
-writeFileSync("docs/examples/NARRATIVE-A1-PLAYTHROUGH.md", lines.join("\n") + "\n");
+writeFileSync("docs/examples/NARRATIVE-A1-PLAYTHROUGH.md", lines.join("\n").trimEnd() + "\n");

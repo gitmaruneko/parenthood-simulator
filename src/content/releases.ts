@@ -5,7 +5,7 @@ import { familyContentKey } from "../domain/content-binding.js";
 import type { ContentPack, GameState, Condition } from "../domain/schemas.js";
 import type { FamilyRun } from "../engine/family-opening.js";
 import { validatePreviewContract } from "./preview-contract.js";
-import { NARRATIVE_RELEASE, NIGHT, DOOR, narrativeA1Events, narrativeA1Pools } from "./narrative-a1.js";
+import { NARRATIVE_RELEASE, NARRATIVE_EVENT_REPLACEMENTS, NIGHT, DOOR, narrativeA1Events, narrativeA1Pools } from "./narrative-a1.js";
 
 export const PREVIEW_RELEASE = "family-events-08a-v1";
 // One private validated catalogue per active identity. Callers always get a copy.
@@ -73,12 +73,7 @@ export function createRunContent(state: GameState): ContentPack {
   if (binding.releaseId === NARRATIVE_RELEASE) {
     if (cachedNarrative?.key === cacheKey) return structuredClone(cachedNarrative.content);
     const original = createRunContent({ ...state, contentBinding: { ...binding, releaseId: PREVIEW_RELEASE } });
-    const replacements = new Map<string, string>([
-      ...["choice", "reflection", "support", "strain", "reconnect", "repair"].map((suffix, index) =>
-        [`night-handoff-${suffix}`, Object.values(NIGHT)[index]!] as const),
-      ...["choice", "reflection", "support", "strain", "reconnect", "repair"].map((suffix, index) =>
-        [`preschool-handoff-${suffix}`, Object.values(DOOR)[index]!] as const),
-    ]);
+    const replacements = new Map(Object.entries(NARRATIVE_EVENT_REPLACEMENTS));
     const ageStages = original.ageStages.map(stage => ({ ...stage, entryEventIds: stage.entryEventIds.map(id => replacements.get(id) ?? id).sort() }));
     const roots = ageStages.find(stage => stage.id === "age-stage-8")!.entryEventIds;
     const events = [...original.events.filter(event => !replacements.has(event.id)), ...narrativeA1Events()].map(event => {
@@ -188,7 +183,7 @@ export function validatePreviewProgress(state: GameState, content: ContentPack):
       if (selected.setFlags.some(flag => !state.flags.includes(flag)) ||
           root.choices.filter(option => option !== selected).some(option => option.setFlags.some(flag => state.flags.includes(flag))))
         throw new Error("Inconsistent story branch flags");
-      const branch = ["nqa1-sit", "nqa1-ask-teacher"].includes(choice.choiceId) ? chain.strain : chain.support;
+      const branch = selected.scheduledFollowUps[0]!.eventId;
       const other = branch === chain.strain ? chain.support : chain.strain;
       if (state.completedEventIds.includes(other) || state.scheduledFollowUps.some(row => row.eventId === other))
         throw new Error("Wrong story branch");

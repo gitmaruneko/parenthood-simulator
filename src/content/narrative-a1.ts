@@ -4,6 +4,20 @@ import { eventNodeSchema, reactionPoolSchema, type Condition } from "../domain/s
 export const NARRATIVE_RELEASE = "narrative-quality-a1-v1";
 export const NIGHT = { root: "nqa1-night-choice", reflection: "nqa1-night-reflection", support: "nqa1-night-support", strain: "nqa1-night-strain", later: "nqa1-night-reorder", close: "nqa1-night-close" } as const;
 export const DOOR = { root: "nqa1-door-choice", reflection: "nqa1-door-reflection", support: "nqa1-door-support", strain: "nqa1-door-strain", later: "nqa1-door-repair", close: "nqa1-door-close" } as const;
+export const NARRATIVE_EVENT_REPLACEMENTS: Readonly<Record<string, string>> = Object.freeze({
+  "night-handoff-choice": NIGHT.root,
+  "night-handoff-reflection": NIGHT.reflection,
+  "night-handoff-support": NIGHT.support,
+  "night-handoff-strain": NIGHT.strain,
+  "night-handoff-reconnect": NIGHT.later,
+  "night-handoff-repair": NIGHT.close,
+  "preschool-handoff-choice": DOOR.root,
+  "preschool-handoff-reflection": DOOR.reflection,
+  "preschool-handoff-support": DOOR.support,
+  "preschool-handoff-strain": DOOR.strain,
+  "preschool-handoff-reconnect": DOOR.later,
+  "preschool-handoff-repair": DOOR.close,
+});
 export const completed = (eventId: string): Condition => ({ kind: "eventCompleted", eventId });
 export const actionFlag = (flag: string): Condition => ({ kind: "flag", flag });
 const branch = (root: string, flag: string): Condition => ({ kind: "all", conditions: [completed(root), actionFlag(flag)] });
