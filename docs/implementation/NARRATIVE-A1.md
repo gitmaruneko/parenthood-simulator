@@ -104,3 +104,25 @@ Standards：0 項發現；無阻擋問題。
 獨立子代理依 #60、共通相容政策 V 與 N01／N08／N13／N14 改稿審查。新 ID／路由、八組路徑、所有專屬回應與 none、跨 Turn queue、保存失敗重試與舊版 checkpoint／Review／Replay 均有對應實作與測試；未發現缺漏或越界。執行結果另依本輪實跑記錄，不以讀稿代替通過。
 
 Spec：0 項發現；無阻擋問題。兩軸合計：Standards 0／Spec 0。
+
+## 最終自動驗證
+
+驗證來源 `3914d7e`（後續僅補交付文件與截圖）：
+
+| 檢查 | 結果 |
+| --- | --- |
+| 本機 `npm.cmd test -- --maxWorkers=2` | 31 files／445 tests 通過，exit 0；229.46 秒，無 worker 錯誤 |
+| 本機 `npm.cmd run typecheck` | 通過 |
+| 本機 `npm.cmd run build` | 通過；正式 index build，未含開發 Preview 入口 |
+| CI Node 22／24：`npm test`、typecheck、build | 兩版本全部通過 |
+| CI `npm run test:e2e` | 桌面／手機共 84／84 通過；2.9 分鐘，含 #52 原有案例與 A1 18 項 |
+| 本機 `npm.cmd run test:e2e -- tests/e2e/narrative-a1.spec.ts --workers=2` | 18／18 通過；1.9 分鐘，桌面／手機八組路徑與獨立 Preview |
+
+可核對的完整 [CI 執行紀錄](https://github.com/gitmaruneko/parenthood-simulator/actions/runs/41850914758)。本機原先全 worker 與 Build／E2E 同時執行有超時；低 worker 重跑後，兩個過大新測試再拆成 48 家庭與 16 舊版完整局獨立案例，並在每個案例結束讓出 event loop 供 Vitest 回覆 worker 進度。沒有放寬時限、修改 golden、減少案例或改動產品程式。
+
+測試分組與 worker 回應性修正已各自獨立複審，Standards／Spec 均為 0 項發現。
+
+已檢視兩鏈桌面／手機的完整 Journal 截圖，文字可讀、選擇與結果分明，無水平溢位：
+[夜間桌面](../examples/NARRATIVE-A1-1-DESKTOP.png)、[夜間手機](../examples/NARRATIVE-A1-1-MOBILE.png)、[門口桌面](../examples/NARRATIVE-A1-8-DESKTOP.png)、[門口手機](../examples/NARRATIVE-A1-8-MOBILE.png)。截圖為自動化暫停狀態，不代替真機與自然閱讀的人工驗收。
+
+回顧：大量笛卡兒積應以可辨識的參數化案例呈現，保留完整覆蓋並讓失敗直接定位。Windows 驗證沿既有兩 worker 慣例依序執行重負載檢查；本次不額外變更 AGENTS.md、CI 或專案測試時限。
