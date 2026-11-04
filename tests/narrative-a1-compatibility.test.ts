@@ -1,10 +1,13 @@
 import { createHash } from "node:crypto";
-import { expect, it } from "vitest";
+import { setImmediate } from "node:timers/promises";
+import { afterEach, expect, it } from "vitest";
 import { bindNarrativeRun, bindPreviewRun, createRunContent } from "../src/content/releases.js";
 import { createFamilyRun, createFamilyReview, getPlayerView, projectJournal, replayFamilyRun, transitionGame } from "../src/engine/index.js";
 import { restoreGame, serializeGame } from "../src/persistence/index.js";
 
 const hash = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+// Keep worker progress responsive while checking complete saved-story traces.
+afterEach(() => setImmediate());
 // Captured from the unchanged legacy/08A sources at main 6ced33a. Never regenerate to hide a regression.
 const oldRuns: Record<string, string> = {
   "legacy/9/false": "27dc05ec530c88233b00c6ae63f4be9c5f9caf286745e8f216f5178877876da1",

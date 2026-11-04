@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { writeFileSync } from "node:fs";
-import { afterAll, expect, it } from "vitest";
+import { setImmediate } from "node:timers/promises";
+import { afterAll, afterEach, expect, it } from "vitest";
 import { bindNarrativeRun, bindPreviewRun, createRunContent } from "../src/content/releases.js";
 import { DOOR, NIGHT, NARRATIVE_RELEASE } from "../src/content/narrative-a1.js";
 import { createFamilyRun, createFamilyReview, getPlayerView, projectJournal, replayFamilyRun, transitionGame } from "../src/engine/index.js";
@@ -12,6 +13,8 @@ import { a1Path, a1Run } from "./helpers/narrative-a1.js";
 import { unknownActorProfiles } from "../src/domain/actor-profiles.js";
 
 const evidence: object[] = [];
+// Let the runner acknowledge progress between CPU-bound matrix cases.
+afterEach(() => setImmediate());
 afterAll(() => {
   if (process.env.NQA1_WRITE_EVIDENCE === "1") writeFileSync("docs/examples/NARRATIVE-A1-RUNS.json", JSON.stringify({
     releaseId: NARRATIVE_RELEASE, seam: "public Engine / Journal / Save-Restore / Review / Session", scope: "forced paths; not distribution", rows: evidence,
