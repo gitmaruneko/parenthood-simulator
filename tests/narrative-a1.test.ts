@@ -136,26 +136,23 @@ it.each([9, 1, 11, 2])("preserves full-story guarantees, review sources and repl
   }
 }, 30000);
 
-it("keeps two feasible actions across all 48 family configurations, actor masks and zero resources", () => {
-  let count = 0;
-  for (const householdComposition of familyProfileSchema.shape.householdComposition.options)
-    for (const careParticipation of familyProfileSchema.shape.careParticipation.options)
-      for (const workArrangement of familyProfileSchema.shape.workArrangement.options) {
-        count++;
-        for (const persistentActorIds of [[], ["caregiver-2"], ["support-1"], ["caregiver-2", "support-1"]]) {
-          const run = bindNarrativeRun(createFamilyRun({ seed: 2 }));
-          run.state.family = { ...run.state.family, householdComposition, careParticipation, workArrangement, persistentActorIds };
-          run.state.contentBinding!.familyKey = familyContentKey(run.state.family, run.state.replayOrigin!.actors);
-          run.state.resources = { energy: 0, timeFlexibility: 0, finances: 0, support: 0, connection: 0 };
-          run.state.planningLoad = 0;
-          const content = createRunContent(run.state);
-          for (const stage of content.ageStages) {
-            const view = transitionGame({ ...run.state, currentAgeStageId: stage.id }, content, { type: "ADVANCE" });
-            expect(view.pendingEvent!.choices.length).toBeGreaterThanOrEqual(2);
-          }
-        }
-      }
-  expect(count).toBe(48);
+const familyConfigurations = familyProfileSchema.shape.householdComposition.options.flatMap(householdComposition =>
+  familyProfileSchema.shape.careParticipation.options.flatMap(careParticipation =>
+    familyProfileSchema.shape.workArrangement.options.map(workArrangement => ({ householdComposition, careParticipation, workArrangement }))));
+
+it.each(familyConfigurations)("keeps two feasible actions with actor masks and zero resources: $householdComposition / $careParticipation / $workArrangement", ({ householdComposition, careParticipation, workArrangement }) => {
+  for (const persistentActorIds of [[], ["caregiver-2"], ["support-1"], ["caregiver-2", "support-1"]]) {
+    const run = bindNarrativeRun(createFamilyRun({ seed: 2 }));
+    run.state.family = { ...run.state.family, householdComposition, careParticipation, workArrangement, persistentActorIds };
+    run.state.contentBinding!.familyKey = familyContentKey(run.state.family, run.state.replayOrigin!.actors);
+    run.state.resources = { energy: 0, timeFlexibility: 0, finances: 0, support: 0, connection: 0 };
+    run.state.planningLoad = 0;
+    const content = createRunContent(run.state);
+    for (const stage of content.ageStages) {
+      const view = transitionGame({ ...run.state, currentAgeStageId: stage.id }, content, { type: "ADVANCE" });
+      expect(view.pendingEvent!.choices.length).toBeGreaterThanOrEqual(2);
+    }
+  }
 }, 60000);
 
 it.each(paths)("retains exactly the accepted $root result when SaveStorage rejects writing", async ({ stage, root, later }) => {

@@ -69,3 +69,38 @@ A1 移除兩鏈原本的通用資源／planningLoad／傾向獎懲與 conflict�
 本機 `npm run dev -- --port 5173` 後開啟 `/preview-narrative-a1.html?story=night`、`?story=door` 或 `?story=full`。直接故事入口是強制路徑試玩，不作自然分布證據；三個模式各自 sessionStorage namespace，可用重新試玩連結重抽同一 seed。原正式 localStorage 與新家庭預設不變；Preview 沿原 Session／App，不新增自動節奏或保存控制。
 
 不修改 #61、#62、#42 新候選或 08A 原文；不修改 #52 自動播放、暫停、閱讀焦點、timer 或保存流程。測試結果與雙軸 Review 完成紀錄另列於本票 PR。
+
+## 本輪交付與人工試玩
+
+2026-11-04 已同步遠端；本地 main 與 origin/main 同為 `6ced33a`。接手時分支已有 `019d770` 與四個未提交檔案，檢查後以 `988cded` 保存既有路由整理，未丟棄工作。
+
+使用者已明確允許僅修改 A1 的 Review 摘要文字，保留舊版輸出。`src/engine/family-review.ts` 的差異僅此摘要與 release 常數引用；Event Engine、PRNG、Scheduler、domain schema、legacy reader、Session 與正式預設 release 無變更。v8 reader 只擴充已知 release 接受路由，沒有改 Save Schema 或 envelope。
+
+獨立開發 Preview：
+
+- 凌晨用品：`http://127.0.0.1:5173/preview-narrative-a1.html?story=night`
+- 教室門口：`http://127.0.0.1:5173/preview-narrative-a1.html?story=door`
+- 十二階段：`http://127.0.0.1:5173/preview-narrative-a1.html?story=full`
+
+兩條故事入口均實際回傳 HTTP 200。此為本機開發 Preview，需保持 dev server 執行；不是外網託管或正式部署。完整八組 Journal 及 Reaction／none 原始來源見上方證據連結。
+
+人工試玩仍待使用者驗收：
+
+1. 夜間根各選一次，再分別嘗試重排籃內／只移位置；確認疲累與翻找的困難自然，兩行動差異清楚，沒有家人接班或嬰兒台詞。
+2. 門口各問孩子／問老師一次；確認請求與回覆分開，未回應也不會讓人誤以為已交接。以不同 seed 重新試玩，可與強制可達性 Journal 對照。
+3. 回家後分別道歉／畫門口；讀孩子補充、拒談與 none 的完整紀錄，確認文字只承諾玩家做了嘗試，沒有保證安心或原諒。
+4. 在 pending Dialog 與下一 Turn 之前重新整理，確認續玩、原選項與 Journal 一致；另開正式入口確認原家庭存檔未被 Preview 改寫。
+5. 在真實手機上正常閱讀，並以鍵盤／螢幕閱讀器檢查兩選項、焦點與長 Journal；自動化手機使用 Chromium 模擬，不能替代真機驗收。
+6. 完整局到家庭回顧，確認用品整理不出現在人際修復時刻，A1 摘要描述修復嘗試；舊存檔繼續保留原有文字與分類。
+
+## Standards
+
+獨立子代理以 `git diff 6ced33a...988cded` 審查 AGENTS.md、docs/agents 的領域／tracker／triage 規範與 code-review skill 的 smell baseline。未發現硬性違規或可處理的程式結構問題。舊摘要獨立保留符合相容要求；Save reader 僅擴充 release allowlist，沒有改 schema。
+
+Standards：0 項發現；無阻擋問題。
+
+## Spec
+
+獨立子代理依 #60、共通相容政策 V 與 N01／N08／N13／N14 改稿審查。新 ID／路由、八組路徑、所有專屬回應與 none、跨 Turn queue、保存失敗重試與舊版 checkpoint／Review／Replay 均有對應實作與測試；未發現缺漏或越界。執行結果另依本輪實跑記錄，不以讀稿代替通過。
+
+Spec：0 項發現；無阻擋問題。兩軸合計：Standards 0／Spec 0。

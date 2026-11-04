@@ -35,36 +35,37 @@ it("freezes the complete legacy, 08A-v1 and A1 catalogues independently", () => 
   ]);
 });
 
-it.each(["legacy", "08a"])("preserves every %s checkpoint, original choices and prose through complete play, review and replay", release => {
-  for (const seed of [9, 1, 11, 2]) for (const last of [false, true]) {
-    const run = createFamilyRun({ seed });
-    let state = (release === "08a" ? bindPreviewRun(run) : run).state;
-    const content = createRunContent(state);
-    const checkpoints: string[] = [];
-    for (let step = 0; step < 240; step++) {
-      const raw = serializeGame(state);
-      checkpoints.push(raw);
-      const restored = restoreGame(raw);
-      expect(restored).toMatchObject({ status: "restored", state, migratedFrom: null });
-      if (restored.status !== "restored") throw new Error("Old checkpoint rejected");
-      expect(createRunContent(restored.state)).toEqual(content);
-      expect(projectJournal(restored.state)).toEqual(projectJournal(state));
-      const view = getPlayerView(state, content);
-      if (view.completed) break;
-      const command = view.pendingEvent ? { type: "CHOOSE" as const,
-        choiceId: view.pendingEvent.choices[last ? view.pendingEvent.choices.length - 1 : 0]!.id } : view.nextInput!;
-      const result = transitionGame(state, content, command);
-      expect(transitionGame(restored.state, createRunContent(restored.state), command)).toEqual(result);
-      state = result.state;
-    }
-    expect(state.completedAgeStages).toHaveLength(12);
-    const review = createFamilyReview(state, content);
-    const saved = { ...state, review };
-    expect(restoreGame(serializeGame(saved))).toMatchObject({ status: "restored", state: saved });
-    const replay = replayFamilyRun(saved);
-    expect(replay.state.contentBinding).toEqual(state.contentBinding);
-    expect(createRunContent(replay.state)).toEqual(content);
-    expect(review.repairMomentIds.some(id => state.history.find(row => row.id === id)!.ageStageId === "age-stage-1")).toBe(true);
-    expect(hash({ checkpoints, review, replay })).toBe(oldRuns[`${release}/${seed}/${last}`]);
+const oldRunCases = ["legacy", "08a"].flatMap(release =>
+  [9, 1, 11, 2].flatMap(seed => [false, true].map(last => ({ release, seed, last }))));
+
+it.each(oldRunCases)("preserves every checkpoint through complete play, review and replay: $release / seed=$seed / last=$last", ({ release, seed, last }) => {
+  const run = createFamilyRun({ seed });
+  let state = (release === "08a" ? bindPreviewRun(run) : run).state;
+  const content = createRunContent(state);
+  const checkpoints: string[] = [];
+  for (let step = 0; step < 240; step++) {
+    const raw = serializeGame(state);
+    checkpoints.push(raw);
+    const restored = restoreGame(raw);
+    expect(restored).toMatchObject({ status: "restored", state, migratedFrom: null });
+    if (restored.status !== "restored") throw new Error("Old checkpoint rejected");
+    expect(createRunContent(restored.state)).toEqual(content);
+    expect(projectJournal(restored.state)).toEqual(projectJournal(state));
+    const view = getPlayerView(state, content);
+    if (view.completed) break;
+    const command = view.pendingEvent ? { type: "CHOOSE" as const,
+      choiceId: view.pendingEvent.choices[last ? view.pendingEvent.choices.length - 1 : 0]!.id } : view.nextInput!;
+    const result = transitionGame(state, content, command);
+    expect(transitionGame(restored.state, createRunContent(restored.state), command)).toEqual(result);
+    state = result.state;
   }
+  expect(state.completedAgeStages).toHaveLength(12);
+  const review = createFamilyReview(state, content);
+  const saved = { ...state, review };
+  expect(restoreGame(serializeGame(saved))).toMatchObject({ status: "restored", state: saved });
+  const replay = replayFamilyRun(saved);
+  expect(replay.state.contentBinding).toEqual(state.contentBinding);
+  expect(createRunContent(replay.state)).toEqual(content);
+  expect(review.repairMomentIds.some(id => state.history.find(row => row.id === id)!.ageStageId === "age-stage-1")).toBe(true);
+  expect(hash({ checkpoints, review, replay })).toBe(oldRuns[`${release}/${seed}/${last}`]);
 }, 30000);
