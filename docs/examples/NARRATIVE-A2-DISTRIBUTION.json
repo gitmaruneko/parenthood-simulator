@@ -1,0 +1,85 @@
+{
+  "releaseId": "narrative-quality-a2-v1",
+  "scope": "isolated stage 8; family seed 9; rngState from fixed corpus; not full #42 coverage",
+  "corpusSha256": "1d0459e3c86c7d6cc1510dba7c2e104a581540e494de14c14a6f3e60329adcc0",
+  "rows": [
+    {
+      "direction": "flexible",
+      "n": 4096,
+      "counts": {
+        "nqa1-door-choice": 2054,
+        "toy-car-story-choice": 2042
+      },
+      "expectedToyCarProbability": 0.5,
+      "toyCarFrequency": 0.49853515625,
+      "absoluteDeviation": 0.00146484375,
+      "tolerance": 0.0390625,
+      "passed": true
+    },
+    {
+      "direction": "work-and-finances",
+      "n": 4096,
+      "counts": {
+        "nqa1-door-choice": 2054,
+        "toy-car-story-choice": 2042
+      },
+      "expectedToyCarProbability": 0.5,
+      "toyCarFrequency": 0.49853515625,
+      "absoluteDeviation": 0.00146484375,
+      "tolerance": 0.0390625,
+      "passed": true
+    },
+    {
+      "direction": "parent-child-time",
+      "n": 4096,
+      "counts": {
+        "nqa1-door-choice": 2144,
+        "toy-car-story-choice": 1952
+      },
+      "expectedToyCarProbability": 0.47916666666666663,
+      "toyCarFrequency": 0.4765625,
+      "absoluteDeviation": 0.0026041666666666297,
+      "tolerance": 0.039028576849875644,
+      "passed": true
+    },
+    {
+      "direction": "family-relationships",
+      "n": 4096,
+      "counts": {
+        "nqa1-door-choice": 2054,
+        "toy-car-story-choice": 2042
+      },
+      "expectedToyCarProbability": 0.5,
+      "toyCarFrequency": 0.49853515625,
+      "absoluteDeviation": 0.00146484375,
+      "tolerance": 0.0390625,
+      "passed": true
+    },
+    {
+      "direction": "caregiver-wellbeing",
+      "n": 4096,
+      "counts": {
+        "nqa1-door-choice": 2054,
+        "toy-car-story-choice": 2042
+      },
+      "expectedToyCarProbability": 0.5,
+      "toyCarFrequency": 0.49853515625,
+      "absoluteDeviation": 0.00146484375,
+      "tolerance": 0.0390625,
+      "passed": true
+    },
+    {
+      "direction": "life-exploration",
+      "n": 4096,
+      "counts": {
+        "nqa1-door-choice": 2054,
+        "toy-car-story-choice": 2042
+      },
+      "expectedToyCarProbability": 0.5,
+      "toyCarFrequency": 0.49853515625,
+      "absoluteDeviation": 0.00146484375,
+      "tolerance": 0.0390625,
+      "passed": true
+    }
+  ]
+}

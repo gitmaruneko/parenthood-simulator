@@ -1,0 +1,130 @@
+# Narrative Quality A2 — #61
+
+基準 main `7fbe9de`，PR #63 已合併。開始前工作目錄乾淨並已 fast-forward main。
+範圍僅 [#61](https://github.com/gitmaruneko/parenthood-simulator/issues/61)：N02／N05／N06／N07／N10，每組入口＋本題後續。
+規格依 [逐事件改稿](../reviews/NARRATIVE-EVENT-REWRITES.md)、[品質與相容政策 V](../reviews/NARRATIVE-QUALITY-REVIEW.md)、[建票決議](../reviews/NARRATIVE-TICKETING.md)。
+
+## 版本與來源
+
+新增 `narrative-quality-a2-v1`、assemblyVersion=2，沿既有 envelope=8 reader；不改 schema。
+`bindNarrativeA2Run` 明確選用；正式入口仍用 `family-events-08a-v1`。A2 由不可變 A1 副本替換十個原節點，新增十三個 A2 作者節點，總目錄 40 節點。
+使用者本輪明確要求選擇影響後續，因此餐桌／用品／雨天各有兩個互斥後續，取代舊稿一個共同 reflection。每局各題仍只執行入口＋一個後續，不增加 Turn／Stage 節點預算。這三個額外作者節點只實現本題兩條結果，不新增主題或 #42 候選。
+`src/content/narrative-a1.ts`、legacy factory、08A、舊 fixtures／golden 均不變。
+每個目錄回傳獨立副本；Replay 保留 binding；未知 release／assembly 拒收並保留 bytes。
+舊 history／Journal／記憶／Review 不回填、不重分類。移除 A2 掛載的通用成人池會改變 PRNG 消耗，不承諾跨 release 同 seed 同故事。
+
+| 原 Event pair（choice／reflection） | A2 Event ID（入口；後續） | 年齡 | 兩個新 Choice ID（亦為本題 action flag） |
+| --- | --- | --- | --- |
+| meal-preparation-* | nqa2-meal-choice；nqa2-meal-after-simplify／nqa2-meal-after-finish | 6 月 | nqa2-simplify／nqa2-finish |
+| leaving-playground-* | nqa2-park-choice；nqa2-park-reflection | 21 月 | nqa2-loop／nqa2-home |
+| shared-ownership-* | nqa2-supplies-choice；nqa2-supplies-after-buy／nqa2-supplies-after-list | 27 月 | nqa2-buy／nqa2-list |
+| rainy-pickup-* | nqa2-rain-choice；nqa2-rain-after-wait／nqa2-rain-after-covered | 33 月 | nqa2-wait／nqa2-covered |
+| quiet-time-* | nqa2-rest-choice；nqa2-rest-reflection | 52 月 | nqa2-read／nqa2-play |
+
+各根先清本題兩旗標，再寫入所選旗標；不改其他題 flags。新版 validator 核對選項旗標與專屬後續 queue，不能遺失／偷換分支後續或冒用 A1 binding。
+每題兩行動沒有成人／資源門檻，不沿用 coordinate／carry／handoff／ask-family。
+
+## 選擇與後續
+
+| 題目 | A 已執行動作／代價 | B 已執行動作／代價 | 本題後續與事實邊界 |
+| --- | --- | --- | --- |
+| 餐桌 | 收起備料、清桌，少一道菜且食材待處理 | 做完第二道菜、只挪一位置，晚坐下且器具待收 | 各自收束未做備料／兩道菜用餐後的器具；只寫玩家晚餐，不替 6 月孩子安排飲食 |
+| 公園 | 繞一圈、晚點備餐 | 直接回程、指出停著的紅車 | 返家放袋、備餐；孩子可仍想回公園，不出現路人評論 |
+| 用品 | 帶孩子實際補一包、縮短公園時間 | 寫手機待辦、保留原路線，尚未補貨 | A 記已有備用／B 記待補且手機待辦仍留；各自 support 與精確分類 planning |
+| 雨天 | 合法留在等候區整理雨具，返家尚未開始 | 帶孩子走有遮蔽長路，繞遠 | A 後續離開等候區沿長路返家；B 後續已走完長路再收濕襪；不宣稱等到雨停 |
+| 休息 | 喝水、打開書，桌遊先放旁邊 | 排好桌遊、休息後移 | 晚些收書與盒；同室照看，不保證讀完兩頁、孩子等完或願意只玩一局 |
+
+三題由 choice 的 immediateFollowUpEventIds 與本題 action flag 控制實際後續路徑，另一分支不入 queue、不執行。公園／休息的旗標決定哪些實際 Reaction 可抽到，反選不能抽到同一分支專屬反應；它們的共同 reflection 只寫兩路都成立的落點。不抹去先前代價，不補外在條件，不擴充物品、天氣、承諾或倒數系統。
+
+### pool／效果差異
+
+- 餐桌、用品、雨天不掛 Reaction。各題 actorIds 只有 child-1，無成人回應或詢問即支援。
+- `nqa2-park-response`：loop → another-path／look-exit；home → point-car／reach-park；另有 park-none。完整 ID 均加 `nqa2-`。
+- `nqa2-rest-response`：read → how-long／other-toy；play → another-game／first-piece；另有 rest-none。完整 ID 均加 `nqa2-`。
+- 非 none 均限定本題 contextTag、action flag、可回應 child，沒有超齡台詞；none 不生成可見 Journal 或記憶。
+- 新版移除這五題原共用 resourceDeltas、tendencyDeltas、planningLoadDelta、成人記憶與 knowledgeCard 掛載。普通動作不給全題同獎懲。
+- 原 coordinate 的 planning +1／energy -1／timeFlexibility -2／sharedCare +1，carry 的 planning +3／energy -4／timeFlexibility +1／responsibility +1，以及 handoff／ask-family 的 planning +1／timeFlexibility -1，均未帶入 A2 新行動。
+- N06 不重用舊 `shared-ownership-checklist-support` 記憶或 reflection 的 planningLoad -1；新工具支持與分類各有自己的 history 來源。舊 release 的該記憶、索引及 Review 保持原樣。
+- 五個新根 base weight 仍為 2，未掛原五題方向倍率；這五階段目前各只有一個一般入口，不宣稱完成 #42 多候選分布。雨天入口地點由舊 street 改為明示的托育點 school，後續 kind 由 environment 改 routine；N06 後續均維持 support，其餘後續 routine。
+- N06 list 的已寫待辦是 planning；兩欄分類的 planning 另由選中的 support 後續實際完成才產生，A 明記已有備用，B 明記待補。support 是清單工具，不只 support 資源數字，也不暗示家人代買。
+- Review 沿 A1 工具支持／修復嘗試摘要；A2 沒有新增人際 repair。第 8 階段修復仍由未改 A1／08A 鏈提供。舊 Review 路由不變。
+
+## 已知敘事缺陷：A1 小籃重複移動
+
+PR #63 的 `nqa1-night-stock` → `nqa1-night-support` 已把小籃移到坐下可拿的位置；隨後 `nqa1-night-reorder` 的 `nqa1-move` 又作同一搬動。兩次動作缺少新的位置前提，屬敘事連續性缺陷。A2 繼承此問題，本票不修夜間鏈。
+
+建議另開修訂票：新增如 `narrative-quality-a1-v2`（或後續整合 release），為夜間鏈配置新 Event／Choice／flag namespace。
+保留 support 確實移近的工具來源，把後續第二行動改成不重排且維持現位置、先取一件放手邊；結果寫實際取物，與重新排序有差異。
+若要保留再次搬動，必須先建立新位置需求，避免僅換句話重演。重新驗證根 A／B × 後續 A／B 與工具支持來源。
+不覆寫 A1／A2 manifest，不映射舊 pending／queue／history；舊存檔與 Replay 繼續走原 release。這是待另票核定的方案，沒有在 #61 實作。
+
+## 試玩與證據
+
+本機 `npm run dev -- --port 5173`，開啟 `/preview-narrative-a2.html`；`?story=meal|supplies|park|rain|rest|full` 可直達五題或完整 12 階段。
+各模式與重新試玩 attempt 使用隔離 sessionStorage，重新整理可續玩，不改正式 localStorage。正式 Build 仍只有 index，沒有切換預設 release。倉庫既有 Cloudflare Pages 整合會在推送分支後自動建立一般分支 Preview；本輪未手動部署或修改部署設定。A2 專用入口不在該 Build 內，請用本機入口試玩。
+
+- [五題各兩路 × 四家庭完整實際 Journal](../examples/NARRATIVE-A2-PLAYTHROUGH.md)
+- [Engine／Journal 原始輸出、全部 Reaction／none、12 階段 Review](../examples/NARRATIVE-A2-RUNS.json)
+- [#42 固定 corpus 在 A2 的獨立分布報告](../examples/NARRATIVE-A2-DISTRIBUTION.json)
+
+## 驗證範圍
+
+- 四基準家庭 seed 9／1／11／2 × 十行動 × availability 0／1，逐 checkpoint Save／Restore、目錄重排、結果／Journal 一致；三題反選後續互斥與實際事實差異有公開 Engine 反例。
+- 48 家庭配置 × 有／無其他成人 × 十行動，在零資源／planningLoad=0／未知親屬下實際執行到後續，清除本題殘留旗標。
+- 公園／休息兩路每種限定 Reaction 與 none 實際可達；沒有交叉答覆或 none 記憶。
+- 真實 Session 與可拒寫 SaveStorage：十行動失敗後只重存已接受 state，不重抽、不重送 CHOOSE。
+- 四家庭 × 首／尾策略，完整十二階段、兩跨 Turn 鏈、Turn≤4／Stage≤6、工具 support／planning、修復機會、Review 與 Replay。
+- 舊 legacy／08A／A1 目錄凍結與既有完整 checkpoints／v1–v7 fixtures 全數回歸，不更新 golden。
+- 桌面／手機：十行動 Dialog、已保存完整 Journal、重開 pending；五個 Preview 入口隔離與已選結果續玩。#52 自動節奏沿原 E2E 全套回歸。
+
+執行結果與獨立 Standards／Spec Review 分列如下；本機兩 worker 沿既有驗證慣例，沒有提高全域 timeout 或減少案例。
+
+## Standards
+
+獨立子代理以 `git diff 7fbe9de...5ab7b76` 審查 AGENTS.md、docs/agents 規範、TDD 公開 seam 與 code-review smell baseline，0 項發現。另以 `git diff 5ab7b76...e7efa5b` 複審互斥後續、manifest、queue 驗證與反例測試，0 項新增發現。沒有修改舊目錄、fixtures、#52 控制器或正式預設。
+
+Standards：0 項發現，無阻擋問題。
+
+## Spec
+
+獨立子代理初審發現 1 項 P1：三題只有固定結果／旗標差異，沒有選擇控制的後續。依使用者本輪第 5 點要求修正為真正互斥的後續路由，新增公開 Engine 紅綠反例，並明列作者節點增量。
+`e7efa5b` 獨立複審確認 P1 解除：所選 action 決定 queue 與 eligibility，N06 兩路有精確分類 support／planning，雨天等待不保證雨停。沒有新增 Spec finding。
+
+Spec：初審 1 項 P1；修正後 0 項未解決。兩軸靜態審查不代替下面的實際命令驗證。
+
+`622640a` 的交付證據亦分別由兩位子代理核對：40 path／12 Reaction／8 full 與 renderer 相符；兩軸均 0 項新增發現。
+
+## 最終自動驗證
+
+| 檢查 | 實跑結果 |
+| --- | --- |
+| `npm.cmd test -- --maxWorkers=2` | 33 files／602 tests 通過，exit 0，304.49 秒 |
+| `npm.cmd run typecheck` | 通過，exit 0 |
+| `npm.cmd run build` | 通過，exit 0；正式 index build，87 modules，未含獨立開發 Preview 入口 |
+| 本機 `npm.cmd run test:e2e -- --workers=2` | 桌面／手機 114／114 通過，exit 0，13.8 分鐘 |
+| CI Node.js 22／24：`npm test`、typecheck、build | 兩版本各 33 files／602 tests，全部通過 |
+| CI `npm run test:e2e` | 桌面／手機 114／114 通過，3.2 分鐘，含 #52 全套與 A2 30 項新增案例 |
+
+可核對的 [CI 紀錄](https://github.com/gitmaruneko/parenthood-simulator/actions/runs/42381172041) 對應 `622640a`；其後交付只補執行紀錄與畫面證據。
+
+已檢視五題的桌面與手機 Journal 畫面；文字換行與已保存選擇可讀，E2E 全題檢查無水平溢位。以下為真實 Session 執行到本題後續後的畫面（測試使用既有手動暫停，沒有新增 timer 行為）：
+
+| 故事 | 桌面 | 手機 |
+| --- | --- | --- |
+| 餐桌 | [畫面](../examples/NARRATIVE-A2-meal-DESKTOP.png) | [畫面](../examples/NARRATIVE-A2-meal-MOBILE.png) |
+| 用品 | [畫面](../examples/NARRATIVE-A2-supplies-DESKTOP.png) | [畫面](../examples/NARRATIVE-A2-supplies-MOBILE.png) |
+| 公園 | [畫面](../examples/NARRATIVE-A2-park-DESKTOP.png) | [畫面](../examples/NARRATIVE-A2-park-MOBILE.png) |
+| 雨天 | [畫面](../examples/NARRATIVE-A2-rain-DESKTOP.png) | [畫面](../examples/NARRATIVE-A2-rain-MOBILE.png) |
+| 休息 | [畫面](../examples/NARRATIVE-A2-rest-DESKTOP.png) | [畫面](../examples/NARRATIVE-A2-rest-MOBILE.png) |
+
+## 待使用者試玩驗收
+
+1. 從五個故事入口各玩兩次，確認行動與代價具體；餐桌、用品、雨天會到達不同後續，公園與休息反應只來自該行動。
+2. 用品分別補貨／記待辦，確認後續清單是已有備用／待補，兩路都有工具支持與分類來源。
+3. 雨天先等待再返家，確認未承諾雨停；休息兩路都仍照看孩子，未保證讀完或只玩一局。
+4. pending 與已選結果各重新整理一次，確認續玩；另開正式入口，確認原存檔保持。
+5. `story=full` 走到家庭回顧，確認第 6 階段支持與第 8 階段修復機會；A1 小籃缺陷仍按上面的已知問題另案處理。
+
+手機測試使用 Chromium 裝置模擬，不能代替真機及螢幕閱讀器試讀。是否合併留待使用者驗收；本輪沒有 Merge、手動部署或切換正式預設 release。
+
+本輪回顧：共同 reflection 的文案合理，不代表選擇已影響後續。這次將三題的反選、後續 queue 與實際事實差異放進公開 Engine 反例，避免以未被內容使用的旗標作完成證據。大型四家庭矩陣拆成可定位的案例，維持覆蓋並讓 worker 回報進度；沒有修改全域測試時限或 golden。
