@@ -61,7 +61,7 @@ PR #63 的 `nqa1-night-stock` → `nqa1-night-support` 已把小籃移到坐下�
 ## 試玩與證據
 
 本機 `npm run dev -- --port 5173`，開啟 `/preview-narrative-a2.html`；`?story=meal|supplies|park|rain|rest|full` 可直達五題或完整 12 階段。
-各模式與重新試玩 attempt 使用隔離 sessionStorage，重新整理可續玩，不改正式 localStorage。正式 Build 仍只有 index，沒有部署 A2 或切換預設 release。
+各模式與重新試玩 attempt 使用隔離 sessionStorage，重新整理可續玩，不改正式 localStorage。正式 Build 仍只有 index，沒有切換預設 release。倉庫既有 Cloudflare Pages 整合會在推送分支後自動建立一般分支 Preview；本輪未手動部署或修改部署設定。A2 專用入口不在該 Build 內，請用本機入口試玩。
 
 - [五題各兩路 × 四家庭完整實際 Journal](../examples/NARRATIVE-A2-PLAYTHROUGH.md)
 - [Engine／Journal 原始輸出、全部 Reaction／none、12 階段 Review](../examples/NARRATIVE-A2-RUNS.json)
@@ -101,6 +101,7 @@ Spec：初審 1 項 P1；修正後 0 項未解決。兩軸靜態審查不代替�
 | `npm.cmd test -- --maxWorkers=2` | 33 files／602 tests 通過，exit 0，304.49 秒 |
 | `npm.cmd run typecheck` | 通過，exit 0 |
 | `npm.cmd run build` | 通過，exit 0；正式 index build，87 modules，未含獨立開發 Preview 入口 |
+| 本機 `npm.cmd run test:e2e -- --workers=2` | 桌面／手機 114／114 通過，exit 0，13.8 分鐘 |
 | CI Node.js 22／24：`npm test`、typecheck、build | 兩版本各 33 files／602 tests，全部通過 |
 | CI `npm run test:e2e` | 桌面／手機 114／114 通過，3.2 分鐘，含 #52 全套與 A2 30 項新增案例 |
 
@@ -124,6 +125,6 @@ Spec：初審 1 項 P1；修正後 0 項未解決。兩軸靜態審查不代替�
 4. pending 與已選結果各重新整理一次，確認續玩；另開正式入口，確認原存檔保持。
 5. `story=full` 走到家庭回顧，確認第 6 階段支持與第 8 階段修復機會；A1 小籃缺陷仍按上面的已知問題另案處理。
 
-手機測試使用 Chromium 裝置模擬，不能代替真機及螢幕閱讀器試讀。是否合併留待使用者驗收；本輪沒有 Merge、部署或切換正式預設 release。
+手機測試使用 Chromium 裝置模擬，不能代替真機及螢幕閱讀器試讀。是否合併留待使用者驗收；本輪沒有 Merge、手動部署或切換正式預設 release。
 
 本輪回顧：共同 reflection 的文案合理，不代表選擇已影響後續。這次將三題的反選、後續 queue 與實際事實差異放進公開 Engine 反例，避免以未被內容使用的旗標作完成證據。大型四家庭矩陣拆成可定位的案例，維持覆蓋並讓 worker 回報進度；沒有修改全域測試時限或 golden。
