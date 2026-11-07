@@ -3,6 +3,7 @@ import { describeFamily, createFamilyRun, type FamilyRun } from "./family-openin
 import { getPlayerView } from "./event-engine.js";
 import { unknownActorProfiles } from "../domain/actor-profiles.js";
 import { NARRATIVE_RELEASE } from "../content/narrative-a1.js";
+import { NARRATIVE_A2_RELEASE } from "../content/narrative-a2.js";
 
 export const REVIEW_THEMES = {
   "growing-together": "一起慢慢長大",
@@ -52,7 +53,7 @@ export function createFamilyReview(state: GameState, content: ContentPack): Fami
   const savedSelection = savedIds?.length === 3 && new Set(savedIds).size === 3 && savedIds.every((id) => eligibleIds.has(id));
   const review: FamilyReview = {
     familySummary: summary.conditions.map((condition) => condition.neutralSummary).join("\n"),
-    narrativeOverview: state.contentBinding?.releaseId === NARRATIVE_RELEASE
+    narrativeOverview: [NARRATIVE_RELEASE, NARRATIVE_A2_RELEASE].includes(state.contentBinding?.releaseId ?? "")
       ? `從出生後的日常到約六歲，這個家庭留下了 ${state.choiceHistory.length} 次選擇。安排、記掛與收尾穿過不同階段；${support.length ? "有可查用的工具與支持，" : "支持並非總在需要時出現，"}${repair.length ? "也有你嘗試補話與邀請對方表達的時刻。" : "有些事情仍留待以後再談。"}對方如何回應，留在當時的紀錄裡。這些經歷可以同時包含疲憊、快樂與未完成的事。`
       : `從出生後的日常到約六歲，這個家庭留下了 ${state.choiceHistory.length} 次選擇。安排、記掛與收尾穿過不同階段；${support.length ? "有人接住生活中的一部分，" : "支持並非總在需要時出現，"}${repair.length ? "也有重新靠近的片刻。" : "有些事情仍留待以後再談。"}這些經歷可以同時包含疲憊、快樂與未完成的事。`,
     timeline: [...content.ageStages].sort((a, b) => a.order - b.order).map((stage) => ({
