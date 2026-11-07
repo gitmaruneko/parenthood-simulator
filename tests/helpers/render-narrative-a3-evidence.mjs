@@ -1,4 +1,4 @@
-﻿import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 const report = JSON.parse(readFileSync("docs/examples/NARRATIVE-A3-RUNS.json", "utf8"));
 const lines = ["# Narrative A3：實際 Journal 與條件對照", "",
   "來源：`NQA3_WRITE_EVIDENCE=1 npm test -- tests/narrative-a3.test.ts tests/narrative-a3-distribution.test.ts --maxWorkers=2`。真實 ContentPack 經公開 Engine、Reaction 與 projectJournal 輸出，沒有靜態代寫 Journal。", "",
@@ -11,7 +11,7 @@ for (const group of report.rows.filter(row => row.kind === "single-dimension"))
   for (const row of group.rows) lines.push(`| ${group.stage} | 9 | ${row.rngState} | ${row.family.workArrangement} | ${row.family.persistentActorIds.includes("support-1")} | ${row.event} | ${row.entries.join(", ")} |`);
 lines.push("", "## 48 配置 × 四角色 mask 的候選與合法選項", "",
   "mask bit 1=長輩、bit 2=伴侶；四個角色集合獨立於家庭三維，availability=0、未知親屬、零資源。每階段皆有一般入口；A3 所有入選版本的兩個行動皆經 Engine 執行並保存還原。完整每階段候選／選項表列於原始 JSON eligibility rows。", "",
-  "| 家庭 | 分工 | 工作 | mask | N03 | N04 |", "| --- | --- | --- | --- | --- | --- |"]);
+  "| 家庭 | 分工 | 工作 | mask | N03 | N04 |", "| --- | --- | --- | --- | --- | --- |");
 for (const row of report.rows.filter(row => row.kind === "eligibility")) lines.push(`| ${row.family.householdComposition} | ${row.family.careParticipation} | ${row.family.workArrangement} | ${row.mask} | ${row.candidates[2].ids.join(", ")} | ${row.candidates[3].ids.join(", ")} |`);
 const names = { work: "N03 工作", bag: "N03 中性：外出袋", message: "N04 作息訊息", shoes: "N04 中性：找鞋", notice: "N09 通知", gathering: "N11 相聚草稿", map: "N12 新教室" };
 for (const seed of [9, 1, 11, 2]) {

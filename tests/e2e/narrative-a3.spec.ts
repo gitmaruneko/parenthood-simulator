@@ -34,9 +34,19 @@ for (const story of A3_STORIES) for (const choiceId of story.choices)
       const next = checkpoints[index + 1]!;
       await expect.poll(async () => JSON.parse((await page.evaluate(() => localStorage.getItem("parenthood-simulator.save")))!).state).toEqual(next);
     }
-    const journal = page.getByRole("list", { name: "已發生的事件" });
-    await expect(journal.locator("li > p")).toHaveText(projectJournal(final).reverse().map(row => row.text));
-    await expect(journal.locator("strong")).toHaveCount(final.choiceHistory.length);
+    if (story.stage === 12) {
+      await expect(page.getByRole("heading", { name: "我們的家庭生活回顧", exact: true })).toBeVisible();
+      const timeline = page.locator(".review-timeline > li");
+      await expect(timeline).toHaveCount(12);
+      for (const stage of await timeline.all()) await stage.locator("summary").click();
+      const rows = projectJournal(final);
+      await expect(timeline.locator("[data-journal-id] > p")).toHaveText(content.ageStages.flatMap(stage =>
+        rows.filter(row => row.ageStageId === stage.id).reverse().map(row => row.text)));
+    } else {
+      const journal = page.getByRole("list", { name: "已發生的事件" });
+      await expect(journal.locator("li > p")).toHaveText(projectJournal(final).reverse().map(row => row.text));
+      await expect(journal.locator("strong")).toHaveCount(final.choiceHistory.length);
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     if (choiceId === story.choices[0]) await page.screenshot({ path: `test-results/NARRATIVE-A3-${story.key}-${isMobile ? "MOBILE" : "DESKTOP"}.png`, fullPage: true });
   });
