@@ -18,13 +18,27 @@ afterAll(() => {
 });
 const paths = A2_STORIES.flatMap(story => story.choices.map(choiceId => ({ story, choiceId })));
 
-it("replaces exactly ten A2 nodes and retains all other A1 and 08A content independently", () => {
+it.each([
+  { key: "meal", choices: ["nqa2-simplify", "nqa2-finish"], results: ["你把收起的第二道菜備料留待之後處理，再把今天用到的器具集中到桌邊，將椅子推回去。", "兩道菜用餐後，你把做菜與吃飯用過的器具集中到桌邊，將椅子推回去。"] },
+  { key: "supplies", choices: ["nqa2-buy", "nqa2-list"], results: ["回家後，你在外出袋的清單分出『待補』與『已有備用』兩格，把今天多買的一包記在『已有備用』。清單留在袋內側。", "回家後，你在外出袋的清單分出『待補』與『已有備用』兩格，把尚未補貨的濕紙巾記在『待補』。手機上的補貨待辦仍留著，袋內也有了可查的清單。"] },
+  { key: "rain", choices: ["nqa2-wait", "nqa2-covered"], results: ["整理好雨具後，你帶孩子離開等候區，沿有遮蔽的長路返家。沒有等到雨停；進門後，你把濕襪放進待洗籃，將外出袋留在門邊晾放。", "沿有遮蔽的長路走回家後，你把濕襪放進待洗籃，將外出袋留在門邊晾放。繞遠的這段路已走完。"] },
+])("uses the actual $key action to select a different continuation, not just the immediate result", ({ key, choices, results }) => {
+  const story = A2_STORIES.find(story => story.key === key)!;
+  const runs = choices.map(choiceId => a2Path(story, choiceId));
+  for (const [index, run] of runs.entries()) {
+    expect(run.state.completedEventIds).toContain(`nqa2-${key}-after-${choices[index]!.slice(5)}`);
+    expect(run.state.history.map(row => row.text)).toContain(results[index]);
+    expect(run.state.completedEventIds).not.toContain(`nqa2-${key}-after-${choices[1 - index]!.slice(5)}`);
+  }
+});
+
+it("replaces ten original nodes with thirteen A2 nodes and retains all other A1 and 08A content independently", () => {
   const opening = createFamilyRun({ seed: 9 });
   const original = createRunContent(bindNarrativeRun(opening).state);
   const bound = bindNarrativeA2Run(opening);
   const content = createRunContent(bound.state);
-  expect(content.events).toHaveLength(37);
-  expect(content.events.filter(event => event.id.startsWith("nqa2-"))).toHaveLength(10);
+  expect(content.events).toHaveLength(40);
+  expect(content.events.filter(event => event.id.startsWith("nqa2-"))).toHaveLength(13);
   expect(content.events.filter(event => !event.id.startsWith("nqa2-")))
     .toEqual(original.events.filter(event => !NARRATIVE_A2_REPLACEMENTS[event.id]));
   expect(content.reactionPools.filter(pool => !pool.id.startsWith("nqa2-"))).toEqual(original.reactionPools);
@@ -43,9 +57,11 @@ it("records the actual stage 6 supply tool and classification on either action",
       state = transitionGame(state, content, view.pendingEvent ? { type: "CHOOSE", choiceId } : view.nextInput!).state;
       expect(restoreGame(serializeGame(state))).toMatchObject({ status: "restored", state });
     }
-    expect(state.completedEventIds).toContain("nqa2-supplies-reflection");
-    expect(state.history).toContainEqual(expect.objectContaining({ kind: "support", resolvedEventId: "nqa2-supplies-reflection" }));
-    expect(state.history).toContainEqual(expect.objectContaining({ kind: "planning", text: "你在袋內清單分出『待補』與『已有備用』兩格，把濕紙巾記到目前對應的位置。" }));
+    expect(state.completedEventIds).toContain(a2Reflection("supplies", choiceId));
+    expect(state.history).toContainEqual(expect.objectContaining({ kind: "support", resolvedEventId: a2Reflection("supplies", choiceId) }));
+    expect(state.history).toContainEqual(expect.objectContaining({ kind: "planning", text: choiceId === "nqa2-buy"
+      ? "你把已補的一包記在袋內清單的『已有備用』格，留下這次實際盤點的記錄。"
+      : "你把尚未補貨的濕紙巾記在袋內清單的『待補』格，補貨待辦沒有被當成已完成。" }));
     expect(state.relationshipMemories).toEqual([]);
   }
 });
@@ -72,7 +88,7 @@ it.each(baselineCases)("restores every checkpoint: $choiceId / seed=$seed / avai
       expect(checkpoint.ageStageProgress?.nodeCount ?? 0).toBeLessThanOrEqual(6);
       for (const row of projectJournal(checkpoint)) expect(checkpoint.history.some(source => source.id === row.sourceHistoryId)).toBe(true);
     }
-    expect(state.completedEventIds).toContain(a2Reflection(story.key));
+    expect(state.completedEventIds).toContain(a2Reflection(story.key, choiceId));
     expect(state.flags.filter(flag => story.choices.includes(flag as never))).toEqual([choiceId]);
     expect(state.relationshipMemories).toEqual([]);
     expect(state.history.some(row => row.kind === "repair")).toBe(false);
@@ -130,7 +146,7 @@ it.each(familyConfigurations)("runs all ten actions at zero resources, including
       if (view.pendingEvent) expect(view.pendingEvent.choices.map(choice => choice.id)).toEqual(story.choices);
       state = transitionGame(state, content, view.pendingEvent ? { type: "CHOOSE", choiceId } : view.nextInput!).state;
     }
-    expect(state.completedEventIds).toContain(a2Reflection(story.key));
+    expect(state.completedEventIds).toContain(a2Reflection(story.key, choiceId));
     expect(state.flags.filter(flag => story.choices.includes(flag as never))).toEqual([choiceId]);
     expect(restoreGame(serializeGame(state))).toMatchObject({ status: "restored", state });
   }
@@ -150,7 +166,7 @@ it.each([9, 1, 11, 2])("completes twelve stages, tool support, repair, review an
     expect(state.completedAgeStages).toHaveLength(12);
     for (const stage of ["age-stage-1", "age-stage-8"]) expect(state.completedAgeStages!.find(row => row.ageStageId === stage)?.turnCount).toBe(2);
     expect(state.history.some(row => row.kind === "planning" && row.ageStageId === "age-stage-6")).toBe(true);
-    expect(state.history.some(row => row.kind === "support" && row.resolvedEventId === "nqa2-supplies-reflection")).toBe(true);
+    expect(state.history.some(row => row.kind === "support" && row.resolvedEventId === a2Reflection("supplies", last ? "nqa2-list" : "nqa2-buy"))).toBe(true);
     const review = createFamilyReview(state, content);
     expect(review.repairMomentIds.length).toBeGreaterThan(0);
     expect(review.repairMomentIds.every(id => state.history.find(row => row.id === id)!.ageStageId === "age-stage-8")).toBe(true);
@@ -194,6 +210,7 @@ it("rejects missing continuations, wrong flags, release spoofing and unknown ver
     (data: any) => { data.state.contentBinding.assemblyVersion = 99; },
     (data: any) => { data.state.contentBinding.releaseId = "narrative-quality-a1-v1"; },
     (data: any) => { data.state.scheduledFollowUps = []; },
+    (data: any) => { data.state.scheduledFollowUps[0].eventId = "nqa2-supplies-after-buy"; },
     (data: any) => { data.state.flags = ["nqa2-buy"]; },
   ]) {
     const data = JSON.parse(serializeGame(chosen)); mutate(data);

@@ -81,11 +81,11 @@ export function createRunContent(state: GameState): ContentPack {
   if (binding.releaseId === NARRATIVE_A2_RELEASE) {
     if (cachedNarrativeA2?.key === cacheKey) return structuredClone(cachedNarrativeA2.content);
     const original = createRunContent({ ...state, contentBinding: { ...binding, releaseId: NARRATIVE_RELEASE } });
-    const replace = (id: string) => NARRATIVE_A2_REPLACEMENTS[id] ?? id;
+    const replaceEntry = (id: string) => NARRATIVE_A2_REPLACEMENTS[id] ?? [id];
     const events = [...original.events.filter(event => !NARRATIVE_A2_REPLACEMENTS[event.id]), ...narrativeA2Events()];
     const authored = parseContentPack({ ...original, events,
-      ageStages: original.ageStages.map(stage => ({ ...stage, entryEventIds: stage.entryEventIds.map(replace).sort() })),
-      entryEventIds: original.entryEventIds.map(replace).sort(), requiredEventIds: events.map(event => event.id),
+      ageStages: original.ageStages.map(stage => ({ ...stage, entryEventIds: stage.entryEventIds.flatMap(replaceEntry).sort() })),
+      entryEventIds: original.entryEventIds.flatMap(replaceEntry).sort(), requiredEventIds: events.map(event => event.id),
       reactionPools: [...original.reactionPools, ...narrativeA2Pools()] });
     const assembled = assembleFamilyEntries(authored, state.family, []);
     cachedNarrativeA2 = { key: cacheKey, content: assembled };
@@ -220,7 +220,12 @@ export function validatePreviewProgress(state: GameState, content: ContentPack):
       if (!choice) continue;
       if (!state.flags.includes(choice.choiceId) || story.choices.some(id => id !== choice.choiceId && state.flags.includes(id)))
         throw new Error("Inconsistent daily story flags");
-      check([a2Root(story.key), a2Reflection(story.key)], false);
+      const continuation = a2Reflection(story.key, choice.choiceId);
+      for (const other of story.choices.map(id => a2Reflection(story.key, id)).filter(id => id !== continuation)) {
+        if (state.completedEventIds.includes(other) || state.scheduledFollowUps.some(row => row.eventId === other))
+          throw new Error("Wrong daily story continuation");
+      }
+      check([a2Root(story.key), continuation], false);
     }
   }
   if (state.completedEventIds.includes(TOY_CAR_ROOT) && state.completedEventIds.includes("preschool-handoff-choice"))
