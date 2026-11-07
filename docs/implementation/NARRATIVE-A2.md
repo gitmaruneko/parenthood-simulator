@@ -75,3 +75,16 @@ PR #63 的 `nqa1-night-stock` → `nqa1-night-support` 已把小籃移到坐下�
 - 桌面／手機：十行動 Dialog、已保存完整 Journal、重開 pending；五個 Preview 入口隔離與已選結果續玩。#52 自動節奏沿原 E2E 全套回歸。
 
 最終命令結果與獨立 Standards／Spec Review 完成後附於此文件及 PR。
+
+## Standards
+
+獨立子代理以 `git diff 7fbe9de...5ab7b76` 審查 AGENTS.md、docs/agents 規範、TDD 公開 seam 與 code-review smell baseline，0 項發現。另以 `git diff 5ab7b76...e7efa5b` 複審互斥後續、manifest、queue 驗證與反例測試，0 項新增發現。沒有修改舊目錄、fixtures、#52 控制器或正式預設。
+
+Standards：0 項發現，無阻擋問題。
+
+## Spec
+
+獨立子代理初審發現 1 項 P1：三題只有固定結果／旗標差異，沒有選擇控制的後續。依使用者本輪第 5 點要求修正為真正互斥的後續路由，新增公開 Engine 紅綠反例，並明列作者節點增量。
+`e7efa5b` 獨立複審確認 P1 解除：所選 action 決定 queue 與 eligibility，N06 兩路有精確分類 support／planning，雨天等待不保證雨停。沒有新增 Spec finding。
+
+Spec：初審 1 項 P1；修正後 0 項未解決。兩軸靜態審查不代替下面的實際命令驗證。

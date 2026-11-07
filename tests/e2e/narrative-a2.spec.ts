@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => { await installPausedNarration(page); });
 
 for (const story of A2_STORIES) for (const choiceId of story.choices)
   test(`two-action Dialog / saved Journal / reload: ${choiceId}`, async ({ page, isMobile }) => {
-    const { checkpoints, content, state: final } = a2Path(story, choiceId);
+    const { checkpoints, content, state: final } = a2Path(story, choiceId, 9, choiceId === story.choices[1] ? 0 : 1);
     const waitingIndex = checkpoints.findIndex(state => state.turn?.status === "awaitingInput");
     await page.addInitScript(raw => {
       if (!localStorage.getItem("parenthood-simulator.save")) localStorage.setItem("parenthood-simulator.save", raw);
