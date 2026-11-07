@@ -10,3 +10,7 @@ For the Issue #42 08A playtest, run `npm run dev` and open
 and uses isolated session storage; the original family save stays untouched.
 This shortcut is a development entry, not part of the production build.
 See [scope, guarantees and compatibility](docs/implementation/ISSUE-42-08A-SLICE.md).
+
+For Issue #60, open `/preview-narrative-a1.html?story=night` (or `story=door`,
+`story=full`) on the local dev server. This isolated preview uses the new A1
+release; the default release stays unchanged. See [A1 scope and evidence](docs/implementation/NARRATIVE-A1.md).

@@ -3,7 +3,7 @@ import { gameStateSchema, contentBindingSchema, type GameState } from "../domain
 import { actorProfilesSchema } from "../domain/actor-profiles.js";
 import { familyLifeDirectionIdSchema } from "../domain/family-life-direction.js";
 import { validateJournal } from "../domain/journal-validation.js";
-import { createRunContent, validatePreviewProgress } from "../content/releases.js";
+import { createRunContent, validatePreviewProgress, isSupportedRelease } from "../content/releases.js";
 import * as legacy from "./legacy-save-format.js";
 
 export const SAVE_SCHEMA_VERSION = 8;
@@ -40,7 +40,7 @@ export function restoreGame(rawData: string): legacy.RestoreResult {
     releaseId: z.string(), assemblyVersion: z.number(),
   }) }) }).safeParse(data);
   if (identity.success && (identity.data.state.schemaVersion !== 2 ||
-      identity.data.state.contentBinding.releaseId !== "family-events-08a-v1" || identity.data.state.contentBinding.assemblyVersion !== 2))
+      !isSupportedRelease(identity.data.state.contentBinding.releaseId, identity.data.state.contentBinding.assemblyVersion)))
     return { status: "error", rawData, error: { code: "incompatible-version", message: "這份故事的內容版本目前無法開啟，原始資料仍保留。" } };
   const parsed = previewEnvelope.safeParse(data);
   if (!parsed.success) return { status: "error", rawData, error: { code: "invalid-data",
