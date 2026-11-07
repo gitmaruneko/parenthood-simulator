@@ -49,7 +49,23 @@ N03 與 N04 在作者組裝層選版，不新增 Condition 語言、不把家庭
 - 完整十二階段、兩條既有鏈、工具支持／planning、Review／Replay 與未知 release bytes 保留。
 - 固定 #42 4096 corpus、六個生活方向重新量測 stage 8；事前容差沿原公式，非宣稱完成 #42 全量覆蓋。
 
-實際 Journal：[七版本各兩路與四基準家庭](../examples/NARRATIVE-A3-PLAYTHROUGH.md)；[原始 Engine／Journal／Review 與資格表](../examples/NARRATIVE-A3-RUNS.json)；[固定 corpus 分布](../examples/NARRATIVE-A3-DISTRIBUTION.json)。執行結果與兩軸 Review 在 PR 完成時補入。
+實際 Journal：[七版本各兩路與四基準 seed](../examples/NARRATIVE-A3-PLAYTHROUGH.md)；[原始 Engine／Journal／Review 與資格表](../examples/NARRATIVE-A3-RUNS.json)；[固定 corpus 分布](../examples/NARRATIVE-A3-DISTRIBUTION.json)。單題起點為展示該版本會調整工作或角色資格，JSON 逐筆列出實際家庭；完整十二階段另用未調整的四基準家庭。
+
+本機 `npm test -- --maxWorkers=2 --reporter=dot`：35 files／796 tests 全部通過（456.43 秒）；`npm run typecheck`、`npm run build` 通過。[CI 實作版本 4ed7aec](https://github.com/gitmaruneko/parenthood-simulator/actions/runs/42388624689) Node.js 22／24 各 796 tests、Typecheck、Build 全通過；桌面／手機 E2E 156／156 通過，含 A3 新增 42 項與既有 #52、legacy、08A、A1、A2 案例。
+
+實際證據包含 56 條單題 Journal、19 條限定 Reaction／none、8 局完整十二階段 Review、192 組資格／候選表與 2 組同 rngState 單維正反例。N03 單維對照 rngState=2903413571：dualIncome 選 work，singleFullTimeCare 選 bag；N04 同 rngState 僅移除 support-1 membership，由 message 改選 shoes。
+
+七版本桌面／手機畫面已檢視，文字與換行正常，E2E 核對沒有橫向溢出；map 包含真實十二階段 Review timeline。
+
+| 故事 | 桌面 | 手機 |
+| --- | --- | --- |
+| 工作 | [畫面](../examples/NARRATIVE-A3-work-DESKTOP.png) | [畫面](../examples/NARRATIVE-A3-work-MOBILE.png) |
+| 外出袋 | [畫面](../examples/NARRATIVE-A3-bag-DESKTOP.png) | [畫面](../examples/NARRATIVE-A3-bag-MOBILE.png) |
+| 作息訊息 | [畫面](../examples/NARRATIVE-A3-message-DESKTOP.png) | [畫面](../examples/NARRATIVE-A3-message-MOBILE.png) |
+| 找鞋 | [畫面](../examples/NARRATIVE-A3-shoes-DESKTOP.png) | [畫面](../examples/NARRATIVE-A3-shoes-MOBILE.png) |
+| 通知 | [畫面](../examples/NARRATIVE-A3-notice-DESKTOP.png) | [畫面](../examples/NARRATIVE-A3-notice-MOBILE.png) |
+| 相聚草稿 | [畫面](../examples/NARRATIVE-A3-gathering-DESKTOP.png) | [畫面](../examples/NARRATIVE-A3-gathering-MOBILE.png) |
+| 新教室／Review | [畫面](../examples/NARRATIVE-A3-map-DESKTOP.png) | [畫面](../examples/NARRATIVE-A3-map-MOBILE.png) |
 
 ## Standards Review
 
@@ -58,3 +74,5 @@ N03 與 N04 在作者組裝層選版，不新增 Condition 語言、不把家庭
 ## Spec Review
 
 另一位獨立 reviewer 逐項核對 #62 與相容政策 V，0 項缺陷。資格單版組裝、14 個作者節點、遠端來源限制、共同 reflection、舊版本路由及排除範圍符合要求。驗證描述需區分家庭人物 availability 與瞬時同事；已補 work 專用全 actor unavailable 負例。
+
+複核：0 項未解決缺陷。work／message 的全 actor unavailable、未詢問、錯場景與缺 actor 負例，以及 Preview／map E2E 的完整 Review 歷史均確認符合規格。
