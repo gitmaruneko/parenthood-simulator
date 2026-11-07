@@ -200,23 +200,25 @@ it.each(A3_STORIES.filter(story => ["work", "message", "notice", "map"].includes
   }
 });
 
-it("never answers an unasked remote question, a different scene, or a missing actor", () => {
-  const story = A3_STORIES.find(story => story.key === "message")!;
+it.each(["message", "work"])("never answers an unasked remote question, a different scene, or a missing actor: %s", key => {
+  const story = A3_STORIES.find(story => story.key === key)!;
   const { state, content } = a3Run(story);
   const event = content.events.find(event => event.id === a3Root(story.key))!;
+  const flag = story.choices[1];
   const cases = [
-    { state: { ...state, flags: ["nqa3-decline"] }, event },
-    { state: { ...state, flags: ["nqa3-ask"] }, event: { ...event, contextTags: ["nqa3-work"] } },
-    { state: { ...state, flags: ["nqa3-ask"] }, event: { ...event, actorIds: ["child-1"] } },
-    { state: { ...state, flags: ["nqa3-ask"], family: { ...state.family, persistentActorIds: [] } }, event },
+    { state: { ...state, flags: [story.choices[0]] }, event },
+    { state: { ...state, flags: [] }, event },
+    { state: { ...state, flags: [flag] }, event: { ...event, contextTags: ["nqa3-bag"] } },
+    { state: { ...state, flags: [flag] }, event: { ...event, actorIds: ["child-1"] } },
+    ...(key === "message" ? [{ state: { ...state, flags: [flag], family: { ...state.family, persistentActorIds: [] } }, event }] : []),
   ];
   for (const row of cases) for (let rngState = 1; rngState <= 96; rngState++) {
     const reactions = resolveReactions({ ...row.state, rngState }, row.event, content).reactions;
-    expect(reactions.every(reaction => reaction.entry?.kind === "none" || reaction.entry?.id === "nqa3-message-reply-0")).toBe(true);
+    expect(reactions.every(reaction => reaction.entry?.kind === "none" || reaction.entry?.id === `nqa3-${key}-reply-0`)).toBe(true);
   }
   const unavailable = structuredClone(content);
   unavailable.actors.forEach(actor => { actor.availability = 0; });
-  expect(resolveReactions({ ...state, flags: ["nqa3-ask"] }, event, unavailable).reactions.every(reaction => reaction.entry?.kind === "none")).toBe(true);
+  expect(resolveReactions({ ...state, flags: [flag] }, event, unavailable).reactions.every(reaction => reaction.entry?.kind === "none")).toBe(true);
 });
 
 it("rejects missing A3 continuations, spoofed releases and wrong flags while preserving bytes", () => {

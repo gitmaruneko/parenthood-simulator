@@ -35,7 +35,7 @@ N03 與 N04 在作者組裝層選版，不新增 Condition 語言、不把家庭
 
 執行 `npm run dev -- --port 5173`，開啟 [A3 工作起點](http://127.0.0.1:5173/preview-narrative-a3.html?story=work)。頁面可切換 work／bag／message／shoes／notice／gathering／map 或 full；`seed` 可指定，`attempt` 可另開試玩。
 
-每個故事起點明確組裝相符家庭；message 若原家庭沒有長輩，僅在這個新 Preview 家庭加入支持家人，不修改任何舊存檔。分頁 sessionStorage 以 release／story／attempt 隔離，可 reload 續玩至 Review。正式 localStorage 完全隔離；入口未列入正式 Build，請使用本機開發網址。本輪不手動部署或切換正式 release。
+每個故事起點明確組裝相符家庭；message 若原家庭沒有長輩，僅在這個新 Preview 家庭加入支持家人，不修改任何舊存檔。捷徑先用真實 Engine、第一個選項走完前段，保留可完成 Review 的十二階段歷史；頁面說明此前段試走。分頁 sessionStorage 以 release／story／attempt 隔離，可 reload 續玩至 Review。正式 localStorage 完全隔離；入口未列入正式 Build，請使用本機開發網址。本輪不手動部署或切換正式 release。
 
 ## 驗證與證據
 
@@ -50,3 +50,11 @@ N03 與 N04 在作者組裝層選版，不新增 Condition 語言、不把家庭
 - 固定 #42 4096 corpus、六個生活方向重新量測 stage 8；事前容差沿原公式，非宣稱完成 #42 全量覆蓋。
 
 實際 Journal：[七版本各兩路與四基準家庭](../examples/NARRATIVE-A3-PLAYTHROUGH.md)；[原始 Engine／Journal／Review 與資格表](../examples/NARRATIVE-A3-RUNS.json)；[固定 corpus 分布](../examples/NARRATIVE-A3-DISTRIBUTION.json)。執行結果與兩軸 Review 在 PR 完成時補入。
+
+## Standards Review
+
+獨立 reviewer 比較 `git diff origin/main...HEAD`，固定基準 `c9c73a5`、實作 `ffaa353`，檢查 AGENTS、Domain Schema、Event Engine、Persistence、Journal、Actor Profiles、Family Review、Decision Dialog 與 #52 規格。0 項硬違反、0 項需處理 smell。作者組裝、Journal 來源、v8 binding 與隔離 Preview 符合既有規範。
+
+## Spec Review
+
+另一位獨立 reviewer 逐項核對 #62 與相容政策 V，0 項缺陷。資格單版組裝、14 個作者節點、遠端來源限制、共同 reflection、舊版本路由及排除範圍符合要求。驗證描述需區分家庭人物 availability 與瞬時同事；已補 work 專用全 actor unavailable 負例。
