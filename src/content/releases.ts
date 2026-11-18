@@ -1,3 +1,4 @@
+import { NARRATIVE_A3_RELEASE, NARRATIVE_A3_REPLACEMENTS, A3_STORIES, a3Root, a3Reflection, narrativeA3Events, narrativeA3Pools } from "./narrative-a3.js";
 import { createMvpContent } from "./mvp.js";
 import { toyCarEvents, toyCarPools, TOY_CAR_CHAIN, TOY_CAR_ROOT } from "./toy-car-story.js";
 import { parseContentPack } from "../domain/content-validation.js";
@@ -13,9 +14,10 @@ export const PREVIEW_RELEASE = "family-events-08a-v1";
 // Checkpoint validation otherwise reparses the same 37 authored nodes on every save.
 let cachedPreview: { key: string; content: ContentPack } | undefined;
 let cachedNarrative: { key: string; content: ContentPack } | undefined;
+let cachedNarrativeA3: { key: string; content: ContentPack } | undefined;
 let cachedNarrativeA2: { key: string; content: ContentPack } | undefined;
 export const isSupportedRelease = (releaseId: string, assemblyVersion: number) =>
-  [PREVIEW_RELEASE, NARRATIVE_RELEASE, NARRATIVE_A2_RELEASE].includes(releaseId) && assemblyVersion === 2;
+  [PREVIEW_RELEASE, NARRATIVE_RELEASE, NARRATIVE_A2_RELEASE, NARRATIVE_A3_RELEASE].includes(releaseId) && assemblyVersion === 2;
 export interface FamilyEntryRule {
   eventId: string;
   householdComposition?: readonly GameState["family"]["householdComposition"][];
@@ -67,6 +69,12 @@ export function bindNarrativeA2Run(run: FamilyRun): FamilyRun {
   return bound;
 }
 
+export function bindNarrativeA3Run(run: FamilyRun): FamilyRun {
+  const bound = bindPreviewRun(run);
+  bound.state.contentBinding!.releaseId = NARRATIVE_A3_RELEASE;
+  return bound;
+}
+
 export function createRunContent(state: GameState): ContentPack {
   const actors = state.replayOrigin?.actors;
   if (!state.contentBinding) {
@@ -78,6 +86,23 @@ export function createRunContent(state: GameState): ContentPack {
       !actors || !state.actorProfiles || !state.replayOrigin?.actorProfiles ||
       binding.familyKey !== familyContentKey(state.family, actors)) throw new Error("Incompatible content binding");
   const cacheKey = `${binding.familyKey}/${JSON.stringify(actors)}`;
+  if (binding.releaseId === NARRATIVE_A3_RELEASE) {
+    if (cachedNarrativeA3?.key === cacheKey) return structuredClone(cachedNarrativeA3.content);
+    const original = createRunContent({ ...state, contentBinding: { ...binding, releaseId: NARRATIVE_A2_RELEASE } });
+    const replaceEntry = (id: string) => NARRATIVE_A3_REPLACEMENTS[id] ?? [id];
+    const events = [...original.events.filter(event => !NARRATIVE_A3_REPLACEMENTS[event.id]), ...narrativeA3Events()];
+    const working = state.family.workArrangement !== "singleFullTimeCare";
+    const hasElder = state.family.persistentActorIds.includes("support-1") &&
+      actors.some(actor => actor.id === "support-1" && actor.role === "grandparent");
+    const excluded = new Set([a3Root(working ? "bag" : "work"), a3Root(hasElder ? "shoes" : "message")]);
+    const authored = parseContentPack({ ...original, events,
+      ageStages: original.ageStages.map(stage => ({ ...stage, entryEventIds: stage.entryEventIds.flatMap(replaceEntry).filter(id => !excluded.has(id)).sort() })),
+      entryEventIds: original.entryEventIds.flatMap(replaceEntry).filter(id => !excluded.has(id)).sort(),
+      requiredEventIds: events.map(event => event.id).filter(id => !excluded.has(id.replace(/-reflection$/, "-choice"))), reactionPools: [...original.reactionPools, ...narrativeA3Pools()] });
+    const assembled = assembleFamilyEntries(authored, state.family, []);
+    cachedNarrativeA3 = { key: cacheKey, content: assembled };
+    return structuredClone(assembled);
+  }
   if (binding.releaseId === NARRATIVE_A2_RELEASE) {
     if (cachedNarrativeA2?.key === cacheKey) return structuredClone(cachedNarrativeA2.content);
     const original = createRunContent({ ...state, contentBinding: { ...binding, releaseId: NARRATIVE_RELEASE } });
@@ -195,7 +220,7 @@ export function validatePreviewProgress(state: GameState, content: ContentPack):
       check([`${prefix}-choice`, `${prefix}-${choice.choiceId === "carry" ? "strain" : "support"}`, `${prefix}-reconnect`, `${prefix}-repair`]);
     }
   }
-  if ([NARRATIVE_RELEASE, NARRATIVE_A2_RELEASE].includes(state.contentBinding?.releaseId ?? "")) {
+  if ([NARRATIVE_RELEASE, NARRATIVE_A2_RELEASE, NARRATIVE_A3_RELEASE].includes(state.contentBinding?.releaseId ?? "")) {
     for (const chain of [NIGHT, DOOR]) {
       const choice = state.choiceHistory.find(row => row.eventId === chain.root);
       if (!choice) continue;
@@ -214,7 +239,7 @@ export function validatePreviewProgress(state: GameState, content: ContentPack):
     if (state.completedEventIds.includes(TOY_CAR_ROOT) && state.completedEventIds.includes(DOOR.root))
       throw new Error("Multiple stage roots");
   }
-  if (state.contentBinding?.releaseId === NARRATIVE_A2_RELEASE) {
+  if ([NARRATIVE_A2_RELEASE, NARRATIVE_A3_RELEASE].includes(state.contentBinding?.releaseId ?? "")) {
     for (const story of A2_STORIES) {
       const choice = state.choiceHistory.find(row => row.eventId === a2Root(story.key));
       if (!choice) continue;
@@ -226,6 +251,16 @@ export function validatePreviewProgress(state: GameState, content: ContentPack):
           throw new Error("Wrong daily story continuation");
       }
       check([a2Root(story.key), continuation], false);
+    }
+  }
+  if (state.contentBinding?.releaseId === NARRATIVE_A3_RELEASE) {
+    if (references.some(id => !content.requiredEventIds.includes(id))) throw new Error("Unavailable family variant");
+    for (const story of A3_STORIES) {
+      const choice = state.choiceHistory.find(row => row.eventId === a3Root(story.key));
+      if (!choice) continue;
+      if (!state.flags.includes(choice.choiceId) || story.choices.some(id => id !== choice.choiceId && state.flags.includes(id)))
+        throw new Error("Inconsistent A3 action flags");
+      check([a3Root(story.key), a3Reflection(story.key)], false);
     }
   }
   if (state.completedEventIds.includes(TOY_CAR_ROOT) && state.completedEventIds.includes("preschool-handoff-choice"))

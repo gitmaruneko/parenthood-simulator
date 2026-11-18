@@ -21,3 +21,9 @@ Issue #61 的獨立 Preview：`npm run dev -- --port 5173`，開啟 `http://127.
 可選餐桌、用品、公園、雨天、休息或完整十二階段；使用隔離分頁存檔。正式預設 release 不變。
 詳見 [A2 實作與已知缺陷](docs/implementation/NARRATIVE-A2.md) 及 [四家庭實際 Journal](docs/examples/NARRATIVE-A2-PLAYTHROUGH.md)。
 
+## Narrative A3 開發試玩
+
+Issue #62 的獨立 Preview：`npm run dev -- --port 5173`，開啟 `http://127.0.0.1:5173/preview-narrative-a3.html?story=work`。
+可選工作、作息訊息、通知、相聚草稿、新教室，以及外出袋／找鞋兩個中性變體或完整十二階段；使用隔離分頁存檔。
+詳見 [A3 資格、版本與驗證](docs/implementation/NARRATIVE-A3.md) 及 [實際 Journal／條件對照](docs/examples/NARRATIVE-A3-PLAYTHROUGH.md)。
+
