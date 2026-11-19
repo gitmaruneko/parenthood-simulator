@@ -1,4 +1,19 @@
-# 重大抉擇與保存恢復（UX v2 T5，Issue #39）
+# 決策 Dialog 與保存恢復（Issues #39、#67）
+
+## 精簡呈現（#67）
+
+正常 ready 只顯示類別、標題、情境及行動文字。移除兩句固定選擇提示，
+選項旁不呈現風格、分數或 `anticipatedJudgment`；後者仍保留於內容及歷史存檔。
+`aria-describedby` 只引用現有情境 ID；常駐 polite status 在 ready 為空，
+提交、未保存及重試時仍播報原狀態，錯誤保留 alert。
+
+類別只投影同 release 作者提供的可選 `EventNode.experienceType`：
+`conflict` → 育兒衝突、`dailyLife` → 日常生活、`positive` → 成長與溫暖、
+`consequence` → 選擇的後續。缺 metadata 顯示中性「生活抉擇」，不依 kind、
+標題或選項猜分類。既有 legacy／08A／A1–A3 不回填 annotation，保持原內容。
+這個可選欄位是 Dialog 的分類投影入口；#68 的版本化作者目錄須沿同 release
+提供分類，不新增第二套分類或改變舊 release。Engine 執行意義與 GameState 不變，
+不改 Session 命令或 save v8。
 
 ## 自動敘事補充（#52）
 
@@ -14,7 +29,7 @@ pending 一律停止後續自動命令，前文已保存 Journal 呈現完後才
 下文「所有 pending 立即開啟」及「一律定位最新」描述以本節例外取代。
 
 所有公開 pendingEvent 使用唯一原生 `DecisionDialog`，包括讀檔後的必要選擇。
-UI 只呈現 Engine 已過濾的選項文字與既有心裡預期，不顯示 resourceDeltas。
+UI 只呈現 Engine 已過濾的選項文字，不顯示心裡預期或 resourceDeltas。
 主畫面不再放情境正文或內嵌選項；已發生文字仍由同一份倒敘 Journal 顯示。
 
 ## Session 契約

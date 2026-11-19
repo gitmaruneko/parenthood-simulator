@@ -2,6 +2,13 @@ import { useEffect, useRef } from "react";
 import type { DecisionPresentation } from "./player-session.js";
 import { JournalText } from "./JournalText.js";
 
+const experienceLabels = {
+  conflict: "育兒衝突",
+  dailyLife: "日常生活",
+  positive: "成長與溫暖",
+  consequence: "選擇的後續",
+} as const;
+
 export function DecisionDialog({ decision, busy, error, hasUnsavedChanges, canRetry,
   onChoose, onRetry, onReload }: {
   decision: DecisionPresentation; busy: boolean; error: string | null;
@@ -26,7 +33,7 @@ export function DecisionDialog({ decision, busy, error, hasUnsavedChanges, canRe
   }, [decision.status]);
   const accepted = decision.status === "unsaved";
   return <dialog ref={dialog} className="decision-dialog" aria-modal="true"
-    aria-labelledby="decision-title" aria-describedby="decision-description decision-help"
+    aria-labelledby="decision-title" aria-describedby="decision-description"
     aria-busy={busy} onCancel={event => event.preventDefault()}
     onKeyDown={event => {
       if (event.key === "Escape") { event.preventDefault(); return; }
@@ -40,14 +47,13 @@ export function DecisionDialog({ decision, busy, error, hasUnsavedChanges, canRe
         event.preventDefault(); first.focus();
       }
     }}>
-    <p className="eyebrow">生活裡的重大抉擇</p>
+    <p className="eyebrow">{decision.event.experienceType ? experienceLabels[decision.event.experienceType] : "生活抉擇"}</p>
     <h2 id="decision-title" ref={title} tabIndex={-1}>{decision.event.title}</h2>
     <p id="decision-description">{decision.event.text}</p>
-    <p id="decision-help">{accepted ? "請完成保存或閱讀下方恢復說明。" : "選擇後才能繼續。"}</p>
     <p role="status" aria-live="polite" aria-atomic="true" ref={result} tabIndex={-1}>
       {busy ? (accepted ? "正在重試儲存，請稍候。" : "正在處理並儲存，請稍候。")
         : accepted ? "選擇已保留於本次開啟的故事，尚未保存。"
-        : hasUnsavedChanges ? "這段事件進度尚未儲存。" : "請選擇眼前的做法。"}
+        : hasUnsavedChanges ? "這段事件進度尚未儲存。" : ""}
     </p>
     {error && <p role="alert">{error}</p>}
     {accepted && <section aria-label="本次已確認的紀錄">
@@ -58,7 +64,6 @@ export function DecisionDialog({ decision, busy, error, hasUnsavedChanges, canRe
         disabled={busy || decision.status !== "ready"}
         onClick={() => onChoose(choice.id, decision.key)}>
         {choice.text}
-        {choice.anticipatedJudgment && <span className="choice-hint">心裡預期：{choice.anticipatedJudgment}</span>}
       </button>)}
     </div>}
     {hasUnsavedChanges && <>

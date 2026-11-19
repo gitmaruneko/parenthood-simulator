@@ -248,6 +248,7 @@ export const eventNodeSchema = z
     ageStageId: identifierSchema,
     kind: eventNodeKindSchema,
     mode: eventResolutionModeSchema,
+    experienceType: z.enum(["conflict", "dailyLife", "positive", "consequence"]).optional(),
     title: z.string().min(1),
     text: z.string().min(1),
     actorText: actorTextSchema.optional(),

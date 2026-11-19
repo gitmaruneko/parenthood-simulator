@@ -79,6 +79,14 @@ history. Observed reactions use `observedReactionSchema`; optional
 `GameState.reactionHistory` adds the source event, stage, and Turn to each result.
 These additions are optional so previous states and content remain parseable.
 
+For the decision Dialog (#67), optional `EventNode.experienceType` accepts
+`conflict`, `dailyLife`, `positive`, or `consequence`. This is an author-supplied
+presentation annotation from the same immutable release, independent of `kind`
+and `mode`. Existing releases leave it absent and display a neutral label.
+It does not affect event selection or add persisted GameState fields.
+`anticipatedJudgment` remains readable in saved history but is hidden beside
+decision options. See [Dialog presentation](DECISION_DIALOG.md).
+
 The validator checks unique reaction entry IDs within each pool, nested modifier
 condition references, and reaction schedule event/stage/condition references.
 Reaction schedules contribute graph edges for reachability and guarded-cycle

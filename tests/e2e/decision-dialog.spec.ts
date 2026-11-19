@@ -27,6 +27,12 @@ test("restored decisions are modal, trap keyboard focus, cannot be skipped, and 
   await expect(page.locator("#decision-title")).toBeFocused();
   await expect(page.locator(".game-background")).toHaveAttribute("inert", "");
   expect(await dialog.evaluate(element => element.matches(":modal"))).toBe(true);
+  await expect(dialog.locator(".eyebrow")).toHaveText("生活抉擇");
+  await expect(dialog).not.toContainText("選擇後才能繼續。");
+  await expect(dialog).not.toContainText("請選擇眼前的做法。");
+  await expect(dialog.getByRole("status")).toBeEmpty();
+  expect(await dialog.evaluate(element => element.getAttribute("aria-describedby")!.split(/\s+/)
+    .every(id => document.getElementById(id)))).toBe(true);
   expect(await dialog.evaluate(element => getComputedStyle(element, "::backdrop").backgroundColor)).not.toBe("rgba(0, 0, 0, 0)");
   await expect(page.locator(".event-panel .decisions button")).toHaveCount(0);
   await expect(dialog.locator(".decisions button")).toHaveText(getPlayerView(pending, content).pendingEvent!.choices.map(choice => choice.text));
